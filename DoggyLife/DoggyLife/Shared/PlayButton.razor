@@ -1,0 +1,17 @@
+@inject NavigationManager NavManager
+
+<NavLink @onclick="ButtonPressed" target="_self" Match="NavLinkMatch.All" style="cursor: pointer">
+    <img src="@($"images/{_buttonState}-play-button.png")" alt="unpressed play button"/>
+</NavLink>
+
+@code
+{
+    string _buttonState = "unpressed";
+    
+    async void ButtonPressed()
+    {
+        _buttonState = "pressed";
+        await Task.Delay(500);
+        NavManager.NavigateTo("game");
+    }
+}

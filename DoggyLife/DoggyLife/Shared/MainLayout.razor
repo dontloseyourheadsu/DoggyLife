@@ -1,0 +1,34 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_doggyLifeTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<main style="height: 100%">
+    <MudPaper Elevation="0" Height="100%" Width="100%" Style="@("display: flex; " + $"background: #6b71db url({StripedBackground}) repeat")">
+        <MudContainer Style="display: flex; flex-direction: column; align-items: center; justify-content: center">
+            @Body
+        </MudContainer>
+    </MudPaper>
+</main>
+
+@code
+{
+    private const string StripedBackground = "/images/stripe-bg.png";
+
+    private readonly MudTheme _doggyLifeTheme = new()
+    {
+        Typography = new()
+        {
+            Default = new()
+            {
+                FontFamily = new[] { "Press Start 2P", "cursive" }
+            },
+            H1 = new()
+            {
+                FontFamily = new[] { "Press Start 2P", "cursive" },
+                FontSize = "2.5rem"
+            }
+        }
+    };
+}

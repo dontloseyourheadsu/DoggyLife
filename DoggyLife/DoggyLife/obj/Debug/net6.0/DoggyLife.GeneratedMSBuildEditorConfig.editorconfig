@@ -1,0 +1,41 @@
+is_global = true
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = DoggyLife
+build_property.RootNamespace = DoggyLife
+build_property.ProjectDir = C:\Users\yisus\Documents\GitHub\DoggyLife\DoggyLife\DoggyLife\
+build_property.RazorLangVersion = 6.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\yisus\Documents\GitHub\DoggyLife\DoggyLife\DoggyLife
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/yisus/Documents/GitHub/DoggyLife/DoggyLife/DoggyLife/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yisus/Documents/GitHub/DoggyLife/DoggyLife/DoggyLife/Pages/Game.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2FtZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yisus/Documents/GitHub/DoggyLife/DoggyLife/DoggyLife/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yisus/Documents/GitHub/DoggyLife/DoggyLife/DoggyLife/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yisus/Documents/GitHub/DoggyLife/DoggyLife/DoggyLife/Shared/PlayButton.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFBsYXlCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/yisus/Documents/GitHub/DoggyLife/DoggyLife/DoggyLife/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
