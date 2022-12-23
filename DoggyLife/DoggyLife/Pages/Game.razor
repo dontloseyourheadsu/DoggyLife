@@ -2,10 +2,22 @@
 
 <PageTitle>DoggyLife | Game</PageTitle>
 
-<MudPaper Elevation="0" Height="440px" Width="500px" Style=@($"position: relative; background: transparent url({room}); background-size: 100%; background-repeat: no-repeat")>
-    <Dog/>
-</MudPaper>
-
+<MudDropContainer T="ImageItem" Items="_items" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ItemUpdated">
+    <ChildContent>
+        <MudDropZone T="ImageItem" Identifier="Room">
+            <MudPaper Elevation="0" Height="440px" Width="500px" Style=@($"position: relative; background: transparent url({room}); background-size: 100%; background-repeat: no-repeat")>
+                <Dog/>
+            </MudPaper>
+        </MudDropZone>
+        <MudDropZone T="ImageItem" Identifier="Dog Bar" Class="d-flex align-end justify-space-around mt-4"
+                     Style="height: 80px; background: #4D3663; border:  10px double darkgoldenrod">
+        </MudDropZone>
+    </ChildContent>
+    <ItemRenderer>
+        <MudImage Src="@context.Image" Alt="object"
+                  Style="@context.Style" Height="@context.Height"></MudImage>
+    </ItemRenderer>
+</MudDropContainer>
 
 
 @code {
@@ -15,4 +27,46 @@
     {
         room = "/images/room-1.svg";
     }
+
+    private static void ItemUpdated(MudItemDropInfo<ImageItem> dropItem)
+    {
+        dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
+        if (dropItem.DropzoneIdentifier == "Room")
+        {
+            dropItem.Item.Style = "position: absolute; top: 0; left: 0; ";
+            dropItem.Item.Height = 35;
+        }
+        else
+        {
+            dropItem.Item.Style = "";
+            dropItem.Item.Height = 50;
+        }
+    }
+
+    private List<ImageItem> _items = new()
+    {
+        new ImageItem()
+        {
+            Identifier = "Dog Bar",
+            Image = "images/dogbar/ball.svg",
+            Style = "",
+            Height = 50
+        },
+        new ImageItem()
+        {
+            Identifier = "Dog Bar",
+            Image = "images/dogbar/food-plate.png",
+            Style = "",
+            Height = 50
+        }
+    };
+
+    public class ImageItem
+    {
+        public string? Identifier { get; set; }
+        public string? Image { get; init; }
+        public string? Style { get; set; }
+        public int? Height { get; set; }
+    }
+
 }

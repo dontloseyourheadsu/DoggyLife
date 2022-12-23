@@ -17,8 +17,12 @@
       "PackagePath": "staticwebassets\\images\\MenuDog.png"
     },
     {
-      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\ball.png",
-      "PackagePath": "staticwebassets\\images\\ball.png"
+      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\dogbar\\ball.svg",
+      "PackagePath": "staticwebassets\\images\\dogbar\\ball.svg"
+    },
+    {
+      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\dogbar\\food-plate.png",
+      "PackagePath": "staticwebassets\\images\\dogbar\\food-plate.png"
     },
     {
       "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\dogs\\sit\\sitfront1.png",
@@ -99,14 +103,6 @@
     {
       "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\dogs\\walking\\walkup4.png",
       "PackagePath": "staticwebassets\\images\\dogs\\walking\\walkup4.png"
-    },
-    {
-      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\elements-bar.png",
-      "PackagePath": "staticwebassets\\images\\elements-bar.png"
-    },
-    {
-      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\food-plate.png",
-      "PackagePath": "staticwebassets\\images\\food-plate.png"
     },
     {
       "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\pressed-play-button.png",
