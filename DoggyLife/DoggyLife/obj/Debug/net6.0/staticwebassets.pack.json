@@ -9,6 +9,10 @@
       "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js.gz"
     },
     {
+      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\obj\\Debug\\net6.0\\scopedcss\\bundle\\DoggyLife.styles.css",
+      "PackagePath": "staticwebassets\\DoggyLife.styles.css"
+    },
+    {
       "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\MenuDog.png",
       "PackagePath": "staticwebassets\\images\\MenuDog.png"
     },

@@ -2,6 +2,17 @@
 
 <PageTitle>DoggyLife | Game</PageTitle>
 
+<MudPaper Elevation="0" Height="440px" Width="500px" Style=@($"position: relative; background: transparent url({room}); background-size: 100%; background-repeat: no-repeat")>
+    <Dog/>
+</MudPaper>
+
+
+
 @code {
-    
+    private string room;
+
+    public Game()
+    {
+        room = "/images/room-1.svg";
+    }
 }

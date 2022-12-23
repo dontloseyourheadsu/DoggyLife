@@ -1,0 +1,202 @@
+.dog {
+    position: absolute;
+    background-size: 100% 100%;
+    width: 70px;
+    height: 75px;
+}
+
+.flip-dog {
+    transform: scaleX(-1);
+}
+
+
+
+
+/*-------SIT ANIMATIONS-------*/
+@keyframes sittingDownFront {
+    0% {
+        background: url("/images/dogs/sit/sitfront1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    5% {
+        background: url("/images/dogs/sit/sitfront2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    10% {
+        background: url("/images/dogs/sit/sitfront3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    15% {
+        background: url("/images/dogs/sit/sitfront4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/sit/sitfront4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+@keyframes sittingUpFront {
+    0% {
+        background: url("/images/dogs/sit/sitfront4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    5% {
+        background: url("/images/dogs/sit/sitfront3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    10% {
+        background: url("/images/dogs/sit/sitfront2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    15% {
+        background: url("/images/dogs/sit/sitfront1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/sit/sitfront1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+@keyframes sittingDownSide {
+    0% {
+        background: url("/images/dogs/sit/sitside1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    5% {
+        background: url("/images/dogs/sit/sitside2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    10% {
+        background: url("/images/dogs/sit/sitside3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    15% {
+        background: url("/images/dogs/sit/sitside4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/sit/sitside4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+@keyframes sittingUpSide {
+    0% {
+        background: url("/images/dogs/sit/sitside4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    5% {
+        background: url("/images/dogs/sit/sitside3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    10% {
+        background: url("/images/dogs/sit/sitside2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    15% {
+        background: url("/images/dogs/sit/sitside1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/sit/sitside1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+.sit-down {
+    animation: sittingDownFront 2s ease-in-out;
+    background: url("/images/dogs/sit/sitfront4.png");
+}
+
+.sit-up {
+    animation: sittingUpFront 2s ease-in-out;
+    background: url("/images/dogs/sit/sitfront1.png");
+}
+
+.sit-down-side {
+    animation: sittingDownSide 2s ease-in-out;
+    background: url("/images/dogs/sit/sitside4.png");
+}
+
+.sit-up-side {
+    animation: sittingUpSide 2s ease-in-out;
+    background: url("/images/dogs/sit/sitside1.png");
+}
+
+
+
+/*-------WALK ANIMATIONS------*/
+
+@keyframes walkDown {
+    0% {
+        background: url("/images/dogs/walking/walkdown1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    33% {
+        background: url("/images/dogs/walking/walkdown2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    66% {
+        background: url("/images/dogs/walking/walkdown3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/walking/walkdown4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+@keyframes walkUp {
+    0% {
+        background: url("/images/dogs/walking/walkup1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    33% {
+        background: url("/images/dogs/walking/walkup2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    66% {
+        background: url("/images/dogs/walking/walkup3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/walking/walkup4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+@keyframes walkSide {
+    0% {
+        background: url("/images/dogs/walking/walkside1.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    33% {
+        background: url("/images/dogs/walking/walkside2.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    66% {
+        background: url("/images/dogs/walking/walkside3.png") no-repeat;
+        background-size: 100% 100%;
+    }
+    100% {
+        background: url("/images/dogs/walking/walkside4.png") no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+.walk-down {
+    animation: walkDown 0.5s infinite;
+    background: url("/images/dogs/walking/walkdown1.png");
+}
+
+.walk-up {
+    animation: walkUp 0.5s infinite;
+    background: url("/images/dogs/walking/walkup1.png");
+}
+
+.walk-side {
+    animation: walkSide 0.5s infinite;
+    background: url("/images/dogs/walking/walkside1.png");
+}

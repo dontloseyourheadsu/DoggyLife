@@ -1,0 +1,20 @@
+<div style="@($"left: {ToStringDot(dogX)}%; bottom: {ToStringDot(dogY)}%; ")" 
+     class="@($"dog {Action}")"></div>
+
+@code {
+    private string Action;
+    private float dogX, dogY;
+
+    public Dog()
+    {
+        Action = "sit-down";
+        dogX = 42.5f;
+        dogY = 5f;
+    }
+
+    private string ToStringDot(float number)
+    {
+        return number.ToString().Replace(',', '.');
+    }
+
+}

@@ -197,13 +197,13 @@
       "mscorlib.dll": "sha256-cx\/3nJhFns3tZhQNQOyiRyKJESKxOjLVufzWnri6KSA=",
       "netstandard.dll": "sha256-yWufW5W4SSfjocBcWTEDqnFwTd\/VYtLMc2Y9mPmlggc=",
       "System.Private.CoreLib.dll": "sha256-H009wzPwRoDZlwvpN4KLCsUwN7Y1AmjKB3PIEHA7ObQ=",
-      "DoggyLife.dll": "sha256-nPY13DSFlM\/4RiirilOKNmEySteo5o8o7ewSN6ffeiM="
+      "DoggyLife.dll": "sha256-Nex\/17AXFrI0iHGnfp1ZWeTuTaWxL415hT6m5KwlU+0="
     },
     "extensions": null,
     "lazyAssembly": null,
     "libraryInitializers": null,
     "pdb": {
-      "DoggyLife.pdb": "sha256-aD9\/UQZBtAa5PgXdQ3Z8VYVy\/Cu\/2io18U6ClRaGW1E="
+      "DoggyLife.pdb": "sha256-gSD8K5F07JPlvAwptx0s1jIfBBkSXPwfMjGqOoRx9PA="
     },
     "runtime": {
       "dotnet.6.0.11.egvp60nq9h.js": "sha256-F30V+6jU3jwJYFZoLuwMAqzTiOXu6q7zGgOdjYBofDI=",
