@@ -1,20 +1,31 @@
-<div style="@($"left: {ToStringDot(dogX)}%; bottom: {ToStringDot(dogY)}%; ")" 
+<div style="@($"left: {dogX}px; top: {dogY}px; ")" 
      class="@($"dog {Action}")"></div>
 
 @code {
+    [Parameter]
+    public double ObjectX { get; set; }
+    [Parameter]
+    public double ObjectY { get; set; }
+
     private string Action;
-    private float dogX, dogY;
+    private int dogX, dogY;
+    private Dictionary<int, int[]> movementBoundaries;
 
     public Dog()
     {
         Action = "sit-down";
-        dogX = 42.5f;
-        dogY = 5f;
+        dogX = 220;
+        dogY = 350;
+        movementBoundaries = new Dictionary<int, int[]>();
+        for (int y = dogY, x1 = dogX, x2 = dogX, xThrust = 2;
+            y >= 200;
+            y--, x1 += (xThrust * -1), x2 += xThrust)
+        {
+            movementBoundaries.Add(y, new[] { x1, x2 });
+            if (y == 275)
+            {
+                xThrust = -2;
+            }
+        }
     }
-
-    private string ToStringDot(float number)
-    {
-        return number.ToString().Replace(',', '.');
-    }
-
 }

@@ -2,11 +2,15 @@
 
 <PageTitle>DoggyLife | Game</PageTitle>
 
-<MudDropContainer T="ImageItem" Items="_items" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ItemUpdated">
+<MudDropContainer T="ImageItem" Items="_items" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" 
+                  ItemDropped="ItemUpdated">
     <ChildContent>
-        <MudDropZone T="ImageItem" Identifier="Room">
-            <MudPaper Elevation="0" Height="440px" Width="500px" Style=@($"position: relative; background: transparent url({room}); background-size: 100%; background-repeat: no-repeat")>
-                <Dog/>
+        <MudDropZone T="ImageItem" Identifier="Room" @ondragover="@GetMousePosition">
+            <MudPaper Elevation="0" Height="440px" Width="500px" 
+                      Style=@($"position: relative; background: transparent url({room}); background-size: 100%;" +
+                              " background-repeat: no-repeat")
+                      >
+                <Dog ObjectX="0" ObjectY="0"/>
             </MudPaper>
         </MudDropZone>
         <MudDropZone T="ImageItem" Identifier="Dog Bar" Class="d-flex align-end justify-space-around mt-4"
@@ -18,14 +22,26 @@
                   Style="@context.Style" Height="@context.Height"></MudImage>
     </ItemRenderer>
 </MudDropContainer>
-
+<p style="color: white; font-size: 20px; ">@($"mouseX: {mouseX} ---- mouseY: {mouseY}")</p>
 
 @code {
     private string room;
+    private static float mouseX, mouseY;
 
     public Game()
     {
         room = "/images/room-1.svg";
+    }
+    
+    private static void GetMousePosition(MouseEventArgs e)
+    {
+        mouseX = (float)(e.OffsetX);
+        mouseY = (float)(e.OffsetY);
+    }
+
+    private static string ToDotString(float number)
+    {
+        return number.ToString().Replace(",", ".");
     }
 
     private static void ItemUpdated(MudItemDropInfo<ImageItem> dropItem)
@@ -33,7 +49,7 @@
         dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
         if (dropItem.DropzoneIdentifier == "Room")
         {
-            dropItem.Item.Style = "position: absolute; top: 0; left: 0; ";
+            dropItem.Item.Style = $"position: absolute; top: {ToDotString(mouseY)}px; left: {ToDotString(mouseX)}px; ";
             dropItem.Item.Height = 35;
         }
         else

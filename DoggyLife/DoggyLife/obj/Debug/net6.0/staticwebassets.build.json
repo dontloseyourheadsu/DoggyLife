@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "OqkY+LRpc6Z/beesWyMPY4vCxQml9VZuHvYsxlx2yEQ=",
+  "Hash": "X5rJdvfjaCsewoCXenvXP0xfrx1yIHeVFR1M2j7s1N0=",
   "Source": "DoggyLife",
   "BasePath": "/",
   "Mode": "Root",
@@ -6934,6 +6934,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\DoggyLife.bundle.scp.css"
+    },
+    {
+      "Identity": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\audios\\lofi-dog.mp3",
+      "SourceId": "DoggyLife",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "audios/lofi-dog.mp3",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\audios\\lofi-dog.mp3"
     },
     {
       "Identity": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\images\\dogbar\\ball.svg",
