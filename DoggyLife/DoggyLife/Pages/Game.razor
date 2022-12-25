@@ -10,7 +10,7 @@
                       Style=@($"position: relative; background: transparent url({room}); background-size: 100%;" +
                               " background-repeat: no-repeat")
                       >
-                <Dog ObjectX="0" ObjectY="0"/>
+                <Dog ObjectX="220" ObjectY="280"/>
             </MudPaper>
         </MudDropZone>
         <MudDropZone T="ImageItem" Identifier="Dog Bar" Class="d-flex align-end justify-space-around mt-4"
@@ -22,7 +22,6 @@
                   Style="@context.Style" Height="@context.Height"></MudImage>
     </ItemRenderer>
 </MudDropContainer>
-<p style="color: white; font-size: 20px; ">@($"mouseX: {mouseX} ---- mouseY: {mouseY}")</p>
 
 @code {
     private string room;
@@ -50,7 +49,7 @@
         if (dropItem.DropzoneIdentifier == "Room")
         {
             dropItem.Item.Style = $"position: absolute; top: {ToDotString(mouseY)}px; left: {ToDotString(mouseX)}px; ";
-            dropItem.Item.Height = 35;
+            dropItem.Item.Height = 25;
         }
         else
         {

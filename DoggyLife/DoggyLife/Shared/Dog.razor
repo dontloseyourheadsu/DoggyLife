@@ -1,23 +1,37 @@
-<div style="@($"left: {dogX}px; top: {dogY}px; ")" 
-     class="@($"dog {Action}")"></div>
+<div class="@($"dog {action} {flipImage}")"
+     style="@("position: absolute; z-index: 2; " + $"left: {dogX}px; top: {dogY}px;")">
+</div>
+
 
 @code {
-    [Parameter]
-    public double ObjectX { get; set; }
-    [Parameter]
-    public double ObjectY { get; set; }
 
-    private string Action;
-    private int dogX, dogY;
-    private Dictionary<int, int[]> movementBoundaries;
+    [Parameter]
+    public int ObjectX { get; set; }
+
+    [Parameter]
+    public int ObjectY { get; set; }
+
+    private static string action, flipImage;
+    private bool isMoving;
+    private static Random random;
+    private static int dogX, dogY,
+    goalX, goalY;
+    private static Dictionary<int, int[]> movementBoundaries;
 
     public Dog()
     {
-        Action = "sit-down";
+        action = "sit-front";
         dogX = 220;
         dogY = 350;
+        goalX = 220;
+        goalY = 200;
+        flipImage = "";
+        isMoving = false;
         movementBoundaries = new Dictionary<int, int[]>();
-        for (int y = dogY, x1 = dogX, x2 = dogX, xThrust = 2;
+        random = new Random();
+
+        //fill boundaries
+        for (int y = 350, x1 = 220, x2 = 220, xThrust = 2;
             y >= 200;
             y--, x1 += (xThrust * -1), x2 += xThrust)
         {
@@ -28,4 +42,71 @@
             }
         }
     }
+
+    private void SelectAnimation()
+    {
+        if (dogX == goalX && dogY == goalY)
+        {
+            action = action == "walk-side" ? "sit-side" : "sit-front";
+        }
+        if (dogX == goalX)
+        {
+            action = dogY > goalY ? "walk-up" : "walk-down";
+        }
+        else
+        {
+            action = "walk-side";
+            flipImage = dogX > goalX ? "flipped" : "";
+        }
+        StateHasChanged();
+    }
+    
+    private void SetGoal()
+    {
+        goalY = random.Next(200, 350);
+        goalX = random.Next(movementBoundaries[goalY][0], movementBoundaries[goalY][1]);
+    }
+
+    private async Task WalkRandom()
+    {
+        SelectAnimation();
+        var steps = 35;
+
+        while (isMoving)
+        {
+            await Task.Delay(100).ContinueWith((t) =>
+            {
+                SelectAnimation();
+                if (dogY != goalY && (goalY is >= 200 and <= 350))
+                {
+                    dogY += dogY > goalY ? -1 : 1;
+                }
+                if (dogX != goalX && (goalX >= movementBoundaries[dogY][0] && goalX <= movementBoundaries[dogY][1]))
+                {
+                    dogX += dogX > goalX ? -1 : 1;
+                }
+                StateHasChanged();
+            });
+            
+            steps--;
+            if (steps != 0) continue;
+            SetGoal();
+            steps = 35;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isMoving = true;
+            await WalkRandom();
+        }
+    }
+
+    private string ToStringDot(float number)
+    {
+        return number.ToString().Replace(",", ".");
+    }
+
 }

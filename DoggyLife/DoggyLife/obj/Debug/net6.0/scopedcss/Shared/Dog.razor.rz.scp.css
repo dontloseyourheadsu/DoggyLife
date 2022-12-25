@@ -5,12 +5,9 @@
     height: 75px;
 }
 
-.flip-dog[b-yaftvuj0qc] {
+.flipped[b-yaftvuj0qc] {
     transform: scaleX(-1);
 }
-
-
-
 
 /*-------SIT ANIMATIONS-------*/
 @keyframes sittingDownFront-b-yaftvuj0qc {
@@ -105,22 +102,22 @@
     }
 }
 
-.sit-down[b-yaftvuj0qc] {
+.sit-front[b-yaftvuj0qc] {
     animation: sittingDownFront-b-yaftvuj0qc 2s ease-in-out;
     background: url("/images/dogs/sit/sitfront4.png");
 }
 
-.sit-up[b-yaftvuj0qc] {
+.stand-front[b-yaftvuj0qc] {
     animation: sittingUpFront-b-yaftvuj0qc 2s ease-in-out;
     background: url("/images/dogs/sit/sitfront1.png");
 }
 
-.sit-down-side[b-yaftvuj0qc] {
+.sit-side[b-yaftvuj0qc] {
     animation: sittingDownSide-b-yaftvuj0qc 2s ease-in-out;
     background: url("/images/dogs/sit/sitside4.png");
 }
 
-.sit-up-side[b-yaftvuj0qc] {
+.stand-side[b-yaftvuj0qc] {
     animation: sittingUpSide-b-yaftvuj0qc 2s ease-in-out;
     background: url("/images/dogs/sit/sitside1.png");
 }

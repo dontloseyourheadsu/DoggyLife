@@ -129,6 +129,10 @@
       "PackagePath": "staticwebassets\\index.html"
     },
     {
+      "Id": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\styles\\app.css",
+      "PackagePath": "staticwebassets\\styles\\app.css"
+    },
+    {
       "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.DoggyLife.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },

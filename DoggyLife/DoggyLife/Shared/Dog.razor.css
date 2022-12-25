@@ -5,12 +5,9 @@
     height: 75px;
 }
 
-.flip-dog {
+.flipped {
     transform: scaleX(-1);
 }
-
-
-
 
 /*-------SIT ANIMATIONS-------*/
 @keyframes sittingDownFront {
@@ -105,22 +102,22 @@
     }
 }
 
-.sit-down {
+.sit-front {
     animation: sittingDownFront 2s ease-in-out;
     background: url("/images/dogs/sit/sitfront4.png");
 }
 
-.sit-up {
+.stand-front {
     animation: sittingUpFront 2s ease-in-out;
     background: url("/images/dogs/sit/sitfront1.png");
 }
 
-.sit-down-side {
+.sit-side {
     animation: sittingDownSide 2s ease-in-out;
     background: url("/images/dogs/sit/sitside4.png");
 }
 
-.sit-up-side {
+.stand-side {
     animation: sittingUpSide 2s ease-in-out;
     background: url("/images/dogs/sit/sitside1.png");
 }

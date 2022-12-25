@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "X5rJdvfjaCsewoCXenvXP0xfrx1yIHeVFR1M2j7s1N0=",
+  "Hash": "QFcqlYXATmtar75OQGitHtUiQjk3MunjwGPJt4rl5wY=",
   "Source": "DoggyLife",
   "BasePath": "/",
   "Mode": "Root",
@@ -7427,6 +7427,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\index.html"
+    },
+    {
+      "Identity": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\styles\\app.css",
+      "SourceId": "DoggyLife",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\yisus\\Documents\\GitHub\\DoggyLife\\DoggyLife\\DoggyLife\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "styles/app.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\styles\\app.css"
     }
   ]
 }
