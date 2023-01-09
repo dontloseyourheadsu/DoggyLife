@@ -10,7 +10,7 @@
                       Style=@($"position: relative; background: transparent url({room}); background-size: 100%;" +
                               " background-repeat: no-repeat")
                       >
-                <Dog ObjectX="220" ObjectY="280"/>
+                <Dog ObjectX="220" ObjectY="280" MovementBoundaries="@movementBoundaries"/>
             </MudPaper>
         </MudDropZone>
         <MudDropZone T="ImageItem" Identifier="Dog Bar" Class="d-flex align-end justify-space-around mt-4"
@@ -26,10 +26,23 @@
 @code {
     private string room;
     private static float mouseX, mouseY;
+    private static Dictionary<int, int[]> movementBoundaries;
 
     public Game()
     {
         room = "/images/room-1.svg";
+        movementBoundaries = new Dictionary<int, int[]>();
+
+        for (int y = 350, x1 = 220, x2 = 220, xThrust = 2;
+            y >= 200;
+            y--, x1 += (xThrust * -1), x2 += xThrust)
+        {
+            movementBoundaries.Add(y, new[] { x1, x2 });
+            if (y == 275)
+            {
+                xThrust = -2;
+            }
+        }
     }
     
     private static void GetMousePosition(MouseEventArgs e)

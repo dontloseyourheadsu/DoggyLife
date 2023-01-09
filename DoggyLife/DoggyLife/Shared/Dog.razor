@@ -10,13 +10,16 @@
 
     [Parameter]
     public int ObjectY { get; set; }
+    
+    [Parameter]
+    public Dictionary<int, int[]> MovementBoundaries { get; set; }
 
     private static string action, flipImage;
     private bool isMoving;
     private static Random random;
     private static int dogX, dogY,
     goalX, goalY;
-    private static Dictionary<int, int[]> movementBoundaries;
+    private static Dictionary<int,int[]> movementBoundaries;
 
     public Dog()
     {
@@ -27,20 +30,8 @@
         goalY = 200;
         flipImage = "";
         isMoving = false;
-        movementBoundaries = new Dictionary<int, int[]>();
         random = new Random();
-
-        //fill boundaries
-        for (int y = 350, x1 = 220, x2 = 220, xThrust = 2;
-            y >= 200;
-            y--, x1 += (xThrust * -1), x2 += xThrust)
-        {
-            movementBoundaries.Add(y, new[] { x1, x2 });
-            if (y == 275)
-            {
-                xThrust = -2;
-            }
-        }
+        movementBoundaries = MovementBoundaries;
     }
 
     private void SelectAnimation()
