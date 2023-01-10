@@ -10,6 +10,9 @@
 
     [Parameter]
     public int ObjectY { get; set; }
+    
+    [Parameter]
+    public bool ObjectInField { get; set; }
 
     private static string action, flipImage;
     private bool isMoving;
@@ -63,6 +66,13 @@
     
     private void SetGoal()
     {
+        if (ObjectInField)
+        {
+            goalX = ObjectX;
+            goalY = ObjectY;
+            return;
+        }
+        
         goalY = random.Next(200, 350);
         goalX = random.Next(movementBoundaries[goalY][0], movementBoundaries[goalY][1]);
     }
@@ -74,6 +84,10 @@
 
         while (isMoving)
         {
+            if (ObjectInField)
+            {
+                SetGoal();
+            }
             await Task.Delay(100).ContinueWith((t) =>
             {
                 SelectAnimation();

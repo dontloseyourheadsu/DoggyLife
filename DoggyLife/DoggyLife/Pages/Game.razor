@@ -8,7 +8,7 @@
         <MudDropZone T="ImageItem" Identifier="Room" @ondragover="@GetMousePosition">
             <MudPaper Elevation="0" Height="440px" Width="500px"
                       Style=@($"position: relative; background: transparent url({room}); background-size: 100%;" + " background-repeat: no-repeat")>
-                <Dog ObjectX="220" ObjectY="280"/>
+                <Dog ObjectX="@((int)mouseX)" ObjectY="@((int)mouseY)" ObjectInField="objectInField"/>
             </MudPaper>
         </MudDropZone>
         <MudDropZone T="ImageItem" Identifier="Dog Bar" Class="d-flex align-end justify-space-around mt-4"
@@ -28,11 +28,16 @@
 @code {
     private string room;
     private static float mouseX, mouseY;
+    private static int objectiveX, objectiveY;
+    private static bool objectInField;
     private static Dictionary<int, int[]> movementBoundaries;
 
     public Game()
     {
         room = "/images/room-1.svg";
+        objectiveX = 220;
+        objectiveY = 280;
+        objectInField = false;
         movementBoundaries = new Dictionary<int, int[]>();
 
         for (int y = 350, x1 = 220, x2 = 220, xThrust = 2;
@@ -66,10 +71,12 @@
         {
             dropItem.Item.Style = $"position: absolute; top: {ToDotString(mouseY)}px; left: {ToDotString(mouseX)}px; ";
             dropItem.Item.Height = 25;
+            objectInField = true;
 
             if (!(mouseY < 200) && !(mouseY > 350) && !(mouseX < movementBoundaries[(int)mouseY][0]) &&
                 !(mouseX > movementBoundaries[(int)mouseY][1])) return;
             dropItem.Item.Identifier = "Dog Bar";
+            objectInField = false;
         }
         
         dropItem.Item.Style = "";
