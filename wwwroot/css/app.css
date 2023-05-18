@@ -1,3 +1,11 @@
+html, body, #app, main, main > div {
+    height: 100%;
+}
+
+* {
+    margin: 0;
+}
+
 h1:focus {
     outline: none;
 }
@@ -29,4 +37,39 @@ h1:focus {
 
     .blazor-error-boundary::after {
         content: "An error has occurred."
+    }
+    
+    .menu-dog {
+        width: 14em;
+        height: 14em;
+    }
+    
+    .play-button {
+        width: 10em;
+        height: 6em;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+    
+    .flex-column {
+        flex-direction: column;
+    }
+    
+    .justify-content-center {
+        justify-content: center;
+    }
+    
+    .align-items-center {
+        align-items: center;
+    }
+    
+    .stripes-bg {
+        background: url("../images/stripes.png") repeat;
+        background-size: 200px 200px;
+    }
+    
+    .cursor-pointer {
+        cursor: pointer;
     }
