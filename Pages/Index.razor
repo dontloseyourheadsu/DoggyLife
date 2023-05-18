@@ -1,3 +1,15 @@
-﻿@page "/"
+﻿@inject NavigationManager NavigationManager
+@page "/"
 
-<h1>Hello, world!</h1>
+<div class="d-flex flex-column justify-content-center align-items-center stripes-bg">
+    <img alt="sit dog" src="images/sit-8.png" class="menu-dog"/>
+    <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@Play"/>
+</div>
+
+@code
+{
+    private void Play()
+    {
+        NavigationManager.NavigateTo("/play");
+    }
+}
