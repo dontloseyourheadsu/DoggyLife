@@ -40,13 +40,13 @@ h1:focus {
     }
     
     .menu-dog {
-        width: 14em;
-        height: 14em;
+        width: 350px;
+        height: 350px;
     }
     
     .play-button {
-        width: 10em;
-        height: 6em;
+        width: 350px;
+        height: 250px;
     }
 
     .d-flex {
