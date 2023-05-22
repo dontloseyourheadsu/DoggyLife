@@ -1,5 +1,13 @@
-html, body, #app, main, main > div {
+html, body, #app, main {
     height: 100%;
+}
+
+audio {
+    display: none;
+}
+
+body, main {
+    overflow: hidden;
 }
 
 * {
@@ -40,13 +48,13 @@ h1:focus {
     }
     
     .menu-dog {
-        width: 350px;
-        height: 350px;
+        width: 12em;
+        height: 12em;
     }
     
     .play-button {
-        width: 350px;
-        height: 250px;
+        width: 11em;
+        height: 8em;
     }
 
     .d-flex {
