@@ -81,3 +81,7 @@ h1:focus {
     .cursor-pointer {
         cursor: pointer;
     }
+    
+    .position-absolute {
+        position: absolute;
+    }

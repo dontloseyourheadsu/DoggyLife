@@ -1,13 +1,15 @@
 ﻿@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @page "/"
 
 <img alt="sit dog" src="images/sit-8.png" class="menu-dog"/>
-<img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@Play"/>
+<img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@GoToPlay"/>
 
 @code
 {
-    private void Play()
+    private void GoToPlay()
     {
         NavigationManager.NavigateTo("/play");
+        JSRuntime.InvokeVoidAsync("changeTrack","Matcha Green Tea");
     }
 }

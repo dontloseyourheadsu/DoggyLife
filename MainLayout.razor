@@ -1,9 +1,9 @@
 ﻿@inherits LayoutComponentBase
 
-<main class="d-flex flex-column justify-content-center align-items-center stripes-bg" ontouchstart="playMusic()" ontouchend="playMusic()">
+<main class="d-flex flex-column justify-content-center align-items-center stripes-bg" ontouchstart="playMusic()" ontouchend="playMusic()" onmouseover="playMusic()">
     @Body
 </main>
 
-<audio autoplay="autoplay" controls loop="loop" id="audio-tag" >
+<audio autoplay controls loop="loop" id="audio-tag" >
     <source src="music/BunnyGirl.mp3" type="audio/mpeg">
 </audio>
