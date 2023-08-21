@@ -1,21 +1,14 @@
 @page "/play"
 
-<div class="d-flex justify-content-center align-items-center" style="width: 400px; height: 400px; background: url('images/room.png'); background-size: 100% 100%; background-repeat: no-repeat;">
+<div class="d-flex justify-content-center align-items-center" style="width: 400px; height: 400px; background: url('./images/room.png'); background-size: 100% 100%;">
 
     <img src="images/sit-8.png" alt="dog" style="@($"z-index: 2; translate: {dog.X}px {dog.Y}px;")" />
     
 </div>
 
 @code {
-    Dog dog;
-
-    public Play()
+    Dog dog = new()
     {
-        dog = new Dog()
-        {
-            X = 0, Y = 0
-        };
-        
-    }
-
+        X = 0, Y = 0
+    };
 }

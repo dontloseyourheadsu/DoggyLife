@@ -5,10 +5,7 @@ public class Dog
     public float X { get; set; }
     public float Y { get; set; }
 
-	public List<List<float>> Boundaries = new() 
-	{
-		
-	}
+    public List<List<float>> Boundaries = new();
 
 	public async void WalkAsync()
     {
