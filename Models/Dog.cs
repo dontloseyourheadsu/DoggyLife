@@ -4,6 +4,8 @@ public class Dog
 {
     public float X { get; set; }
     public float Y { get; set; }
+    
+    public string Image { get; set; }
 
     public List<List<float>> Boundaries = new();
 
