@@ -1,15 +1,115 @@
-﻿@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+﻿@inject IJSRuntime JSRuntime
 @page "/"
 
-<img alt="sit dog" src="images/sit-8.png" class="menu-dog"/>
-<img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@GoToPlay"/>
+<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+    @if (_musicTrack == MusicTrack.None)
+    {
+        <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer"
+        @onclick="@PlayMatchaGreen" />
+    }
+
+
+
+    else if (_musicTrack == MusicTrack.MatchaGreenTea)
+    {
+        <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
+
+        <img @ref="@_dog.ImageElements["backwalk-1"]" src="images/dog/backwalk-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["backwalk-2"]" src="images/dog/backwalk-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["backwalk-3"]" src="images/dog/backwalk-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["backwalk-4"]" src="images/dog/backwalk-4.png" style="width: 25px; height: 25px; display: none;">
+
+        <img @ref="@_dog.ImageElements["frontsit-1"]" src="images/dog/frontsit-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["frontsit-2"]" src="images/dog/frontsit-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["frontsit-3"]" src="images/dog/frontsit-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["frontsit-4"]" src="images/dog/frontsit-4.png" style="width: 25px; height: 25px; display: none;">
+
+        <img @ref="@_dog.ImageElements["frontwalk-1"]" src="images/dog/frontwalk-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["frontwalk-2"]" src="images/dog/frontwalk-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["frontwalk-3"]" src="images/dog/frontwalk-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["frontwalk-4"]" src="images/dog/frontwalk-4.png" style="width: 25px; height: 25px; display: none;">
+
+        <img @ref="@_dog.ImageElements["rightsit-1"]" src="images/dog/rightsit-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["rightsit-2"]" src="images/dog/rightsit-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["rightsit-3"]" src="images/dog/rightsit-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["rightsit-4"]" src="images/dog/rightsit-4.png" style="width: 25px; height: 25px; display: none;">
+
+        <img @ref="@_dog.ImageElements["rightwalk-1"]" src="images/dog/rightwalk-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["rightwalk-2"]" src="images/dog/rightwalk-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["rightwalk-3"]" src="images/dog/rightwalk-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["rightwalk-4"]" src="images/dog/rightwalk-4.png" style="width: 25px; height: 25px; display: none;">
+
+        <img @ref="@_dog.ImageElements["leftsit-1"]" src="images/dog/leftsit-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["leftsit-2"]" src="images/dog/leftsit-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["leftsit-3"]" src="images/dog/leftsit-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["leftsit-4"]" src="images/dog/leftsit-4.png" style="width: 25px; height: 25px; display: none;">
+
+        <img @ref="@_dog.ImageElements["leftwalk-1"]" src="images/dog/leftwalk-1.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["leftwalk-2"]" src="images/dog/leftwalk-2.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["leftwalk-3"]" src="images/dog/leftwalk-3.png" style="width: 25px; height: 25px; display: none;">
+        <img @ref="@_dog.ImageElements["leftwalk-4"]" src="images/dog/leftwalk-4.png" style="width: 25px; height: 25px; display: none;">
+
+
+        <img @ref="@_floorElement" src="images/floor.png" style="width: 25px; height: 25px; display: none;">
+    }
+</div>
 
 @code
 {
-    private void GoToPlay()
+    private MusicTrack _musicTrack = MusicTrack.None;
+
+    private Canvas2DContext? _context;
+    protected BECanvasComponent? _canvasReference;
+    private int _ticks = 0;
+
+    private int _width = 400;
+    private int _height = 400;
+
+    private Dog _dog = new Dog(400, 400);
+
+    private ElementReference _floorElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        NavigationManager.NavigateTo("/play");
-        JSRuntime.InvokeVoidAsync("changeTrack","Matcha Green Tea");
+        if (_canvasReference is null)
+        {
+            return;
+        }
+
+        this._context = await this._canvasReference.CreateCanvas2DAsync();
+        var floorX = 0;
+        var floorY = 0;
+        var floorWidth = _width / 10;
+        var floorHeight = _height / 10;
+
+        for (var i = 0; i < 10; i++)
+        {
+            for (var j = 0; j < 10; j++)
+            {
+                await _context.DrawImageAsync(_floorElement, floorX, floorY, floorWidth, floorHeight);
+                floorX += floorWidth;
+            }
+
+            floorX = 0;
+            floorY += floorHeight;
+        }
+
+        _dog.Move(_width, _height, _ticks);
+        await _dog.Draw(_context);
+
+        _ticks = _ticks == int.MaxValue ? 0 : _ticks + 1;
+        await Task.Delay(200);
+        StateHasChanged();
+    }
+
+    private async Task PlayMatchaGreen()
+    {
+        if (_musicTrack != MusicTrack.None)
+        {
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("changeTrack", "Matcha Green Tea");
+        _musicTrack = MusicTrack.MatchaGreenTea;
     }
 }
