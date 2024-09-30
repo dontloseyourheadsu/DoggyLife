@@ -3,25 +3,32 @@ using DoggyLife;
 using Microsoft.AspNetCore.Components;
 using Action = DoggyLife.Action;
 
-public class Dog
+public abstract class Dog
 {
     public Dictionary<string, ElementReference> ImageElements { get; set; } = new();
     private ElementReference ImageElement => GetImage();
-    private float x = 0;
-    private float y = 0;
-    private float width = 50;
-    private float height = 50;
+    protected float x = 0;
+    protected float y = 0;
+    protected float width = 50;
+    protected float height = 50;
     private int imageTick = 0;
-    private float speed = 1f;
+    protected float speed = 1f;
     private Action action = Action.Walk;
-    private Orientation orientation = Orientation.Front;
+    protected Orientation orientation = Orientation.Right;
     private Random random = new Random();
 
     public Dog(int canvasWidth, int canvasHeight)
     {
-        x = random.Next(0, canvasWidth - (int)width);
-        y = random.Next(0, canvasHeight - (int)height);
-    
+        InitializePosition(canvasWidth, canvasHeight);
+        InitializeImages();
+    }
+
+    // Abstract method for initializing position, to be defined by derived classes
+    protected abstract void InitializePosition(int canvasWidth, int canvasHeight);
+
+    // Method for loading image elements
+    private void InitializeImages()
+    {
         ImageElements = new()
         {
             { "backwalk-1", default },
@@ -63,7 +70,7 @@ public class Dog
         }
     }
 
-    public void Move(int width, int height, int ticks)
+    public virtual void Move(int width, int height, int ticks)
     {
         HandlePeriodicDirectionChange(ticks);
         MoveDog();
@@ -81,8 +88,6 @@ public class Dog
 
     private void MoveDog()
     {
-        Console.WriteLine($"Action: {action}, Orientation: {orientation}");
-
         switch (orientation)
         {
             case Orientation.Front:
@@ -178,5 +183,55 @@ public class Dog
         imageTick = imageTick == 4 ? 1 : imageTick + 1;
 
         return ImageElements[$"{orientationValue}{actionValue}-{imageTick}"];
+    }
+}
+
+public class RoomDog : Dog
+{
+    public RoomDog(int canvasWidth, int canvasHeight) : base(canvasWidth, canvasHeight) { }
+
+    protected override void InitializePosition(int canvasWidth, int canvasHeight)
+    {
+        x = canvasWidth / 2;
+        y = canvasHeight - height;
+    }
+}
+
+public class GardenDog : Dog
+{
+    public GardenDog(int canvasWidth, int canvasHeight) : base(canvasWidth, canvasHeight) { }
+
+    // Initialize position at the bottom of the canvas
+    protected override void InitializePosition(int canvasWidth, int canvasHeight)
+    {
+        x = 0;  // Start from the left edge
+        y = canvasHeight - height;  // Always stay at the bottom
+        orientation = Orientation.Right; // Start moving right
+    }
+
+    // Override movement logic to only move left and right at the bottom
+    public override void Move(int canvasWidth, int canvasHeight, int ticks)
+    {
+        if (orientation == Orientation.Right)
+        {
+            x += speed; // Move right
+        }
+        else if (orientation == Orientation.Left)
+        {
+            x -= speed; // Move left
+        }
+
+        // If the dog hits the left or right boundary, reverse direction
+        if (x <= 0)
+        {
+            orientation = Orientation.Right;
+        }
+        else if (x >= canvasWidth - width)
+        {
+            orientation = Orientation.Left;
+        }
+
+        // Keep y fixed at the bottom
+        y = canvasHeight - height;
     }
 }
