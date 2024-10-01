@@ -1,15 +1,16 @@
 ﻿@inject IJSRuntime JSRuntime
 @page "/"
 
-<div style="width: 100%; height: 100%; display: flex; flex-column; align-items: center; justify-content: center;">
+<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     @if (_musicTrack == MusicTrack.None)
     {
         <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@PlayMatchaGreen" />
     }
     else if (_musicTrack == MusicTrack.MatchaGreenTea)
     {
-        <p>x: @_mouseX y: @_mouseY</p>
-        <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
+        <div id="canvasContainer" @onmousemove="MouseMove" @ref="_canvasContainer">
+            <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
+        </div>
 
         <img @ref="@_dog.ImageElements["backwalk-1"]" src="images/dog/backwalk-1.png" style="width: 25px; height: 25px; display: none;">
         <img @ref="@_dog.ImageElements["backwalk-2"]" src="images/dog/backwalk-2.png" style="width: 25px; height: 25px; display: none;">
@@ -46,7 +47,6 @@
         <img @ref="@_dog.ImageElements["leftwalk-3"]" src="images/dog/leftwalk-3.png" style="width: 25px; height: 25px; display: none;">
         <img @ref="@_dog.ImageElements["leftwalk-4"]" src="images/dog/leftwalk-4.png" style="width: 25px; height: 25px; display: none;">
 
-        <img @ref="@_floorElement" src="images/floor.png" style="width: 25px; height: 25px; display: none;">
         <img @ref="@_roomElement" src="images/room-background.png" style="width: 25px; height: 25px; display: none;">
     }
 </div>
@@ -57,8 +57,10 @@
     private Models.Environment environment = Models.Environment.Garden;
 
     private Canvas2DContext? _context;
+    private ElementReference _canvasContainer;
     protected BECanvasComponent? _canvasReference;
     private int _ticks = 0;
+    private bool _isPlaying = false;
 
     private int _width = 350;
     private int _height = 350;
@@ -71,23 +73,36 @@
     private ElementReference _floorElement;
     private ElementReference _roomElement;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_canvasReference is null)
+        if (firstRender)
+        {
+            _isPlaying = true;
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task PlayGameLoop()
+    {
+        if (_canvasReference is null || !_isPlaying)
         {
             return;
         }
 
-        this._context = await this._canvasReference.CreateCanvas2DAsync();
+        while (true)
+        {
+            this._context = await this._canvasReference.CreateCanvas2DAsync();
 
-        await _context.DrawImageAsync(_roomElement, 0, 0, _width, _height);
+            await _context.DrawImageAsync(_roomElement, 0, 0, _width, _height);
 
-        _dog.Move(_width, _height, _ticks);
-        await _dog.Draw(_context);
+            _dog.Move(_width, _height, _ticks);
+            await _dog.Draw(_context);
 
-        _ticks = _ticks == int.MaxValue ? 0 : _ticks + 1;
-        await Task.Delay(200);
-        StateHasChanged();
+            _ticks = _ticks == int.MaxValue ? 0 : _ticks + 1;
+            await Task.Delay(200);
+            StateHasChanged();
+        }
     }
 
     private async Task DrawWoodenFloor()
@@ -124,5 +139,18 @@
 
         await JSRuntime.InvokeVoidAsync("changeTrack", "Matcha Green Tea");
         _musicTrack = MusicTrack.MatchaGreenTea;
+
+        StateHasChanged();
+
+        _isPlaying = true;
+        await PlayGameLoop();
+    }
+
+    private async Task MouseMove(MouseEventArgs e)
+    {
+        var rect = await JSRuntime.InvokeAsync<DomRect>("getBoundingClientRect", _canvasContainer);
+        _mouseY = (float) (e.ClientY - rect.Top);
+        _mouseX = (float) (e.ClientX - rect.Left);
+        StateHasChanged();
     }
 }
