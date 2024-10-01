@@ -4,13 +4,13 @@
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     @if (_musicTrack == MusicTrack.None)
     {
-        <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@PlayMatchaGreen" />
+        <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@(async () => await PlayGame())" />
     }
     else if (_musicTrack == MusicTrack.MatchaGreenTea)
     {
         <p>x: @_mouseX y: @_mouseY</p>
         <div id="canvasContainer" @onmousemove="MouseMove" @ref="_canvasContainer" @ontouchmove="TouchMove">
-            <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
+            <BECanvas Width="_width" Height="(_height + 100)" @ref="_canvasReference" />
         </div>
 
         <img @ref="@_dog.ImageElements["backwalk-1"]" src="images/dog/backwalk-1.png" style="width: 25px; height: 25px; display: none;">
@@ -48,6 +48,7 @@
         <img @ref="@_dog.ImageElements["leftwalk-3"]" src="images/dog/leftwalk-3.png" style="width: 25px; height: 25px; display: none;">
         <img @ref="@_dog.ImageElements["leftwalk-4"]" src="images/dog/leftwalk-4.png" style="width: 25px; height: 25px; display: none;">
 
+        <img @ref="@_ball.ImageElement" src="images/ball.png" style="width: 25px; height: 25px; display: none;">
         <img @ref="@_roomElement" src="images/room-background.png" style="width: 25px; height: 25px; display: none;">
     }
 </div>
@@ -70,8 +71,8 @@
     private float _mouseY;
 
     private Dog _dog = new GardenDog(400, 400);
+    private Ball _ball = new Ball();
 
-    private ElementReference _floorElement;
     private ElementReference _roomElement;
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -97,8 +98,7 @@
 
             await _context.DrawImageAsync(_roomElement, 0, 0, _width, _height);
 
-            _dog.Move(_width, _height, _ticks);
-            await _dog.Draw(_context);
+            await DrawGame();
 
             _ticks = _ticks == int.MaxValue ? 0 : _ticks + 1;
             await Task.Delay(200);
@@ -106,29 +106,21 @@
         }
     }
 
-    private async Task DrawWoodenFloor()
+    private async Task DrawGame()
     {
-        if (_context is null)
-        {
-            return;
-        }
+        _dog.Move(_width, _height, _ticks);
+        await _dog.Draw(_context);
 
-        var floorX = 0;
-        var floorY = 0;
-        var floorWidth = _width / 10;
-        var floorHeight = _height / 10;
+        _ball.Move(_width, _height, _ticks);
+        await _ball.Draw(_context);
+    }
 
-        for (var i = 0; i < 10; i++)
-        {
-            for (var j = 0; j < 10; j++)
-            {
-                await _context.DrawImageAsync(_floorElement, floorX, floorY, floorWidth, floorHeight);
-                floorX += floorWidth;
-            }
+    private async Task PlayGame()
+    {
+        await PlayMatchaGreen();
 
-            floorX = 0;
-            floorY += floorHeight;
-        }
+        _isPlaying = true;
+        await PlayGameLoop();
     }
 
     private async Task PlayMatchaGreen()
@@ -142,9 +134,6 @@
         _musicTrack = MusicTrack.MatchaGreenTea;
 
         StateHasChanged();
-
-        _isPlaying = true;
-        await PlayGameLoop();
     }
 
     private async Task MouseMove(MouseEventArgs e)
