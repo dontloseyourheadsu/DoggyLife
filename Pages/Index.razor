@@ -8,7 +8,8 @@
     }
     else if (_musicTrack == MusicTrack.MatchaGreenTea)
     {
-        <div id="canvasContainer" @onmousemove="MouseMove" @ref="_canvasContainer">
+        <p>x: @_mouseX y: @_mouseY</p>
+        <div id="canvasContainer" @onmousemove="MouseMove" @ref="_canvasContainer" @ontouchmove="TouchMove">
             <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
         </div>
 
@@ -151,6 +152,14 @@
         var rect = await JSRuntime.InvokeAsync<DomRect>("getBoundingClientRect", _canvasContainer);
         _mouseY = (float) (e.ClientY - rect.Top);
         _mouseX = (float) (e.ClientX - rect.Left);
+        StateHasChanged();
+    }
+
+    private async Task TouchMove(TouchEventArgs e)
+    {
+        var rect = await JSRuntime.InvokeAsync<DomRect>("getBoundingClientRect", _canvasContainer);
+        _mouseY = (float) (e.Touches[0].ClientY - rect.Top);
+        _mouseX = (float) (e.Touches[0].ClientX - rect.Left);
         StateHasChanged();
     }
 }
