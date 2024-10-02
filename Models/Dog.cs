@@ -16,6 +16,7 @@ public abstract class Dog
     private Action action = Action.Walk;
     protected Orientation orientation = Orientation.Right;
     private Random random = new Random();
+    private int ticks = 0;
 
     public Dog(int canvasWidth, int canvasHeight)
     {
@@ -62,10 +63,11 @@ public abstract class Dog
         };
     }
 
-    public async Task Draw(Canvas2DContext context)
+    public async Task Draw(Canvas2DContext context, int ticks)
     {
         if (ImageElements.Count > 0)
         {
+            this.ticks = ticks;
             await context.DrawImageAsync(ImageElement, x, y, width, height);
         }
     }
@@ -180,7 +182,10 @@ public abstract class Dog
         var actionValue = action.ToString().ToLower();
         var orientationValue = orientation.ToString().ToLower();
 
-        imageTick = imageTick == 4 ? 1 : imageTick + 1;
+        if (this.ticks % 2 == 0)
+        {
+            imageTick = imageTick == 4 ? 1 : imageTick + 1;
+        }
 
         return ImageElements[$"{orientationValue}{actionValue}-{imageTick}"];
     }
