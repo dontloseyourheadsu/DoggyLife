@@ -182,7 +182,7 @@ public abstract class Dog
         var actionValue = action.ToString().ToLower();
         var orientationValue = orientation.ToString().ToLower();
 
-        if (this.ticks % 2 == 0)
+        if (this.ticks % 3 == 0)
         {
             imageTick = imageTick == 4 ? 1 : imageTick + 1;
         }

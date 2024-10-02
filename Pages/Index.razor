@@ -12,6 +12,9 @@
         <div id="canvasContainer" @onmousemove="MouseMove" @ref="_canvasContainer" @ontouchmove="TouchMove">
             <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
         </div>
+        <div style=@($"width: {_width}px; display: flex; justify-content: center; align-items: center; gap: 15px; padding: 0.75em; margin-top: 1em; background-color: rgba(43, 42, 51,1); border: 5px double rgba(146, 124, 176, 1);")>
+            <img src="images/ball.png" style="width: 25px; height: 25px;">
+        </div>
 
         <img @ref="@_dog.ImageElements["backwalk-1"]" src="images/dog/backwalk-1.png" style="width: 25px; height: 25px; display: none;">
         <img @ref="@_dog.ImageElements["backwalk-2"]" src="images/dog/backwalk-2.png" style="width: 25px; height: 25px; display: none;">
