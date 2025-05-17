@@ -1,65 +1,16 @@
-﻿@inject IJSRuntime JSRuntime
-@page "/"
+﻿@page "/"
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     @if (_musicTrack == MusicTrack.None)
     {
         <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@(async () => await PlayGame())" />
     }
-    else if (_musicTrack == MusicTrack.MatchaGreenTea)
-    {
-        <p>x: @_mouseX y: @_mouseY</p>
-        <div id="canvasContainer" @onmousemove="MouseMove" @ref="_canvasContainer" @ontouchmove="TouchMove">
-            <BECanvas Width="_width" Height="_height" @ref="_canvasReference" />
-        </div>
-        <div style=@($"width: {_width}px; display: flex; justify-content: center; align-items: center; gap: 15px; padding: 0.75em; margin-top: 1em; background-color: rgba(43, 42, 51,1); border: 5px double rgba(146, 124, 176, 1);")>
-            <img src="images/ball.png" style="width: 25px; height: 25px;">
-        </div>
-
-        <img @ref="@_dog.ImageElements["backwalk-1"]" src="images/dog/backwalk-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["backwalk-2"]" src="images/dog/backwalk-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["backwalk-3"]" src="images/dog/backwalk-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["backwalk-4"]" src="images/dog/backwalk-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_dog.ImageElements["frontsit-1"]" src="images/dog/frontsit-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["frontsit-2"]" src="images/dog/frontsit-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["frontsit-3"]" src="images/dog/frontsit-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["frontsit-4"]" src="images/dog/frontsit-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_dog.ImageElements["frontwalk-1"]" src="images/dog/frontwalk-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["frontwalk-2"]" src="images/dog/frontwalk-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["frontwalk-3"]" src="images/dog/frontwalk-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["frontwalk-4"]" src="images/dog/frontwalk-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_dog.ImageElements["rightsit-1"]" src="images/dog/rightsit-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["rightsit-2"]" src="images/dog/rightsit-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["rightsit-3"]" src="images/dog/rightsit-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["rightsit-4"]" src="images/dog/rightsit-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_dog.ImageElements["rightwalk-1"]" src="images/dog/rightwalk-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["rightwalk-2"]" src="images/dog/rightwalk-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["rightwalk-3"]" src="images/dog/rightwalk-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["rightwalk-4"]" src="images/dog/rightwalk-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_dog.ImageElements["leftsit-1"]" src="images/dog/leftsit-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["leftsit-2"]" src="images/dog/leftsit-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["leftsit-3"]" src="images/dog/leftsit-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["leftsit-4"]" src="images/dog/leftsit-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_dog.ImageElements["leftwalk-1"]" src="images/dog/leftwalk-1.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["leftwalk-2"]" src="images/dog/leftwalk-2.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["leftwalk-3"]" src="images/dog/leftwalk-3.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_dog.ImageElements["leftwalk-4"]" src="images/dog/leftwalk-4.png" style="width: 25px; height: 25px; display: none;">
-
-        <img @ref="@_ball.ImageElement" src="images/ball.png" style="width: 25px; height: 25px; display: none;">
-        <img @ref="@_roomElement" src="images/room-background.png" style="width: 25px; height: 25px; display: none;">
-    }
 </div>
 
 @code
 {
     private MusicTrack _musicTrack = MusicTrack.None;
-    private Models.Environment environment = Models.Environment.Garden;
+    private Scene environment = Scene.Garden;
 
     private Canvas2DContext? _context;
     private ElementReference _canvasContainer;
@@ -88,44 +39,6 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task PlayGameLoop()
-    {
-        if (_canvasReference is null || !_isPlaying)
-        {
-            return;
-        }
-
-        while (_isPlaying)
-        {
-            await InvokeAsync(async () =>
-            {
-                this._context = await this._canvasReference.CreateCanvas2DAsync();
-
-                await _context.ClearRectAsync(0, 0, _width, _height);
-                await _context.DrawImageAsync(_roomElement, 0, 0, _width, _height);
-
-                await DrawGame();
-
-                _ticks++;
-            });
-
-            await Task.Delay(16); // Aim for ~60 FPS
-        }
-    }
-
-    private async Task DrawGame()
-    {
-        for (int i = 0; i < 3; i++) // Multiple physics updates per frame
-        {
-            _ball.Move(_width, _height, _ticks);
-        }
-
-        _dog.Move(_width, _height, _ticks);
-
-        await _dog.Draw(_context, _ticks);
-        await _ball.Draw(_context);
-    }
-
     private async Task PlayGame()
     {
         await PlayMatchaGreen();
@@ -144,22 +57,6 @@
         await JSRuntime.InvokeVoidAsync("changeTrack", "Matcha Green Tea");
         _musicTrack = MusicTrack.MatchaGreenTea;
 
-        StateHasChanged();
-    }
-
-    private async Task MouseMove(MouseEventArgs e)
-    {
-        var rect = await JSRuntime.InvokeAsync<DomRect>("getBoundingClientRect", _canvasContainer);
-        _mouseY = (float) (e.ClientY - rect.Top);
-        _mouseX = (float) (e.ClientX - rect.Left);
-        StateHasChanged();
-    }
-
-    private async Task TouchMove(TouchEventArgs e)
-    {
-        var rect = await JSRuntime.InvokeAsync<DomRect>("getBoundingClientRect", _canvasContainer);
-        _mouseY = (float) (e.Touches[0].ClientY - rect.Top);
-        _mouseX = (float) (e.Touches[0].ClientX - rect.Left);
         StateHasChanged();
     }
 }
