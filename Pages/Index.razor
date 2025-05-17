@@ -1,9 +1,19 @@
 ﻿@page "/"
+@using SkiaSharp
+@using SkiaSharp.Views.Blazor
+@inject IJSRuntime JSRuntime
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-    @if (_musicTrack == MusicTrack.None)
+    @if (!_isPlaying)
     {
         <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@(async () => await PlayGame())" />
+    }
+    else
+    {
+        <SKCanvasView Width="@_width"
+                      Height="@_height"
+                      OnPaintSurface="OnGamePaint"
+                      Style="border: 1px solid black; background-color: white;"/>
     }
 </div>
 
@@ -12,39 +22,16 @@
     private MusicTrack _musicTrack = MusicTrack.None;
     private Scene environment = Scene.Garden;
 
-    private Canvas2DContext? _context;
-    private ElementReference _canvasContainer;
-    protected BECanvasComponent? _canvasReference;
-    private int _ticks = 0;
     private bool _isPlaying = false;
 
     private int _width = 350;
     private int _height = 350;
-
-    private float _mouseX;
-    private float _mouseY;
-
-    private Dog _dog = new GardenDog(400, 400);
-    private Ball _ball = new Ball();
-
-    private ElementReference _roomElement;
-
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _isPlaying = true;
-        }
-
-        return base.OnAfterRenderAsync(firstRender);
-    }
 
     private async Task PlayGame()
     {
         await PlayMatchaGreen();
 
         _isPlaying = true;
-        await PlayGameLoop();
     }
 
     private async Task PlayMatchaGreen()
@@ -58,5 +45,21 @@
         _musicTrack = MusicTrack.MatchaGreenTea;
 
         StateHasChanged();
+    }
+
+    private void OnGamePaint(SKPaintSurfaceEventArgs e)
+    {
+        var canvas = e.Surface.Canvas;
+        canvas.Clear(SKColors.White);
+
+        var skFont = new SKFont(SKTypeface.FromFamilyName("Arial"), 24);
+
+        var paint = new SKPaint
+        {
+            Color = SKColors.Black,
+            IsAntialias = true,
+        };
+
+        canvas.DrawText("Hello, SkiaSharp!", 100, 100, SKTextAlign.Center, skFont, paint);
     }
 }
