@@ -1,6 +1,6 @@
 ﻿namespace DoggyLife.Models;
 
-public enum Environment
+public enum Scene
 {
     Room,
     Garden,
