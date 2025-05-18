@@ -1,6 +1,8 @@
 ﻿@page "/"
+@using DoggyLife.Physics
 @using SkiaSharp
 @using SkiaSharp.Views.Blazor
+@using System.Numerics
 @inject IJSRuntime JSRuntime
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -10,28 +12,45 @@
     }
     else
     {
-        <SKCanvasView Width="@_width"
-                      Height="@_height"
-                      OnPaintSurface="OnGamePaint"
-                      Style="border: 1px solid black; background-color: white;"/>
+        <SKCanvasView Width="@_width" Height="@_height"
+            EnableRenderLoop="true"
+            IgnorePixelScaling="true"
+            OnPaintSurface="OnGamePaint"/>
     }
 </div>
 
 @code
 {
     private MusicTrack _musicTrack = MusicTrack.None;
-    private Scene environment = Scene.Garden;
+    private Scene _environment = Scene.Garden;
+    private VerletSystem _verletSystem;
+
 
     private bool _isPlaying = false;
 
-    private int _width = 350;
-    private int _height = 350;
+    private int _width = 400;
+    private int _height = 400;
+
+    private float _deltaTime = 0.016f; // 60 FPS
 
     private async Task PlayGame()
     {
+        if (_isPlaying)
+        {
+            return;
+        }
+
+        SetupVerletSystem();
         await PlayMatchaGreen();
 
         _isPlaying = true;
+    }
+
+    private void SetupVerletSystem()
+    {
+        _verletSystem = new VerletSystem(_width, _height);
+        _verletSystem.CreatePoint(new Vector2(100, 100), 10, 10, SKColors.Red);
+        _verletSystem.CreatePoint(new Vector2(100, 50), 10, 10, SKColors.Red);
     }
 
     private async Task PlayMatchaGreen()
@@ -50,16 +69,17 @@
     private void OnGamePaint(SKPaintSurfaceEventArgs e)
     {
         var canvas = e.Surface.Canvas;
-        canvas.Clear(SKColors.White);
+        canvas.Clear(SKColors.Black);
 
-        var skFont = new SKFont(SKTypeface.FromFamilyName("Arial"), 24);
-
-        var paint = new SKPaint
-        {
-            Color = SKColors.Black,
-            IsAntialias = true,
-        };
-
-        canvas.DrawText("Hello, SkiaSharp!", 100, 100, SKTextAlign.Center, skFont, paint);
+        _verletSystem.Update(_deltaTime);
+        _verletSystem.Draw(canvas);
+        
+        // Draw a line around the canvas (square)
+        canvas.DrawRect(new SKRect(0, 0, _width, _height), new SKPaint
+            {
+                Color = SKColors.White,
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = 2
+            });
     }
 }
