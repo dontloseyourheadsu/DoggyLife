@@ -75,9 +75,13 @@
         // Draw the isometric floor in the middle of the canvas
         IsometricFloorBuilder.DrawIsometricFloor(canvas, _width, _height);
 
+        // Draw walls on both sides
+        IsometricWallBuilder.DrawVerticalWall(canvas, _width, _height, WallSide.Left);
+        IsometricWallBuilder.DrawVerticalWall(canvas, _width, _height, WallSide.Right);
+
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);
-        
+
         // Draw a line around the canvas (square)
         canvas.DrawRect(new SKRect(0, 0, _width, _height), new SKPaint
             {
