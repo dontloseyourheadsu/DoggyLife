@@ -5,8 +5,17 @@ namespace DoggyLife.Rendering.Isometric;
 
 public static class IsometricFloorBuilder
 {
-    public static void DrawIsometricFloor(SKCanvas canvas, float width, float height)
+    public static void DrawIsometricFloor(
+        SKCanvas canvas,
+        float width,
+        float height,
+        SKColor floorColorLight,
+        SKColor floorColorDark,
+        SKColor outlineColor = default)
     {
+        // Use default gray outline if not specified
+        outlineColor = outlineColor == default ? SKColors.Gray : outlineColor;
+
         // Calculate the center of the canvas
         float centerX = width / 2f;
         float centerY = height / 2f;
@@ -19,7 +28,7 @@ public static class IsometricFloorBuilder
         var gridPaint = new SKPaint
         {
             IsAntialias = true,
-            Color = SKColors.Gray,
+            Color = outlineColor,
             StrokeWidth = 1,
             Style = SKPaintStyle.Stroke
         };
@@ -63,14 +72,7 @@ public static class IsometricFloorBuilder
                 cellPath.Close();
 
                 // Use a checkerboard pattern for tiles
-                if ((x + y) % 2 == 0)
-                {
-                    tilePaint.Color = IsometricConfig.FloorColorLight;
-                }
-                else
-                {
-                    tilePaint.Color = IsometricConfig.FloorColorDark;
-                }
+                tilePaint.Color = (x + y) % 2 == 0 ? floorColorLight : floorColorDark;
 
                 // Fill the tile
                 canvas.DrawPath(cellPath, tilePaint);

@@ -73,11 +73,32 @@
         canvas.Clear(SKColors.Black);
 
         // Draw the isometric floor in the middle of the canvas
-        IsometricFloorBuilder.DrawIsometricFloor(canvas, _width, _height);
+        IsometricFloorBuilder.DrawIsometricFloor(canvas, _width, _height,
+            new SKColor(90,90,120),
+            new SKColor(50, 50, 70)
+        );
 
         // Draw walls on both sides
-        IsometricWallBuilder.DrawVerticalWall(canvas, _width, _height, WallSide.Left);
-        IsometricWallBuilder.DrawVerticalWall(canvas, _width, _height, WallSide.Right);
+        IsometricWallBuilder.DrawVerticalWall(
+            canvas,
+            _width,
+            _height,
+            WallSide.Left,
+            new SKColor(70, 70, 100),  // light wall color
+            new SKColor(70, 70, 100),  // dark wall color
+            new SKColor(30, 30, 50),      // optional outline color
+            new SKColor(30, 30, 50)    // optional stripe color
+            ); 
+        IsometricWallBuilder.DrawVerticalWall(
+            canvas,
+            _width,
+            _height,
+            WallSide.Right,
+            new SKColor(70, 70, 100),  // light wall color
+            new SKColor(70, 70, 100),  // dark wall color
+            new SKColor(30, 30, 50),      // optional outline color
+            new SKColor(30, 30, 50)    // optional stripe color
+            );
 
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);

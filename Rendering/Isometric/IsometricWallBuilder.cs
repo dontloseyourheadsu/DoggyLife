@@ -12,8 +12,24 @@ public static class IsometricWallBuilder
     /// <param name="canvasWidth">Width of the canvas</param>
     /// <param name="canvasHeight">Height of the canvas</param>
     /// <param name="side">Which side of the floor to place the wall</param>
-    public static void DrawVerticalWall(SKCanvas canvas, float canvasWidth, float canvasHeight, WallSide side)
+    /// <param name="wallColorLight">Light color for wall sections</param>
+    /// <param name="wallColorDark">Dark color for wall sections</param>
+    /// <param name="outlineColor">Color for wall outlines</param>
+    /// <param name="stripeColor">Color for the vertical stripes</param>
+    public static void DrawVerticalWall(
+        SKCanvas canvas,
+        float canvasWidth,
+        float canvasHeight,
+        WallSide side,
+        SKColor wallColorLight,
+        SKColor wallColorDark,
+        SKColor outlineColor = default,
+        SKColor stripeColor = default)
     {
+        // Use default colors if not specified
+        outlineColor = outlineColor == default ? SKColors.Gray : outlineColor;
+        stripeColor = stripeColor == default ? new SKColor(40, 40, 60) : stripeColor;
+
         // Get isometric transformation factors
         float isoX = IsometricConfig.IsoX;
         float isoY = IsometricConfig.IsoY;
@@ -26,7 +42,7 @@ public static class IsometricWallBuilder
         var wallOutlinePaint = new SKPaint
         {
             IsAntialias = true,
-            Color = SKColors.Gray,
+            Color = outlineColor,
             StrokeWidth = 1,
             Style = SKPaintStyle.Stroke
         };
@@ -40,7 +56,7 @@ public static class IsometricWallBuilder
         var stripePaint = new SKPaint
         {
             IsAntialias = true,
-            Color = new SKColor(40, 40, 60),
+            Color = stripeColor,
             StrokeWidth = 1.5f,
             Style = SKPaintStyle.Stroke
         };
@@ -48,16 +64,25 @@ public static class IsometricWallBuilder
         // Determine which wall to draw based on side parameter
         if (side == WallSide.Left)
         {
-            DrawLeftWall(canvas, offsetX, offsetY, isoX, isoY, wallFillPaint, wallOutlinePaint, stripePaint);
+            DrawLeftWall(canvas, offsetX, offsetY, isoX, isoY, wallFillPaint, wallOutlinePaint, stripePaint, wallColorLight, wallColorDark);
         }
         else // Right side
         {
-            DrawRightWall(canvas, offsetX, offsetY, isoX, isoY, wallFillPaint, wallOutlinePaint, stripePaint);
+            DrawRightWall(canvas, offsetX, offsetY, isoX, isoY, wallFillPaint, wallOutlinePaint, stripePaint, wallColorLight, wallColorDark);
         }
     }
 
-    private static void DrawLeftWall(SKCanvas canvas, float offsetX, float offsetY, float isoX, float isoY,
-        SKPaint wallFillPaint, SKPaint wallOutlinePaint, SKPaint stripePaint)
+    private static void DrawLeftWall(
+        SKCanvas canvas,
+        float offsetX,
+        float offsetY,
+        float isoX,
+        float isoY,
+        SKPaint wallFillPaint,
+        SKPaint wallOutlinePaint,
+        SKPaint stripePaint,
+        SKColor wallColorLight,
+        SKColor wallColorDark)
     {
         // Draw the left wall (along the y-axis)
         for (int y = 0; y < IsometricConfig.GridLength; y++)
@@ -89,7 +114,7 @@ public static class IsometricWallBuilder
             wallPath.Close();
 
             // Set wall color (alternate between dark and light)
-            wallFillPaint.Color = y % 2 == 0 ? IsometricConfig.WallColorLight : IsometricConfig.WallColorDark;
+            wallFillPaint.Color = y % 2 == 0 ? wallColorLight : wallColorDark;
 
             // Fill and outline the wall
             canvas.DrawPath(wallPath, wallFillPaint);
@@ -110,8 +135,17 @@ public static class IsometricWallBuilder
         }
     }
 
-    private static void DrawRightWall(SKCanvas canvas, float offsetX, float offsetY, float isoX, float isoY,
-        SKPaint wallFillPaint, SKPaint wallOutlinePaint, SKPaint stripePaint)
+    private static void DrawRightWall(
+        SKCanvas canvas,
+        float offsetX,
+        float offsetY,
+        float isoX,
+        float isoY,
+        SKPaint wallFillPaint,
+        SKPaint wallOutlinePaint,
+        SKPaint stripePaint,
+        SKColor wallColorLight,
+        SKColor wallColorDark)
     {
         // Draw the right wall (along the x-axis)
         for (int x = 0; x < IsometricConfig.GridWidth; x++)
@@ -143,7 +177,7 @@ public static class IsometricWallBuilder
             wallPath.Close();
 
             // Set wall color (alternate between dark and light)
-            wallFillPaint.Color = x % 2 == 0 ? IsometricConfig.WallColorLight : IsometricConfig.WallColorDark;
+            wallFillPaint.Color = x % 2 == 0 ? wallColorLight : wallColorDark;
 
             // Fill and outline the wall
             canvas.DrawPath(wallPath, wallFillPaint);
