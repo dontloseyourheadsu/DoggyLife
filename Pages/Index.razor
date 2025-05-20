@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using DoggyLife.Physics
+@using DoggyLife.Rendering.Isometric
 @using SkiaSharp
 @using SkiaSharp.Views.Blazor
 @using System.Numerics
@@ -70,6 +71,9 @@
     {
         var canvas = e.Surface.Canvas;
         canvas.Clear(SKColors.Black);
+
+        // Draw the isometric floor in the middle of the canvas
+        IsometricFloorBuilder.DrawIsometricFloor(canvas, _width, _height);
 
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);
