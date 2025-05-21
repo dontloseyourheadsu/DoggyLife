@@ -14,9 +14,9 @@
     else
     {
         <SKCanvasView Width="@_width" Height="@_height"
-            EnableRenderLoop="true"
-            IgnorePixelScaling="true"
-            OnPaintSurface="OnGamePaint"/>
+        EnableRenderLoop="true"
+        IgnorePixelScaling="true"
+        OnPaintSurface="OnGamePaint"/>
     }
 </div>
 
@@ -26,11 +26,10 @@
     private Scene _environment = Scene.Garden;
     private VerletSystem _verletSystem;
 
-
     private bool _isPlaying = false;
 
-    private int _width = 400;
-    private int _height = 400;
+    private int _width = 300;
+    private int _height = 300;
 
     private float _deltaTime = 0.016f; // 60 FPS
 
@@ -50,8 +49,6 @@
     private void SetupVerletSystem()
     {
         _verletSystem = new VerletSystem(_width, _height);
-        _verletSystem.CreatePoint(new Vector2(100, 100), 10, 10, SKColors.Red);
-        _verletSystem.CreatePoint(new Vector2(100, 50), 10, 10, SKColors.Red);
     }
 
     private async Task PlayMatchaGreen()
@@ -72,33 +69,7 @@
         var canvas = e.Surface.Canvas;
         canvas.Clear(SKColors.Black);
 
-        // Draw the isometric floor in the middle of the canvas
-        IsometricFloorBuilder.DrawIsometricFloor(canvas, _width, _height,
-            new SKColor(90,90,120),
-            new SKColor(50, 50, 70)
-        );
-
-        // Draw walls on both sides
-        IsometricWallBuilder.DrawVerticalWall(
-            canvas,
-            _width,
-            _height,
-            WallSide.Left,
-            new SKColor(70, 70, 100),  // light wall color
-            new SKColor(70, 70, 100),  // dark wall color
-            new SKColor(30, 30, 50),      // optional outline color
-            new SKColor(30, 30, 50)    // optional stripe color
-            ); 
-        IsometricWallBuilder.DrawVerticalWall(
-            canvas,
-            _width,
-            _height,
-            WallSide.Right,
-            new SKColor(70, 70, 100),  // light wall color
-            new SKColor(70, 70, 100),  // dark wall color
-            new SKColor(30, 30, 50),      // optional outline color
-            new SKColor(30, 30, 50)    // optional stripe color
-            );
+        IsometricRoomBuilder.DrawIsometricRoom(canvas, _width, _height);
 
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);

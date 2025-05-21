@@ -15,7 +15,7 @@ public static class IsometricConfig
     /// <summary>
     /// Grid size in pixels. Size of each cell.
     /// </summary>
-    public const int GridSize = 20;
+    public const int GridSize = 15;
 
     /// <summary>
     /// Number of cells horizontally.
