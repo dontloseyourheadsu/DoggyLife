@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using DoggyLife.Components
 @using DoggyLife.Physics
 @using DoggyLife.Rendering.Isometric
 @using DoggyLife.Models
@@ -11,7 +12,9 @@
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;" @onkeydown="OnKeyPress">
     @if (!_isPlaying)
     {
-        <img alt="play button" src="images/play-button.png" class="play-button cursor-pointer" @onclick="@(async () => await PlayGame())" />
+        <PixelButton OnClick="(async () => await PlayGame())">
+            Play
+        </PixelButton>
     }
     else
     {
