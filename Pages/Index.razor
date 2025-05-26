@@ -9,7 +9,8 @@
 @using System.Numerics
 @inject IJSRuntime JSRuntime
 
-<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;" @onkeydown="OnKeyPress">
+<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+    @onkeydown="OnKeyPress">
     @if (!_isPlaying)
     {
         <PixelButton OnClick="(async () => await PlayGame())">
@@ -19,55 +20,41 @@
     else
     {
         <div style="display: flex; flex-direction: column; align-items: center;">
-            <!-- Game Mode Button -->
-            <button @onclick="ToggleGameMode" style="margin-bottom: 10px; padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            <PixelButton OnClick="ToggleGameMode">
                 Mode: @_currentGameMode
-            </button>
+            </PixelButton>
 
-            <!-- Instructions for Floor Edit Mode -->
-            @if (_currentGameMode == GameMode.FloorEditor)
-            {
-                <div style="margin-bottom: 10px; text-align: center; color: #4CAF50; font-size: 14px;">
-                    <div>Floor Edit Mode - Use Arrow Keys to Move Hologram</div>
-                    <div>Position: (@_hologramX, @_hologramY)</div>
-                </div>
-            }
-
-            <SKCanvasView Width="@_width" Height="@_height"
-            EnableRenderLoop="true"
-            IgnorePixelScaling="true"
-            OnPaintSurface="OnGamePaint" />
+            <SKCanvasView Width="@_width" Height="@_height" EnableRenderLoop="true" IgnorePixelScaling="true"
+                OnPaintSurface="OnGamePaint" />
         </div>
     }
 </div>
 
-@code
-{
+@code {
     private MusicTrack _musicTrack = MusicTrack.None;
     private Scene _environment = Scene.Garden;
     private VerletSystem _verletSystem;
     private bool _isPlaying = false;
     private int _width = 300;
     private int _height = 300;
-    private float _deltaTime = 0.016f; // 60 FPS
+    private float _deltaTime = 0.016f;
 
-    // Game Mode properties
     private GameMode _currentGameMode = GameMode.Interaction;
-    private float _hologramX = 0; // Center of floor grid
-    private float _hologramY = 0; // Center of floor grid
-    private float _hologramMoveSpeed = 0.1f; // Speed of hologram movement
+
+    private float _hologramX = 0;
+    private float _hologramY = 0;
+    private float _hologramMoveSpeed = 0.1f;
+
+    private WallCursor _wallCursor = new(WallSide.Left, 0);
 
     private async Task PlayGame()
     {
-        if (_isPlaying)
-        {
-            return;
-        }
+        if (_isPlaying) return;
+
         SetupVerletSystem();
         await PlayMatchaGreen();
         _isPlaying = true;
 
-        // Initialize hologram position to center of grid
         _hologramX = IsometricConfig.GridWidth / 2;
         _hologramY = IsometricConfig.GridLength / 2;
     }
@@ -79,10 +66,8 @@
 
     private async Task PlayMatchaGreen()
     {
-        if (_musicTrack != MusicTrack.None)
-        {
-            return;
-        }
+        if (_musicTrack != MusicTrack.None) return;
+
         await JSRuntime.InvokeVoidAsync("changeTrack", "Matcha Green Tea");
         _musicTrack = MusicTrack.MatchaGreenTea;
         StateHasChanged();
@@ -98,39 +83,58 @@
             GameMode.Viewer => GameMode.Interaction,
             _ => GameMode.Interaction
         };
+
+        if (_currentGameMode == GameMode.WallEditor)
+            _wallCursor = new(WallSide.Left, 0);
+
         StateHasChanged();
     }
 
     public void OnKeyPress(KeyboardEventArgs e)
     {
-        var key = e.Key;
-        if (_currentGameMode != GameMode.FloorEditor)
-            return;
+        var key = e.Key.ToLower();
 
-        // Handle arrow keys and wasd to move the hologram
-        switch (key.ToLower())
+        if (_currentGameMode == GameMode.FloorEditor)
         {
-            case "arrowup":
-            case "w":
-                if (_hologramY > 0)
-                    _hologramY -= _hologramMoveSpeed;
-                break;
-            case "arrowdown":
-            case "s":
-                if (_hologramY < IsometricConfig.GridLength - 1)
-                    _hologramY += _hologramMoveSpeed;
-                break;
-            case "arrowleft":
-            case "a":
-                if (_hologramX > 0)
-                    _hologramX -= _hologramMoveSpeed;
-                break;
-            case "arrowright":
-            case "d":
-                if (_hologramX < IsometricConfig.GridWidth - 1)
-                    _hologramX += _hologramMoveSpeed;
-                break;
+            switch (key)
+            {
+                case "arrowup":
+                case "w":
+                    if (_hologramY > 0)
+                        _hologramY -= _hologramMoveSpeed;
+                    break;
+                case "arrowdown":
+                case "s":
+                    if (_hologramY < IsometricConfig.GridLength - 1)
+                        _hologramY += _hologramMoveSpeed;
+                    break;
+                case "arrowleft":
+                case "a":
+                    if (_hologramX > 0)
+                        _hologramX -= _hologramMoveSpeed;
+                    break;
+                case "arrowright":
+                case "d":
+                    if (_hologramX < IsometricConfig.GridWidth - 1)
+                        _hologramX += _hologramMoveSpeed;
+                    break;
+            }
         }
+        else if (_currentGameMode == GameMode.WallEditor)
+        {
+            switch (key)
+            {
+                case "arrowleft":
+                case "a":
+                    _wallCursor.MoveHorizontal(-1);
+                    break;
+                case "arrowright":
+                case "d":
+                    _wallCursor.MoveHorizontal(+1);
+                    break;
+            }
+        }
+
         StateHasChanged();
     }
 
@@ -141,35 +145,29 @@
 
         IsometricRoomBuilder.DrawIsometricRoom(canvas, _width, _height);
 
-        // Draw hologram if in floor edit mode
         if (_currentGameMode == GameMode.FloorEditor)
-        {
             DrawFloorHologram(canvas);
-        }
+
+        if (_currentGameMode == GameMode.WallEditor)
+            DrawWallHologram(canvas);
 
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);
 
-        // Draw a line around the canvas (square)
         canvas.DrawRect(new SKRect(0, 0, _width, _height), new SKPaint
-            {
-                Color = SKColors.White,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 2
-            });
+        {
+            Color = SKColors.White,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        });
     }
 
     private void DrawFloorHologram(SKCanvas canvas)
     {
-        // Get isometric transformation factors
         float isoX = IsometricConfig.IsoX;
         float isoY = IsometricConfig.IsoY;
-
-        // Calculate offset to center the grid (same as floor rendering)
         float offsetX = IsometricConfig.GetOffsetX(_width);
         float offsetY = IsometricConfig.GetOffsetY(_height);
-
-        // Calculate the four corners of the hologram cell in isometric space
         var x = _hologramX;
         var y = _hologramY;
 
@@ -182,33 +180,84 @@
         float x4 = (x - (y + 1)) * IsometricConfig.GridSize * isoX + offsetX;
         float y4 = (x + (y + 1)) * IsometricConfig.GridSize * isoY + offsetY;
 
-        // Create hologram path
-        var hologramPath = new SKPath();
-        hologramPath.MoveTo(x1, y1);
-        hologramPath.LineTo(x2, y2);
-        hologramPath.LineTo(x3, y3);
-        hologramPath.LineTo(x4, y4);
-        hologramPath.Close();
+        var path = new SKPath();
+        path.MoveTo(x1, y1);
+        path.LineTo(x2, y2);
+        path.LineTo(x3, y3);
+        path.LineTo(x4, y4);
+        path.Close();
 
-        // Create hologram paint (semi-transparent green)
-        var hologramPaint = new SKPaint
-            {
-                IsAntialias = true,
-                Color = new SKColor(0, 255, 0, 128), // Green with 50% transparency
-                Style = SKPaintStyle.Fill
-            };
+        var fill = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 128),
+            Style = SKPaintStyle.Fill
+        };
+        var stroke = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 255),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
 
-        // Create hologram outline paint
-        var hologramOutlinePaint = new SKPaint
-            {
-                IsAntialias = true,
-                Color = new SKColor(0, 255, 0, 255), // Solid green
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 2
-            };
+        canvas.DrawPath(path, fill);
+        canvas.DrawPath(path, stroke);
+    }
 
-        // Draw the hologram
-        canvas.DrawPath(hologramPath, hologramPaint);
-        canvas.DrawPath(hologramPath, hologramOutlinePaint);
+    private void DrawWallHologram(SKCanvas canvas)
+    {
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float offsetX = IsometricConfig.GetOffsetX(_width);
+        float offsetY = IsometricConfig.GetOffsetY(_height);
+
+        float x1, y1, x2, y2;
+
+        if (_wallCursor.Side == WallSide.Left)
+        {
+            int y = _wallCursor.Cell;
+            x1 = (0 - y) * IsometricConfig.GridSize * isoX + offsetX;
+            y1 = (0 + y) * IsometricConfig.GridSize * isoY + offsetY;
+            x2 = (0 - (y + 1)) * IsometricConfig.GridSize * isoX + offsetX;
+            y2 = (0 + (y + 1)) * IsometricConfig.GridSize * isoY + offsetY;
+        }
+        else
+        {
+            int x = _wallCursor.Cell;
+            x1 = (x - 0) * IsometricConfig.GridSize * isoX + offsetX;
+            y1 = (x + 0) * IsometricConfig.GridSize * isoY + offsetY;
+            x2 = ((x + 1) - 0) * IsometricConfig.GridSize * isoX + offsetX;
+            y2 = ((x + 1) + 0) * IsometricConfig.GridSize * isoY + offsetY;
+        }
+
+        float x3 = x2;
+        float y3 = y2 - IsometricConfig.WallHeight * IsometricConfig.GridSize * isoY;
+        float x4 = x1;
+        float y4 = y1 - IsometricConfig.WallHeight * IsometricConfig.GridSize * isoY;
+
+        var path = new SKPath();
+        path.MoveTo(x1, y1);
+        path.LineTo(x2, y2);
+        path.LineTo(x3, y3);
+        path.LineTo(x4, y4);
+        path.Close();
+
+        var fill = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 128),
+            Style = SKPaintStyle.Fill
+        };
+        var stroke = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 255),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
+
+        canvas.DrawPath(path, fill);
+        canvas.DrawPath(path, stroke);
     }
 }

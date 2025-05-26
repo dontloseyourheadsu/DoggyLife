@@ -3,7 +3,7 @@ name: Deploy Blazor WASM to Netlify
 on:
   push:
     branches:
-      - main  # Adjust if your default branch is different
+      - main
 
 jobs:
   build-and-deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'  # Adjust to your project's .NET version
+          dotnet-version: '8.0.x'
 
       - name: Restore Workloads
         run: dotnet workload restore
