@@ -45,7 +45,7 @@
     private float _hologramY = 0;
     private float _hologramMoveSpeed = 0.1f;
 
-    private WallCursor _wallCursor = new(WallSide.Left, 0);
+    private WallCursor _wallCursor = new(WallSide.Left, 0, 0);
 
     private async Task PlayGame()
     {
@@ -85,7 +85,7 @@
         };
 
         if (_currentGameMode == GameMode.WallEditor)
-            _wallCursor = new(WallSide.Left, 0);
+            _wallCursor = new(WallSide.Left, 0, 0);
 
         StateHasChanged();
     }
@@ -126,11 +126,21 @@
             {
                 case "arrowleft":
                 case "a":
-                    _wallCursor.MoveHorizontal(-1);
+                    if (_wallCursor.Side == WallSide.Left)
+                        _wallCursor.MoveHorizontal(-1, _hologramMoveSpeed); // Move left along wall
                     break;
                 case "arrowright":
                 case "d":
-                    _wallCursor.MoveHorizontal(+1);
+                    if (_wallCursor.Side == WallSide.Left)
+                        _wallCursor.MoveHorizontal(+1, _hologramMoveSpeed); // Move right along wall
+                    break;
+                case "arrowup":
+                case "w":
+                    _wallCursor.MoveVertical(+1, _hologramMoveSpeed); // Move up (increase height)
+                    break;
+                case "arrowdown":
+                case "s":
+                    _wallCursor.MoveVertical(-1, _hologramMoveSpeed); // Move down (decrease height)
                     break;
             }
         }
@@ -216,7 +226,8 @@
 
         if (_wallCursor.Side == WallSide.Left)
         {
-            int y = _wallCursor.Cell;
+            float y = _wallCursor.Position;
+            // Bottom edge of wall segment
             x1 = (0 - y) * IsometricConfig.GridSize * isoX + offsetX;
             y1 = (0 + y) * IsometricConfig.GridSize * isoY + offsetY;
             x2 = (0 - (y + 1)) * IsometricConfig.GridSize * isoX + offsetX;
@@ -224,23 +235,30 @@
         }
         else
         {
-            int x = _wallCursor.Cell;
+            // Right wall logic will be added later
+            float x = _wallCursor.Position;
             x1 = (x - 0) * IsometricConfig.GridSize * isoX + offsetX;
             y1 = (x + 0) * IsometricConfig.GridSize * isoY + offsetY;
             x2 = ((x + 1) - 0) * IsometricConfig.GridSize * isoX + offsetX;
             y2 = ((x + 1) + 0) * IsometricConfig.GridSize * isoY + offsetY;
         }
 
+        // Calculate the height offset from the floor
+        float baseWallHeight = _wallCursor.Height * IsometricConfig.GridSize * isoY;
+        float hologramHeight = IsometricConfig.GridSize * isoY * 0.3f; // Make hologram a bit taller
+
+        // Top edge of hologram (going UP from the base height)
         float x3 = x2;
-        float y3 = y2 - IsometricConfig.WallHeight * IsometricConfig.GridSize * isoY;
+        float y3 = y2 - baseWallHeight - hologramHeight; // Subtract to go UP
         float x4 = x1;
-        float y4 = y1 - IsometricConfig.WallHeight * IsometricConfig.GridSize * isoY;
+        float y4 = y1 - baseWallHeight - hologramHeight; // Subtract to go UP
 
         var path = new SKPath();
-        path.MoveTo(x1, y1);
-        path.LineTo(x2, y2);
-        path.LineTo(x3, y3);
-        path.LineTo(x4, y4);
+        // Start from bottom edge at the height level
+        path.MoveTo(x1, y1 - baseWallHeight);
+        path.LineTo(x2, y2 - baseWallHeight);
+        path.LineTo(x3, y3); // Top edge
+        path.LineTo(x4, y4); // Top edge
         path.Close();
 
         var fill = new SKPaint
@@ -259,5 +277,14 @@
 
         canvas.DrawPath(path, fill);
         canvas.DrawPath(path, stroke);
+
+        // Debug: Draw a small circle at the cursor position for reference
+        var debugPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = SKColors.Red,
+            Style = SKPaintStyle.Fill
+        };
+        canvas.DrawCircle(x1, y1 - baseWallHeight, 3, debugPaint);
     }
 }
