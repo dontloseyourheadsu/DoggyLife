@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using DoggyLife.Components
 @using DoggyLife.Physics
+@using DoggyLife.Rendering
 @using DoggyLife.Rendering.Isometric
 @using DoggyLife.Models
 @using DoggyLife.Settings
@@ -8,9 +9,10 @@
 @using SkiaSharp.Views.Blazor
 @using System.Numerics
 @inject IJSRuntime JSRuntime
+@inject HttpClient Http
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;"
-    @onkeydown="OnKeyPress">
+    @onkeydown="OnKeyPress" tabindex="0">
     @if (!_isPlaying)
     {
         <PixelButton OnClick="(async () => await PlayGame())">
@@ -26,6 +28,21 @@
 
             <SKCanvasView Width="@_width" Height="@_height" EnableRenderLoop="true" IgnorePixelScaling="true"
                 OnPaintSurface="OnGamePaint" />
+
+            <div style="margin-top: 20px; text-align: center;">
+                <p>Dog Animation Controls</p>
+                <div style="margin-top: 10px;">
+                    <button @onclick="() => SetDogState(DogAnimationState.FrontStanding)">Front Standing</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.LeftWalking)">Side Walking</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.BackStanding)">Back Standing</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.Laying)">Laying</button>
+                </div>
+                <div style="margin-top: 5px;">
+                    <button @onclick="() => SetDogState(DogAnimationState.FrontWalking)">Front Walking</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.LeftStanding)">Side Standing</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.BackWalking)">Back Walking</button>
+                </div>
+            </div>
         </div>
     }
 </div>
@@ -46,6 +63,35 @@
     private float _hologramMoveSpeed = 0.1f;
 
     private WallCursor _wallCursor = new(WallSide.Left, 0, 0);
+
+    private DogAnimation _dogAnimation = new DogAnimation();
+    private float _dogX = 150;
+    private float _dogY = 150;
+    private float _dogScale = 0.5f;
+    private float _dogSize = 25; // Size of the dog sprite in pixels
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadAssets();
+    }
+
+    private async Task LoadAssets()
+    {
+        try
+        {
+            await _dogAnimation.LoadSpritesheetAsync(Http, "images/dogs/dog1.png");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading assets: {ex.Message}");
+        }
+    }
+
+    private void SetDogState(DogAnimationState state)
+    {
+        _dogAnimation.SetState(state);
+    }
 
     private async Task PlayGame()
     {
@@ -132,8 +178,6 @@
                     break;
                 case "arrowright":
                 case "d":
-                    // For left wall, we need to invert the direction to match visual expectations
-                    // So 'd' moves cursor to the right side of the left wall
                     _wallCursor.MoveHorizontal(_wallCursor.Side == WallSide.Left ? 1 : 1, _hologramMoveSpeed);
                     break;
                 case "arrowup":
@@ -144,9 +188,37 @@
                 case "s":
                     _wallCursor.MoveVertical(-1, _hologramMoveSpeed); // Move down (decrease height)
                     break;
-                case " ": // Space key to toggle wall side
                 case "t": // Alternative key to toggle wall side
                     _wallCursor.ToggleWallSide();
+                    break;
+            }
+        }
+        else if (_currentGameMode == GameMode.Interaction)
+        {
+            switch (key)
+            {
+                case "arrowup":
+                case "w":
+                    _dogY -= 5;
+                    _dogAnimation.SetState(DogAnimationState.BackWalking);
+                    break;
+                case "arrowdown":
+                case "s":
+                    _dogY += 5;
+                    _dogAnimation.SetState(DogAnimationState.FrontWalking);
+                    break;
+                case "arrowleft":
+                case "a":
+                    _dogX -= 5;
+                    _dogAnimation.SetState(DogAnimationState.LeftWalking);
+                    break;
+                case "arrowright":
+                case "d":
+                    _dogX += 5;
+                    _dogAnimation.SetState(DogAnimationState.LeftWalking);
+                    break;
+                case " ":
+                    _dogAnimation.SetState(DogAnimationState.Laying);
                     break;
             }
         }
@@ -167,6 +239,10 @@
         if (_currentGameMode == GameMode.WallEditor)
             DrawWallHologram(canvas);
 
+        // Update and draw dog animations
+        _dogAnimation.Update(_deltaTime);
+        _dogAnimation.Draw(canvas, _dogX, _dogY, _dogScale); // Scale up for better visibility
+
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);
 
@@ -176,6 +252,14 @@
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
+
+        // Add text to show current dog animation state
+        var textPaint = new SKPaint
+        {
+            Color = SKColors.White,
+            IsAntialias = true
+        };
+        canvas.DrawText($"Current animation: {_dogAnimation._currentState}", 10, 20, textPaint);
     }
 
     private void DrawFloorHologram(SKCanvas canvas)
@@ -342,20 +426,5 @@
             float floorY = (0 + y) * IsometricConfig.GridSize * isoY + offsetY;
             canvas.DrawCircle(floorX, floorY, 4, gridPaint);
         }
-
-        // Draw UI elements showing current settings
-        var textPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Color = SKColors.White,
-            TextSize = 12
-        };
-
-        string side = _wallCursor.Side.ToString();
-        string position = $"Pos: {_wallCursor.Position:F1}";
-        string height = $"H: {_wallCursor.Height:F1}";
-
-        canvas.DrawText($"Wall: {side} | {position} | {height}", 10, 20, textPaint);
-        canvas.DrawText("Space/T to switch sides", 10, _height - 10, textPaint);
     }
 }
