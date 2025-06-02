@@ -20,16 +20,25 @@ public class DogAnimation
 
     public DogAnimation()
     {
-        // Initialize the animations dictionary
+        // Based on the exact states you specified:
+        // walking front (row 0)
+        // walking right (row 1) 
+        // walking left (row 2)
+        // walking back (row 3)
+        // sitting left (row 4)
+        // sitting right (row 5)
+        // sitting front (row 6)
+
         _animations = new Dictionary<DogAnimationState, (int Row, int FrameCount)>
             {
-                { DogAnimationState.FrontStanding, (0, 4) },   // First row, 4 frames
-                { DogAnimationState.LeftWalking, (1, 4) },     // Second row, 4 frames
-                { DogAnimationState.BackStanding, (2, 4) },    // Third row, 4 frames
-                { DogAnimationState.Laying, (3, 4) },          // Fourth row, 4 frames
-                { DogAnimationState.FrontWalking, (4, 4) },    // Fifth row, 4 frames
-                { DogAnimationState.LeftStanding, (5, 4) },    // Sixth row, 4 frames
-                { DogAnimationState.BackWalking, (6, 4) }      // Seventh row, 4 frames
+                // Map animations to match your exact states in order
+                { DogAnimationState.FrontWalking, (0, 4) },   // walking front
+                { DogAnimationState.RightWalking, (1, 4) },   // walking right 
+                { DogAnimationState.LeftWalking, (2, 4) },    // walking left
+                { DogAnimationState.BackWalking, (3, 4) },    // walking back
+                { DogAnimationState.LeftStanding, (4, 4) },   // sitting left
+                { DogAnimationState.RightStanding, (5, 4) },  // sitting right
+                { DogAnimationState.FrontStanding, (6, 4) },  // sitting front
             };
     }
 

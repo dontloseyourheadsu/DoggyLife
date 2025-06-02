@@ -32,15 +32,15 @@
             <div style="margin-top: 20px; text-align: center;">
                 <p>Dog Animation Controls</p>
                 <div style="margin-top: 10px;">
-                    <button @onclick="() => SetDogState(DogAnimationState.FrontStanding)">Front Standing</button>
-                    <button @onclick="() => SetDogState(DogAnimationState.LeftWalking)">Side Walking</button>
-                    <button @onclick="() => SetDogState(DogAnimationState.BackStanding)">Back Standing</button>
-                    <button @onclick="() => SetDogState(DogAnimationState.Laying)">Laying</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.FrontStanding)">Sitting Front</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.LeftStanding)">Sitting Left</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.RightStanding)">Sitting Right</button>
                 </div>
                 <div style="margin-top: 5px;">
-                    <button @onclick="() => SetDogState(DogAnimationState.FrontWalking)">Front Walking</button>
-                    <button @onclick="() => SetDogState(DogAnimationState.LeftStanding)">Side Standing</button>
-                    <button @onclick="() => SetDogState(DogAnimationState.BackWalking)">Back Walking</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.FrontWalking)">Walking Front</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.LeftWalking)">Walking Left</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.RightWalking)">Walking Right</button>
+                    <button @onclick="() => SetDogState(DogAnimationState.BackWalking)">Walking Back</button>
                 </div>
             </div>
         </div>
@@ -215,10 +215,17 @@
                 case "arrowright":
                 case "d":
                     _dogX += 5;
-                    _dogAnimation.SetState(DogAnimationState.LeftWalking);
+                    _dogAnimation.SetState(DogAnimationState.RightWalking);
                     break;
-                case " ":
-                    _dogAnimation.SetState(DogAnimationState.Laying);
+                // Keys for sitting positions
+                case "q":
+                    _dogAnimation.SetState(DogAnimationState.LeftStanding);
+                    break;
+                case "e":
+                    _dogAnimation.SetState(DogAnimationState.RightStanding);
+                    break;
+                case "x":
+                    _dogAnimation.SetState(DogAnimationState.FrontStanding);
                     break;
             }
         }
