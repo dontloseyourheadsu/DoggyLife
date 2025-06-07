@@ -12,7 +12,7 @@
 @inject HttpClient Http
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;"
-    @onkeydown="OnKeyPress" tabindex="0">
+    @onkeydown="OnKeyPress" tabindex="0" @ref="_containerRef">
     @if (!_isPlaying)
     {
         <PixelButton OnClick="(async () => await PlayGame())">
@@ -55,6 +55,8 @@
     private int _width = 300;
     private int _height = 300;
     private float _deltaTime = 0.016f;
+    private ElementReference _containerRef;
+    private DotNetObjectReference<Index> _objRef;
 
     private GameMode _currentGameMode = GameMode.Interaction;
 
@@ -74,6 +76,89 @@
     {
         await base.OnInitializedAsync();
         await LoadAssets();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+
+            // Setup JS resize handler
+            await JSRuntime.InvokeVoidAsync("setupResizeHandler", _objRef);
+
+            // Initialize canvas dimensions
+            await ResizeCanvas();
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnBrowserResize(int width, int height)
+    {
+        // This method will be called from JavaScript when the browser is resized
+        // with window dimensions already calculated in JS
+        await SetCanvasSize(width, height);
+        StateHasChanged();
+    }
+
+    private async Task ResizeCanvas()
+    {
+        // Call our JS function to get the window dimensions
+        await JSRuntime.InvokeVoidAsync("getWindowSize", _objRef);
+    }
+
+    [JSInvokable]
+    public async Task SetCanvasSize(int windowWidth, int windowHeight)
+    {
+        // Calculate maximum canvas size (accounting for margins, padding, UI elements)
+        var maxCanvasSize = (Math.Min(windowWidth, windowHeight) / 2) - 100;
+        maxCanvasSize = Math.Max(maxCanvasSize, 20);
+        Console.WriteLine($"Setting canvas size to: {maxCanvasSize}");
+
+        // Set canvas to be square with the determined size
+        _width = maxCanvasSize;
+        _height = maxCanvasSize;
+
+        // Set grid size to be 1/20 of the canvas size
+        CalculateOptimalGridSize(maxCanvasSize, maxCanvasSize);
+
+        // Reset dog position to the center of the canvas
+        _dogX = _width / 2;
+        _dogY = _height / 2;
+
+        // If the VerletSystem is already initialized, update it
+        if (_verletSystem != null)
+        {
+            _verletSystem.UpdateScreenSize(_width, _height);
+        }
+    }
+
+    private void CalculateOptimalGridSize(int canvasWidth, int canvasHeight)
+    {
+        // We need to account for both the floor area (GridWidth x GridLength)
+        // and the walls heights for proper rendering
+
+        // Calculate the floor's diagonal
+        float floorDiagonal = (float)Math.Sqrt(
+        Math.Pow(IsometricConfig.GridWidth, 2) +
+        Math.Pow(IsometricConfig.GridLength, 2));
+
+        // The isometric projection will need more height for the walls
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float wallHeightFactor = IsometricConfig.WallHeight * isoY;
+
+        // The horizontal span of the isometric grid is determined by the grid width and length
+        // The vertical span includes the floor's height range plus the wall height
+        float horizontalSpan = (IsometricConfig.GridWidth + IsometricConfig.GridLength) * isoX;
+        float verticalSpan = floorDiagonal * isoY + wallHeightFactor;
+
+        // Calculate the grid size that would make the room fit in the canvas with some margin
+        float horizontalGridSize = canvasWidth * 0.8f / horizontalSpan;
+        float verticalGridSize = canvasHeight * 0.8f / verticalSpan;
+
+        // Choose the smaller value to ensure the entire room fits
+        IsometricConfig.GridSize = (int)Math.Floor(Math.Min(horizontalGridSize, verticalGridSize));
     }
 
     private async Task LoadAssets()
@@ -433,5 +518,11 @@
             float floorY = (0 + y) * IsometricConfig.GridSize * isoY + offsetY;
             canvas.DrawCircle(floorX, floorY, 4, gridPaint);
         }
+    }
+
+    public void Dispose()
+    {
+        // Clean up the DotNetObjectReference
+        _objRef?.Dispose();
     }
 }

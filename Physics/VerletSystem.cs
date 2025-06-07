@@ -48,6 +48,16 @@ public class VerletSystem
     }
 
     /// <summary>
+    /// Updates the screen size for the system.
+    /// </summary>
+    /// <param name="screenWidth">Screen width.</param>
+    /// <param name="screenHeight">Screen height.</param>
+    public void UpdateScreenSize(int screenWidth, int screenHeight)
+    {
+        _bounds = new RectangleF(0, 0, screenWidth, screenHeight);
+    }
+
+    /// <summary>
     /// Adds an existing Verlet point to the system.
     /// </summary>
     public void AddPoint(VerletPoint point)
