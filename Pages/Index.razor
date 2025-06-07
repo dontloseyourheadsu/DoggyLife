@@ -126,11 +126,26 @@
         _dogX = _width / 2;
         _dogY = _height / 2;
 
+        // Update dog scale based on canvas size
+        UpdateDogScale();
+
         // If the VerletSystem is already initialized, update it
         if (_verletSystem != null)
         {
             _verletSystem.UpdateScreenSize(_width, _height);
         }
+    }
+
+    private void UpdateDogScale()
+    {
+        // Assume the dog should fit within one grid cell
+        float gridCellSize = IsometricConfig.GridSize;
+
+        // If the dog sprite's original size is stored in _dogSize
+        // We need to scale it to match the grid cell size
+        _dogScale = gridCellSize / _dogSize;
+
+        Console.WriteLine($"Updated dog scale to: {_dogScale} (Grid size: {gridCellSize}, Dog size: {_dogSize})");
     }
 
     private void CalculateOptimalGridSize(int canvasWidth, int canvasHeight)
@@ -280,26 +295,32 @@
         }
         else if (_currentGameMode == GameMode.Interaction)
         {
+            // Handle dog movement and animation based on key presses
+            float moveDist = IsometricConfig.GridSize / 5;
+
+            // Set a minimum movement distance to avoid too small movements
+            if (moveDist < 1) moveDist = 1;
+
             switch (key)
             {
                 case "arrowup":
                 case "w":
-                    _dogY -= 5;
+                    _dogY -= moveDist;
                     _dogAnimation.SetState(DogAnimationState.BackWalking);
                     break;
                 case "arrowdown":
                 case "s":
-                    _dogY += 5;
+                    _dogY += moveDist;
                     _dogAnimation.SetState(DogAnimationState.FrontWalking);
                     break;
                 case "arrowleft":
                 case "a":
-                    _dogX -= 5;
+                    _dogX -= moveDist;
                     _dogAnimation.SetState(DogAnimationState.LeftWalking);
                     break;
                 case "arrowright":
                 case "d":
-                    _dogX += 5;
+                    _dogX += moveDist;
                     _dogAnimation.SetState(DogAnimationState.RightWalking);
                     break;
                 // Keys for sitting positions
@@ -331,9 +352,24 @@
         if (_currentGameMode == GameMode.WallEditor)
             DrawWallHologram(canvas);
 
-        // Update and draw dog animations
+        // Calculate the isometric position for the dog
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float offsetX = IsometricConfig.GetOffsetX(_width);
+        float offsetY = IsometricConfig.GetOffsetY(_height);
+
+        // Convert screen coordinates to isometric grid coordinates
+        // This positions the dog on the isometric grid properly
+        float gridX = _dogX / _width * IsometricConfig.GridWidth;
+        float gridY = _dogY / _height * IsometricConfig.GridLength;
+
+        // Convert grid coordinates to screen coordinates using isometric projection
+        float dogScreenX = (gridX - gridY) * IsometricConfig.GridSize * isoX + offsetX;
+        float dogScreenY = (gridX + gridY) * IsometricConfig.GridSize * isoY + offsetY;
+
+        // Update and draw dog animations at the isometric position
         _dogAnimation.Update(_deltaTime);
-        _dogAnimation.Draw(canvas, _dogX, _dogY, _dogScale); // Scale up for better visibility
+        _dogAnimation.Draw(canvas, dogScreenX, dogScreenY, _dogScale);
 
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);
