@@ -1,0 +1,29 @@
+@using DoggyLife.Models;
+
+<div class="game-mode-selector">
+    <PixelButton OnClick="ToggleGameMode">
+        Mode: @CurrentGameMode
+    </PixelButton>
+</div>
+
+@code {
+    [Parameter]
+    public GameMode CurrentGameMode { get; set; } = GameMode.Interaction;
+    
+    [Parameter]
+    public EventCallback<GameMode> OnGameModeChanged { get; set; }
+    
+    private async Task ToggleGameMode()
+    {
+        CurrentGameMode = CurrentGameMode switch
+        {
+            GameMode.Interaction => GameMode.FloorEditor,
+            GameMode.FloorEditor => GameMode.WallEditor,
+            GameMode.WallEditor => GameMode.Viewer,
+            GameMode.Viewer => GameMode.Interaction,
+            _ => GameMode.Interaction
+        };
+        
+        await OnGameModeChanged.InvokeAsync(CurrentGameMode);
+    }
+}
