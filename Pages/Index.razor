@@ -3,85 +3,70 @@
 @using DoggyLife.Data.Database
 @using DoggyLife.Models.Storage
 @using DoggyLife.Models
+@using DoggyLife.Pages.Screens
 @using DoggyLife.Services
 @using Microsoft.EntityFrameworkCore
 @using System.Numerics
 @using SqliteWasmHelper
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
-@inject ISqliteWasmDbContextFactory<AppDbContext> Factory
 @inject MusicService _musicService
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-    @if (!_isPlaying)
+    @if (_environment == GameEnvironment.None)
     {
         <PixelButton OnClick="PlayGame">
             Play
         </PixelButton>
     }
-    else
+    else if (_environment == GameEnvironment.Home)
     {
         <div style="display: flex; flex-direction: column; align-items: center;">
             <GameModeSelector 
                 CurrentGameMode="@_currentGameMode" 
-                OnGameModeChanged="@HandleGameModeChanged" />
-                
-            <UserManager 
-                User="@_user" 
-                OnUserUpdated="@HandleUserUpdated" />
+                OnGameModeChanged=HandleGameModeChanged />
+            <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
+                Settings
+            </PixelButton>
 
             <GameCanvas 
-                Width="@_width" 
-                Height="@_height" 
                 CurrentGameMode="@_currentGameMode"
-                User="@_user" 
                 OnKeyboardEvent="@HandleKeyboardEvent" />
+        </div>
+    }
+    else if (_environment == GameEnvironment.Settings)
+    {
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <GameSettings />
+
+            <PixelButton OnClick="() => _environment = GameEnvironment.Home">
+                Back to Home
+            </PixelButton>
         </div>
     }
 </div>
 
 @code {
-    private bool _isPlaying = false;
-    private int _width = 300;
-    private int _height = 300;
-    private User? _user;
+    private GameEnvironment _environment = GameEnvironment.None;
     private GameMode _currentGameMode = GameMode.Interaction;
     
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await LoadUserDetails();
     }
-    
-    private async Task LoadUserDetails()
-    {
-        using var ctx = await Factory.CreateDbContextAsync();
-
-        var users = await ctx.Users.ToListAsync();
-        _user = users.FirstOrDefault();
-
-        if (_user is not null)
-        {
-            Console.WriteLine($"Loaded user: {_user.Name}");
-        }
-    }
-    
     private async Task PlayGame()
     {
-        if (_isPlaying) return;
+        if (_environment != GameEnvironment.None) return;
 
         await _musicService.PlayTrack(MusicTrack.MatchaGreenTea);
-        _isPlaying = true;
+        _environment = GameEnvironment.Home;
+        StateHasChanged();
     }
     
     private void HandleGameModeChanged(GameMode newMode)
     {
         _currentGameMode = newMode;
-    }
-    
-    private void HandleUserUpdated(User user)
-    {
-        _user = user;
+        StateHasChanged();
     }
     
     private void HandleKeyboardEvent(KeyboardEventArgs e)

@@ -6,31 +6,31 @@ namespace DoggyLife.Rendering;
 public enum DogAnimationState
 {
     /// <summary>
-    /// The dog is standing still facing the front.
+    /// The dog is walking while facing the right side.
     /// </summary>
-    FrontStanding,
+    RightWalking,
     /// <summary>
     /// The dog is walking while facing the left side.
     /// </summary>
     LeftWalking,
     /// <summary>
-    /// The dog is walking while facing the right side.
+    /// The dog is walking backwards while facing the left side.
     /// </summary>
-    RightWalking,
+    BackWalking,
     /// <summary>
     /// The dog is walking while facing the front.
     /// </summary>
     FrontWalking,
     /// <summary>
-    /// The dog is standing still facing the left side.
+    /// The dog is standing still facing the front.
     /// </summary>
-    LeftStanding,
+    FrontSitting,
     /// <summary>
     /// The dog is standing still facing the right side.
     /// </summary>
-    RightStanding,
+    RightSitting,
     /// <summary>
-    /// The dog is walking backwards while facing the left side.
+    /// The dog is standing still facing the left side.
     /// </summary>
-    BackWalking
+    LeftSitting,
 }

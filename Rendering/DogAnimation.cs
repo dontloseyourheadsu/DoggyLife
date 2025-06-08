@@ -13,7 +13,7 @@ public class DogAnimation
     private readonly int _spriteSpacing = 10;
     private readonly Dictionary<DogAnimationState, (int Row, int FrameCount)> _animations;
 
-    public DogAnimationState _currentState = DogAnimationState.FrontStanding;
+    public DogAnimationState _currentState = DogAnimationState.FrontSitting;
     private int _currentFrame = 0;
     private float _animationTimer = 0;
     private readonly float _frameTime = 0.2f; // seconds per frame
@@ -36,9 +36,9 @@ public class DogAnimation
                 { DogAnimationState.RightWalking, (1, 4) },   // walking right 
                 { DogAnimationState.LeftWalking, (2, 4) },    // walking left
                 { DogAnimationState.BackWalking, (3, 4) },    // walking back
-                { DogAnimationState.LeftStanding, (4, 4) },   // sitting left
-                { DogAnimationState.RightStanding, (5, 4) },  // sitting right
-                { DogAnimationState.FrontStanding, (6, 4) },  // sitting front
+                { DogAnimationState.LeftSitting, (4, 4) },   // sitting left
+                { DogAnimationState.RightSitting, (5, 4) },  // sitting right
+                { DogAnimationState.FrontSitting, (6, 4) },  // sitting front
             };
     }
 
