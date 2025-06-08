@@ -1,0 +1,38 @@
+@using DoggyLife.Components
+@using DoggyLife.Data.Database
+@using DoggyLife.Models.Storage
+@using Microsoft.EntityFrameworkCore
+@using SqliteWasmHelper
+@inject ISqliteWasmDbContextFactory<AppDbContext> Factory
+
+<UserManager 
+    User="@_user" 
+    OnUserUpdated="HandleUserUpdated" />
+
+@code {
+    private User? _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadUserDetails();
+    }
+
+    private async Task LoadUserDetails()
+    {
+        using var ctx = await Factory.CreateDbContextAsync();
+
+        var users = await ctx.Users.ToListAsync();
+        _user = users.FirstOrDefault();
+
+        if (_user is not null)
+        {
+            Console.WriteLine($"Loaded user: {_user.Name}");
+        }
+    }
+
+    private void HandleUserUpdated(User user)
+    {
+        _user = user;
+    }
+}
