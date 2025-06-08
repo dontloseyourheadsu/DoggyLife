@@ -13,6 +13,7 @@
     <PackageReference Include="SkiaSharp" Version="3.119.0" />
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.0" />
     <PackageReference Include="SkiaSharp.Views.Blazor" Version="3.119.0" />
+    <PackageReference Include="SqliteWasmHelper" Version="1.2.0-beta-gf8e1db1f31" />
   </ItemGroup>
 
   <ItemGroup>

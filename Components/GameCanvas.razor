@@ -1,0 +1,521 @@
+@using DoggyLife.Components
+@using DoggyLife.Data.Database
+@using DoggyLife.Models.Storage
+@using DoggyLife.Physics
+@using DoggyLife.Rendering
+@using DoggyLife.Rendering.Isometric
+@using DoggyLife.Models
+@using DoggyLife.Settings
+@using SkiaSharp
+@using SkiaSharp.Views.Blazor
+@using System.Numerics
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+
+<div @onkeydown="OnKeyPress" tabindex="0" @ref="ContainerRef">
+    <SKCanvasView Width="@Width" Height="@Height" EnableRenderLoop="true" IgnorePixelScaling="true"
+        OnPaintSurface="OnGamePaint" />
+
+    <div style="margin-top: 20px; text-align: center;">
+        <p>Dog Animation Controls</p>
+        <div style="margin-top: 10px;">
+            <button @onclick="() => SetDogState(DogAnimationState.FrontStanding)">Sitting Front</button>
+            <button @onclick="() => SetDogState(DogAnimationState.LeftStanding)">Sitting Left</button>
+            <button @onclick="() => SetDogState(DogAnimationState.RightStanding)">Sitting Right</button>
+        </div>
+        <div style="margin-top: 5px;">
+            <button @onclick="() => SetDogState(DogAnimationState.FrontWalking)">Walking Front</button>
+            <button @onclick="() => SetDogState(DogAnimationState.LeftWalking)">Walking Left</button>
+            <button @onclick="() => SetDogState(DogAnimationState.RightWalking)">Walking Right</button>
+            <button @onclick="() => SetDogState(DogAnimationState.BackWalking)">Walking Back</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Width { get; set; } = 300;
+    
+    [Parameter]
+    public int Height { get; set; } = 300;
+    
+    [Parameter] 
+    public GameMode CurrentGameMode { get; set; } = GameMode.Interaction;
+    
+    [Parameter]
+    public User? User { get; set; }
+    
+    [Parameter]
+    public EventCallback<KeyboardEventArgs> OnKeyboardEvent { get; set; }
+
+    private ElementReference ContainerRef;
+    private DotNetObjectReference<GameCanvas>? _objRef;
+    private VerletSystem _verletSystem;
+    private float _deltaTime = 0.016f;
+
+    // Dog properties
+    private DogAnimation _dogAnimation = new DogAnimation();
+    private float _dogX = 150;
+    private float _dogY = 150;
+    private float _dogScale = 0.5f;
+    private float _dogSize = 25;
+
+    // Editor properties
+    private float _hologramX = 0;
+    private float _hologramY = 0;
+    private float _hologramMoveSpeed = 0.1f;
+    private WallCursor _wallCursor = new(WallSide.Left, 0, 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadAssets();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            
+            // Setup JS resize handler
+            await JSRuntime.InvokeVoidAsync("setupResizeHandler", _objRef);
+
+            SetupVerletSystem();
+
+            // Initialize dog position to the center of canvas
+            _dogX = Width / 2;
+            _dogY = Height / 2;
+            UpdateDogScale();
+        }
+    }
+
+    private void SetupVerletSystem()
+    {
+        _verletSystem = new VerletSystem(Width, Height);
+    }
+
+    private async Task LoadAssets()
+    {
+        try
+        {
+            await _dogAnimation.LoadSpritesheetAsync(Http, "images/dogs/dog1.png");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading assets: {ex.Message}");
+        }
+    }
+
+    public void SetDogState(DogAnimationState state)
+    {
+        _dogAnimation.SetState(state);
+    }
+
+    [JSInvokable]
+    public async Task OnBrowserResize(int width, int height)
+    {
+        await SetCanvasSize(width, height);
+    }
+
+    public async Task SetCanvasSize(int windowWidth, int windowHeight)
+    {
+        // Calculate optimal canvas size
+        var maxCanvasSize = (Math.Min(windowWidth, windowHeight) / 2) - 100;
+        maxCanvasSize = Math.Max(maxCanvasSize, 20);
+
+        Width = maxCanvasSize;
+        Height = maxCanvasSize;
+
+        // Set grid size to be 1/20 of the canvas size
+        CalculateOptimalGridSize(maxCanvasSize, maxCanvasSize);
+
+        // Reset dog position to the center of the canvas
+        _dogX = Width / 2;
+        _dogY = Height / 2;
+
+        // Update dog scale based on canvas size
+        UpdateDogScale();
+
+        // If the VerletSystem is already initialized, update it
+        if (_verletSystem != null)
+        {
+            _verletSystem.UpdateScreenSize(Width, Height);
+        }
+    }
+
+    private void UpdateDogScale()
+    {
+        // Assume the dog should fit within one grid cell
+        float gridCellSize = IsometricConfig.GridSize;
+        _dogScale = gridCellSize / _dogSize;
+    }
+
+    private void CalculateOptimalGridSize(int canvasWidth, int canvasHeight)
+    {
+        // Calculate the floor's diagonal
+        float floorDiagonal = (float)Math.Sqrt(
+        Math.Pow(IsometricConfig.GridWidth, 2) +
+        Math.Pow(IsometricConfig.GridLength, 2));
+
+        // The isometric projection will need more height for the walls
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float wallHeightFactor = IsometricConfig.WallHeight * isoY;
+
+        // The horizontal span of the isometric grid is determined by the grid width and length
+        // The vertical span includes the floor's height range plus the wall height
+        float horizontalSpan = (IsometricConfig.GridWidth + IsometricConfig.GridLength) * isoX;
+        float verticalSpan = floorDiagonal * isoY + wallHeightFactor;
+
+        // Calculate the grid size that would make the room fit in the canvas with some margin
+        float horizontalGridSize = canvasWidth * 0.8f / horizontalSpan;
+        float verticalGridSize = canvasHeight * 0.8f / verticalSpan;
+
+        // Choose the smaller value to ensure the entire room fits
+        IsometricConfig.GridSize = (int)Math.Floor(Math.Min(horizontalGridSize, verticalGridSize));
+    }
+
+    public void OnKeyPress(KeyboardEventArgs e)
+    {
+        // Process key input first
+        ProcessKeyInput(e);
+        
+        // Then notify parent component if needed
+        OnKeyboardEvent.InvokeAsync(e);
+    }
+
+    private void ProcessKeyInput(KeyboardEventArgs e)
+    {
+        var key = e.Key.ToLower();
+
+        if (CurrentGameMode == GameMode.FloorEditor)
+        {
+            HandleFloorEditorInput(key);
+        }
+        else if (CurrentGameMode == GameMode.WallEditor)
+        {
+            HandleWallEditorInput(key);
+        }
+        else if (CurrentGameMode == GameMode.Interaction)
+        {
+            HandleDogMovementInput(key);
+        }
+    }
+
+    private void HandleFloorEditorInput(string key)
+    {
+        switch (key)
+        {
+            case "arrowup":
+            case "w":
+                if (_hologramY > 0)
+                    _hologramY -= _hologramMoveSpeed;
+                break;
+            case "arrowdown":
+            case "s":
+                if (_hologramY < IsometricConfig.GridLength - 1)
+                    _hologramY += _hologramMoveSpeed;
+                break;
+            case "arrowleft":
+            case "a":
+                if (_hologramX > 0)
+                    _hologramX -= _hologramMoveSpeed;
+                break;
+            case "arrowright":
+            case "d":
+                if (_hologramX < IsometricConfig.GridWidth - 1)
+                    _hologramX += _hologramMoveSpeed;
+                break;
+        }
+    }
+
+    private void HandleWallEditorInput(string key)
+    {
+        switch (key)
+        {
+            case "arrowleft":
+            case "a":
+                _wallCursor.MoveHorizontal(_wallCursor.Side == WallSide.Left ? -1 : -1, _hologramMoveSpeed);
+                break;
+            case "arrowright":
+            case "d":
+                _wallCursor.MoveHorizontal(_wallCursor.Side == WallSide.Left ? 1 : 1, _hologramMoveSpeed);
+                break;
+            case "arrowup":
+            case "w":
+                _wallCursor.MoveVertical(1, _hologramMoveSpeed); // Move up (increase height)
+                break;
+            case "arrowdown":
+            case "s":
+                _wallCursor.MoveVertical(-1, _hologramMoveSpeed); // Move down (decrease height)
+                break;
+            case "t": // Alternative key to toggle wall side
+                _wallCursor.ToggleWallSide();
+                break;
+        }
+    }
+
+    private void HandleDogMovementInput(string key)
+    {
+        float moveDist = IsometricConfig.GridSize / 5;
+        if (moveDist < 1) moveDist = 1;
+
+        switch (key)
+        {
+            case "arrowup":
+            case "w":
+                _dogY -= moveDist;
+                _dogAnimation.SetState(DogAnimationState.BackWalking);
+                break;
+            case "arrowdown":
+            case "s":
+                _dogY += moveDist;
+                _dogAnimation.SetState(DogAnimationState.FrontWalking);
+                break;
+            case "arrowleft":
+            case "a":
+                _dogX -= moveDist;
+                _dogAnimation.SetState(DogAnimationState.LeftWalking);
+                break;
+            case "arrowright":
+            case "d":
+                _dogX += moveDist;
+                _dogAnimation.SetState(DogAnimationState.RightWalking);
+                break;
+            // Keys for sitting positions
+            case "q":
+                _dogAnimation.SetState(DogAnimationState.LeftStanding);
+                break;
+            case "e":
+                _dogAnimation.SetState(DogAnimationState.RightStanding);
+                break;
+            case "x":
+                _dogAnimation.SetState(DogAnimationState.FrontStanding);
+                break;
+        }
+    }
+
+    private void OnGamePaint(SKPaintSurfaceEventArgs e)
+    {
+        var canvas = e.Surface.Canvas;
+        canvas.Clear(SKColors.Black);
+
+        IsometricRoomBuilder.DrawIsometricRoom(canvas, Width, Height);
+
+        if (CurrentGameMode == GameMode.FloorEditor)
+            DrawFloorHologram(canvas);
+
+        if (CurrentGameMode == GameMode.WallEditor)
+            DrawWallHologram(canvas);
+
+        DrawDog(canvas);
+
+        _verletSystem.Update(_deltaTime);
+        _verletSystem.Draw(canvas);
+
+        canvas.DrawRect(new SKRect(0, 0, Width, Height), new SKPaint
+        {
+            Color = SKColors.White,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        });
+
+        // Add text to show current dog animation state
+        var textPaint = new SKPaint
+        {
+            Color = SKColors.White,
+            IsAntialias = true
+        };
+
+        canvas.DrawText($"Player name: {User?.Name ?? "Guest"}", 10, 20, textPaint);
+    }
+
+    private void DrawDog(SKCanvas canvas)
+    {
+        // Calculate the isometric position for the dog
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float offsetX = IsometricConfig.GetOffsetX(Width);
+        float offsetY = IsometricConfig.GetOffsetY(Height);
+
+        // Convert screen coordinates to isometric grid coordinates
+        float gridX = _dogX / Width * IsometricConfig.GridWidth;
+        float gridY = _dogY / Height * IsometricConfig.GridLength;
+
+        // Convert grid coordinates to screen coordinates using isometric projection
+        float dogScreenX = (gridX - gridY) * IsometricConfig.GridSize * isoX + offsetX;
+        float dogScreenY = (gridX + gridY) * IsometricConfig.GridSize * isoY + offsetY;
+
+        // Update and draw dog animations at the isometric position
+        _dogAnimation.Update(_deltaTime);
+        _dogAnimation.Draw(canvas, dogScreenX, dogScreenY, _dogScale);
+    }
+
+    private void DrawFloorHologram(SKCanvas canvas)
+    {
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float offsetX = IsometricConfig.GetOffsetX(Width);
+        float offsetY = IsometricConfig.GetOffsetY(Height);
+        var x = _hologramX;
+        var y = _hologramY;
+
+        float x1 = (x - y) * IsometricConfig.GridSize * isoX + offsetX;
+        float y1 = (x + y) * IsometricConfig.GridSize * isoY + offsetY;
+        float x2 = ((x + 1) - y) * IsometricConfig.GridSize * isoX + offsetX;
+        float y2 = ((x + 1) + y) * IsometricConfig.GridSize * isoY + offsetY;
+        float x3 = ((x + 1) - (y + 1)) * IsometricConfig.GridSize * isoX + offsetX;
+        float y3 = ((x + 1) + (y + 1)) * IsometricConfig.GridSize * isoY + offsetY;
+        float x4 = (x - (y + 1)) * IsometricConfig.GridSize * isoX + offsetX;
+        float y4 = (x + (y + 1)) * IsometricConfig.GridSize * isoY + offsetY;
+
+        var path = new SKPath();
+        path.MoveTo(x1, y1);
+        path.LineTo(x2, y2);
+        path.LineTo(x3, y3);
+        path.LineTo(x4, y4);
+        path.Close();
+
+        var fill = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 128),
+            Style = SKPaintStyle.Fill
+        };
+        var stroke = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 255),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
+
+        canvas.DrawPath(path, fill);
+        canvas.DrawPath(path, stroke);
+    }
+
+    private void DrawWallHologram(SKCanvas canvas)
+    {
+        float isoX = IsometricConfig.IsoX;
+        float isoY = IsometricConfig.IsoY;
+        float offsetX = IsometricConfig.GetOffsetX(Width);
+        float offsetY = IsometricConfig.GetOffsetY(Height);
+
+        float x1, y1, x2, y2;
+
+        // Calculate base points for wall segment based on side
+        if (_wallCursor.Side == WallSide.Left)
+        {
+            // Left wall logic
+            float y = _wallCursor.Position;
+            x1 = (0 - y) * IsometricConfig.GridSize * isoX + offsetX;
+            y1 = (0 + y) * IsometricConfig.GridSize * isoY + offsetY;
+            x2 = (0 - (y + 1)) * IsometricConfig.GridSize * isoX + offsetX;
+            y2 = (0 + (y + 1)) * IsometricConfig.GridSize * isoY + offsetY;
+        }
+        else // Right wall
+        {
+            float x = _wallCursor.Position;
+            x1 = (x - 0) * IsometricConfig.GridSize * isoX + offsetX;
+            y1 = (x + 0) * IsometricConfig.GridSize * isoY + offsetY;
+            x2 = ((x + 1) - 0) * IsometricConfig.GridSize * isoX + offsetX;
+            y2 = ((x + 1) + 0) * IsometricConfig.GridSize * isoY + offsetY;
+        }
+
+        // Calculate the height offset in pixels
+        float baseWallHeight = _wallCursor.Height * IsometricConfig.GridSize * isoY;
+        float hologramHeight = IsometricConfig.GridSize * isoY * 0.3f;
+
+        // Draw visual guides to show where the wall will connect to the floor
+        var guidePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 0, 150),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1,
+            PathEffect = SKPathEffect.CreateDash(new float[] { 4, 4 }, 0)
+        };
+
+        // Draw guides from floor to wall base
+        canvas.DrawLine(x1, y1, x1, y1 - baseWallHeight, guidePaint);
+        canvas.DrawLine(x2, y2, x2, y2 - baseWallHeight, guidePaint);
+
+        // Calculate points for the wall hologram
+        var path = new SKPath();
+
+        // Bottom edge at current height
+        path.MoveTo(x1, y1 - baseWallHeight);
+        path.LineTo(x2, y2 - baseWallHeight);
+
+        // Top edge at hologram height above current height
+        float x3 = x2;
+        float y3 = y2 - baseWallHeight - hologramHeight;
+        float x4 = x1;
+        float y4 = y1 - baseWallHeight - hologramHeight;
+
+        path.LineTo(x3, y3);
+        path.LineTo(x4, y4);
+        path.Close();
+
+        // Draw the hologram
+        var fill = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 128),
+            Style = SKPaintStyle.Fill
+        };
+        var stroke = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(0, 255, 0, 255),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
+
+        canvas.DrawPath(path, fill);
+        canvas.DrawPath(path, stroke);
+
+        // Draw connection points
+        var pointPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = SKColors.Yellow,
+            Style = SKPaintStyle.Fill
+        };
+
+        // Draw indicators at the connection points
+        canvas.DrawCircle(x1, y1 - baseWallHeight, 3, pointPaint);
+        canvas.DrawCircle(x2, y2 - baseWallHeight, 3, pointPaint);
+
+        // Add grid indicator
+        var gridPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = SKColors.Red,
+            Style = SKPaintStyle.Fill
+        };
+
+        // Draw position indicator on the floor
+        if (_wallCursor.Side == WallSide.Right)
+        {
+            float x = _wallCursor.Position;
+            float floorX = (x - 0) * IsometricConfig.GridSize * isoX + offsetX;
+            float floorY = (x + 0) * IsometricConfig.GridSize * isoY + offsetY;
+            canvas.DrawCircle(floorX, floorY, 4, gridPaint);
+        }
+        else // Left wall
+        {
+            float y = _wallCursor.Position;
+            float floorX = (0 - y) * IsometricConfig.GridSize * isoX + offsetX;
+            float floorY = (0 + y) * IsometricConfig.GridSize * isoY + offsetY;
+            canvas.DrawCircle(floorX, floorY, 4, gridPaint);
+        }
+    }
+
+    public void Dispose()
+    {
+        // Clean up the DotNetObjectReference
+        _objRef?.Dispose();
+    }
+}
