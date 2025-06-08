@@ -1,15 +1,20 @@
 ﻿@page "/"
 @using DoggyLife.Components
+@using DoggyLife.Data.Database
+@using DoggyLife.Models.Storage
 @using DoggyLife.Physics
 @using DoggyLife.Rendering
 @using DoggyLife.Rendering.Isometric
 @using DoggyLife.Models
 @using DoggyLife.Settings
+@using Microsoft.EntityFrameworkCore
 @using SkiaSharp
 @using SkiaSharp.Views.Blazor
 @using System.Numerics
+@using SqliteWasmHelper
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
+@inject ISqliteWasmDbContextFactory<AppDbContext> Factory
 
 <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;"
     @onkeydown="OnKeyPress" tabindex="0" @ref="_containerRef">
@@ -24,6 +29,10 @@
         <div style="display: flex; flex-direction: column; align-items: center;">
             <PixelButton OnClick="ToggleGameMode">
                 Mode: @_currentGameMode
+            </PixelButton>
+            <input type="text" @bind="_newUserName" placeholder="Enter your name" style="margin-top: 10px; width: 200px;"/>
+            <PixelButton OnClick="UpdateUserName">
+                Update Name
             </PixelButton>
 
             <SKCanvasView Width="@_width" Height="@_height" EnableRenderLoop="true" IgnorePixelScaling="true"
@@ -57,6 +66,8 @@
     private float _deltaTime = 0.016f;
     private ElementReference _containerRef;
     private DotNetObjectReference<Index> _objRef;
+    private User? _user;
+    private string _newUserName = "Guesto";
 
     private GameMode _currentGameMode = GameMode.Interaction;
 
@@ -75,6 +86,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        await LoadUserDetails();
         await LoadAssets();
     }
 
@@ -89,6 +101,20 @@
 
             // Initialize canvas dimensions
             await ResizeCanvas();
+        }
+    }
+
+    private async Task LoadUserDetails()
+    {
+        using var ctx = await Factory.CreateDbContextAsync();
+
+        var users = await ctx.Users.ToListAsync();
+        _user = users.FirstOrDefault();
+
+        if (_user is not null)
+        {
+            _newUserName = _user.Name;
+            Console.WriteLine($"Loaded user: {_user.Name}");
         }
     }
 
@@ -113,7 +139,6 @@
         // Calculate maximum canvas size (accounting for margins, padding, UI elements)
         var maxCanvasSize = (Math.Min(windowWidth, windowHeight) / 2) - 100;
         maxCanvasSize = Math.Max(maxCanvasSize, 20);
-        Console.WriteLine($"Setting canvas size to: {maxCanvasSize}");
 
         // Set canvas to be square with the determined size
         _width = maxCanvasSize;
@@ -387,7 +412,8 @@
             Color = SKColors.White,
             IsAntialias = true
         };
-        canvas.DrawText($"Current animation: {_dogAnimation._currentState}", 10, 20, textPaint);
+
+        canvas.DrawText($"Player name: {_user?.Name ?? "Guest"}", 10, 20, textPaint);
     }
 
     private void DrawFloorHologram(SKCanvas canvas)
@@ -560,5 +586,28 @@
     {
         // Clean up the DotNetObjectReference
         _objRef?.Dispose();
+    }
+
+    private async Task UpdateUserName()
+    {
+        await using var db = await Factory.CreateDbContextAsync();
+
+        if (_user is null)
+        {
+            _user = new User { Name = _newUserName };
+            db.Users.Add(_user);
+        }
+        else
+        {
+            _user.Name = _newUserName;
+            db.Users.Update(_user);
+        }
+
+        await db.SaveChangesAsync(); // make sure the INSERT/UPDATE is executed
+
+        var users = await db.Users.ToListAsync(); // NOW the count is correct
+        Console.WriteLine($"Updated user name to: {_user.Name}. Total users in DB: {users.Count}");
+
+        StateHasChanged();
     }
 }
