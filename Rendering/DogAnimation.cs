@@ -8,9 +8,10 @@ namespace DoggyLife.Rendering;
 public class DogAnimation
 {
     private SKBitmap _spritesheet;
-    private readonly int _spriteWidth = 50;
-    private readonly int _spriteHeight = 50;
-    private readonly int _spriteSpacing = 10;
+    private readonly int _spriteWidth = 44;
+    private readonly int _spriteHeight = 46;
+    private readonly int _spriteHorizontalSpacing = 4;
+    private readonly int _spriteVerticalSpacing = 1;
     private readonly Dictionary<DogAnimationState, (int Row, int FrameCount)> _animations;
 
     public DogAnimationState _currentState = DogAnimationState.FrontSitting;
@@ -20,25 +21,25 @@ public class DogAnimation
 
     public DogAnimation()
     {
-        // Based on the exact states you specified:
-        // walking front (row 0)
-        // walking right (row 1) 
-        // walking left (row 2)
-        // walking back (row 3)
-        // sitting left (row 4)
-        // sitting right (row 5)
-        // sitting front (row 6)
+        // Updated animation order:
+        // right walking (row 0)
+        // left walking (row 1)
+        // back walking (row 2)
+        // front walking (row 3)
+        // front sitting (row 4)
+        // right sitting (row 5)
+        // left sitting (row 6)
 
         _animations = new Dictionary<DogAnimationState, (int Row, int FrameCount)>
             {
-                // Map animations to match your exact states in order
-                { DogAnimationState.FrontWalking, (0, 4) },   // walking front
-                { DogAnimationState.RightWalking, (1, 4) },   // walking right 
-                { DogAnimationState.LeftWalking, (2, 4) },    // walking left
-                { DogAnimationState.BackWalking, (3, 4) },    // walking back
-                { DogAnimationState.LeftSitting, (4, 4) },   // sitting left
-                { DogAnimationState.RightSitting, (5, 4) },  // sitting right
-                { DogAnimationState.FrontSitting, (6, 4) },  // sitting front
+                // Map animations to match your updated order
+                { DogAnimationState.RightWalking, (0, 4) },   // right walking
+                { DogAnimationState.LeftWalking, (1, 4) },    // left walking
+                { DogAnimationState.BackWalking, (2, 4) },    // back walking
+                { DogAnimationState.FrontWalking, (3, 4) },   // front walking
+                { DogAnimationState.FrontSitting, (4, 4) },   // front sitting
+                { DogAnimationState.RightSitting, (5, 4) },   // right sitting
+                { DogAnimationState.LeftSitting, (6, 4) },    // left sitting
             };
     }
 
@@ -88,10 +89,10 @@ public class DogAnimation
 
         // Calculate source rectangle (from the spritesheet)
         var sourceRect = new SKRectI(
-            _currentFrame * (_spriteWidth + _spriteSpacing),
-            row * (_spriteHeight + _spriteSpacing),
-            _currentFrame * (_spriteWidth + _spriteSpacing) + _spriteWidth,
-            row * (_spriteHeight + _spriteSpacing) + _spriteHeight
+            _currentFrame * (_spriteWidth + _spriteHorizontalSpacing),
+            row * (_spriteHeight + _spriteVerticalSpacing),
+            _currentFrame * (_spriteWidth + _spriteHorizontalSpacing) + _spriteWidth,
+            row * (_spriteHeight + _spriteVerticalSpacing) + _spriteHeight
         );
 
         // Calculate destination rectangle (where to draw on canvas)

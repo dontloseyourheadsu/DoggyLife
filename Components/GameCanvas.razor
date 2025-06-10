@@ -21,15 +21,31 @@
     <div style="margin-top: 20px; text-align: center;">
         <p>Dog Animation Controls</p>
         <div style="margin-top: 10px;">
-            <button @onclick="() => SetDogState(DogAnimationState.FrontSitting)">Sitting Front</button>
-            <button @onclick="() => SetDogState(DogAnimationState.LeftSitting)">Sitting Left</button>
-            <button @onclick="() => SetDogState(DogAnimationState.RightSitting)">Sitting Right</button>
+            <strong>Dog 0 Controls:</strong><br />
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.FrontSitting)">Sitting Front</button>
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.LeftSitting)">Sitting Left</button>
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.RightSitting)">Sitting Right</button>
         </div>
         <div style="margin-top: 5px;">
-            <button @onclick="() => SetDogState(DogAnimationState.FrontWalking)">Walking Front</button>
-            <button @onclick="() => SetDogState(DogAnimationState.LeftWalking)">Walking Left</button>
-            <button @onclick="() => SetDogState(DogAnimationState.RightWalking)">Walking Right</button>
-            <button @onclick="() => SetDogState(DogAnimationState.BackWalking)">Walking Back</button>
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.FrontWalking)">Walking Front</button>
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.LeftWalking)">Walking Left</button>
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.RightWalking)">Walking Right</button>
+            <button @onclick="() => SetDogState(_dog, DogAnimationState.BackWalking)">Walking Back</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <p><strong>Dog 1 Controls:</strong></p>
+            <div style="margin-top: 10px;">
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.FrontSitting)">Sitting Front</button>
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.LeftSitting)">Sitting Left</button>
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.RightSitting)">Sitting Right</button>
+            </div>
+            <div style="margin-top: 5px;">
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.FrontWalking)">Walking Front</button>
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.LeftWalking)">Walking Left</button>
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.RightWalking)">Walking Right</button>
+                <button @onclick="() => SetDogState(_dog1, DogAnimationState.BackWalking)">Walking Back</button>
+            </div>
         </div>
     </div>
 </div>
@@ -61,11 +77,21 @@
         WallCursor = new WallCursor(WallSide.Left, 0, 0)
     };
 
-    // Dog properties
+    // Dog properties - Dog 0
     private Dog _dog = new Dog
     {
         X = 150,
         Y = 150,
+        Scale = 0.5f,
+        Size = 25,
+        Animation = new DogAnimation()
+    };
+
+    // Dog properties - Dog 1 (new)
+    private Dog _dog1 = new Dog
+    {
+        X = 100,
+        Y = 100,
         Scale = 0.5f,
         Size = 25,
         Animation = new DogAnimation()
@@ -88,9 +114,13 @@
 
             SetupVerletSystem();
 
-            // Initialize dog position to the center of canvas
+            // Initialize dog positions to the center or default
             _dog.X = _room.Width / 2;
             _dog.Y = _room.Height / 2;
+
+            _dog1.X = _room.Width / 3; // Place second dog at 1/3 of width
+            _dog1.Y = _room.Height / 3; // Place second dog at 1/3 of height
+
             UpdateDogScale();
         }
     }
@@ -104,7 +134,10 @@
     {
         try
         {
-            await _dog.Animation.LoadSpritesheetAsync(Http, "images/dogs/dog1.png");
+            // Load dog0 spritesheet
+            await _dog.Animation.LoadSpritesheetAsync(Http, "images/dogs/dog2.png");
+            // Load dog1 spritesheet
+            await _dog1.Animation.LoadSpritesheetAsync(Http, "images/dogs/dog1.png");
         }
         catch (Exception ex)
         {
@@ -112,9 +145,9 @@
         }
     }
 
-    public void SetDogState(DogAnimationState state)
+    public void SetDogState(Dog dog, DogAnimationState state)
     {
-        _dog.Animation.SetState(state);
+        dog.Animation.SetState(state);
     }
 
     [JSInvokable]
@@ -134,11 +167,14 @@
         // Set grid size to be 1/20 of the canvas size
         CalculateOptimalGridSize(maxCanvasSize, maxCanvasSize);
 
-        // Reset dog position to the center of the canvas
+        // Reset dog positions
         _dog.X = _room.Width / 2;
         _dog.Y = _room.Height / 2;
 
-        // Update dog scale based on canvas size
+        _dog1.X = _room.Width / 3;
+        _dog1.Y = _room.Height / 3;
+
+        // Update dog scales based on canvas size
         UpdateDogScale();
 
         // If the VerletSystem is already initialized, update it
@@ -153,6 +189,7 @@
         // Assume the dog should fit within one grid cell
         float gridCellSize = IsometricConfig.GridSize;
         _dog.Scale = gridCellSize / _dog.Size;
+        _dog1.Scale = gridCellSize / _dog1.Size;
     }
 
     private void CalculateOptimalGridSize(int canvasWidth, int canvasHeight)
@@ -265,6 +302,9 @@
         float moveDist = IsometricConfig.GridSize / 5;
         if (moveDist < 1) moveDist = 1;
 
+        // For simplicity, dog movement controls affect only dog0 (_dog).
+        // You can expand this logic to control dog1 (_dog1) if needed.
+
         switch (key)
         {
             case "arrowup":
@@ -287,7 +327,7 @@
                 _dog.X += moveDist;
                 _dog.Animation.SetState(DogAnimationState.RightWalking);
                 break;
-            // Keys for sitting positions
+            // Keys for sitting positions for dog0
             case "q":
                 _dog.Animation.SetState(DogAnimationState.LeftSitting);
                 break;
@@ -296,6 +336,17 @@
                 break;
             case "x":
                 _dog.Animation.SetState(DogAnimationState.FrontSitting);
+                break;
+
+            // Extra keys to control dog1 sitting animations for demonstration
+            case "z":
+                _dog1.Animation.SetState(DogAnimationState.LeftSitting);
+                break;
+            case "c":
+                _dog1.Animation.SetState(DogAnimationState.RightSitting);
+                break;
+            case "v":
+                _dog1.Animation.SetState(DogAnimationState.FrontSitting);
                 break;
         }
     }
@@ -313,7 +364,9 @@
         if (CurrentGameMode == GameMode.WallEditor)
             DrawingHelper.DrawWallHologram(canvas, _room, _hologram);
 
+        // Draw both dogs
         DrawingHelper.DrawDog(canvas, _room, _dog, _deltaTime);
+        DrawingHelper.DrawDog(canvas, _room, _dog1, _deltaTime);
 
         _verletSystem.Update(_deltaTime);
         _verletSystem.Draw(canvas);
@@ -325,12 +378,7 @@
             StrokeWidth = 2
         });
 
-        // Add text to show current dog animation state
-        var textPaint = new SKPaint
-        {
-            Color = SKColors.White,
-            IsAntialias = true
-        };
+        // Optionally, add text showing current dog states (not implemented here)
     }
 
     public void Dispose()
