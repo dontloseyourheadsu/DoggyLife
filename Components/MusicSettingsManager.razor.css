@@ -1,0 +1,23 @@
+.music-settings-manager {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.setting-row span {
+    color: white;
+    font-size: 16px;
+}
