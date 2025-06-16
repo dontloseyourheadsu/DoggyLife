@@ -49,7 +49,7 @@
 @code {
     private GameEnvironment _environment = GameEnvironment.None;
     private GameMode _currentGameMode = GameMode.Interaction;
-    
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -57,18 +57,20 @@
     private async Task PlayGame()
     {
         if (_environment != GameEnvironment.None) return;
+        
+        await _musicService.InitializeAsync();
 
         await _musicService.PlayTrack(MusicTrack.MatchaGreenTea);
         _environment = GameEnvironment.Home;
         StateHasChanged();
     }
-    
+
     private void HandleGameModeChanged(GameMode newMode)
     {
         _currentGameMode = newMode;
         StateHasChanged();
     }
-    
+
     private void HandleKeyboardEvent(KeyboardEventArgs e)
     {
         // You can handle global keyboard events here if needed

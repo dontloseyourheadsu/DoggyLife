@@ -21,15 +21,6 @@ public class DogAnimation
 
     public DogAnimation()
     {
-        // Updated animation order:
-        // right walking (row 0)
-        // left walking (row 1)
-        // back walking (row 2)
-        // front walking (row 3)
-        // front sitting (row 4)
-        // right sitting (row 5)
-        // left sitting (row 6)
-
         _animations = new Dictionary<DogAnimationState, (int Row, int FrameCount)>
             {
                 // Map animations to match your updated order

@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+
+<div class="main">
+    <div class="content">
+        @Body
+    </div>
+
+    <audio id="audio-tag" loop autoplay src="music/background.mp3" style="display:none;"></audio>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Try to start the background music
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("playMusic");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error starting background music: {ex.Message}");
+            }
+        }
+    }
+}

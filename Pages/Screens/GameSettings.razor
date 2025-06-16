@@ -1,13 +1,25 @@
 @using DoggyLife.Components
 @using DoggyLife.Data.Database
 @using DoggyLife.Models.Storage
+@using DoggyLife.Models.Storage.Settings
 @using Microsoft.EntityFrameworkCore
 @using SqliteWasmHelper
 @inject ISqliteWasmDbContextFactory<AppDbContext> Factory
+@inject NavigationManager NavigationManager
 
-<UserManager 
-    User="@_user" 
-    OnUserUpdated="HandleUserUpdated" />
+<div class="settings-page">
+    <h2>Game Settings</h2>
+
+    <UserManager User="@_user" OnUserUpdated="HandleUserUpdated" />
+
+    <MusicSettingsManager />
+
+    <div class="back-button">
+        <PixelButton OnClick="NavigateToHome">
+            Back to Home
+        </PixelButton>
+    </div>
+</div>
 
 @code {
     private User? _user;
@@ -15,24 +27,44 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await LoadUserDetails();
+        try
+        {
+            await LoadUserDetails();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during initialization: {ex.Message}");
+        }
     }
 
     private async Task LoadUserDetails()
     {
-        using var ctx = await Factory.CreateDbContextAsync();
-
-        var users = await ctx.Users.ToListAsync();
-        _user = users.FirstOrDefault();
-
-        if (_user is not null)
+        try
         {
-            Console.WriteLine($"Loaded user: {_user.Name}");
+            using var ctx = await Factory.CreateDbContextAsync();
+
+            var users = await ctx.Users.ToListAsync();
+            _user = users.FirstOrDefault();
+
+            if (_user is not null)
+            {
+                Console.WriteLine($"Loaded user: {_user.Name}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading user details: {ex.Message}");
+            // Continue with null user
         }
     }
 
     private void HandleUserUpdated(User user)
     {
         _user = user;
+    }
+
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
     }
 }
