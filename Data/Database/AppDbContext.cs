@@ -10,4 +10,5 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<MusicSettings> MusicSettings { get; set; } = null!;
+    public DbSet<RoomSettings> RoomSettings { get; set; } = null!;
 }

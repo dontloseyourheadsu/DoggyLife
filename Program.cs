@@ -11,6 +11,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSingleton<MusicService>();
+builder.Services.AddSingleton<RoomService>();
 
 builder.Services.AddSqliteWasmDbContextFactory<AppDbContext>(
   opts => opts.UseSqlite("Data Source=things.sqlite3"));

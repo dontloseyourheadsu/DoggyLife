@@ -1,4 +1,4 @@
-.settings-page {
+.room-appearance-page {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
@@ -16,7 +16,7 @@ h2 {
     width: 100%;
 }
 
-/* Style for the back to home button from screenshot */
+/* Style for the back to home button */
 .back-button {
     display: inline-block;
     width: 100%;
@@ -24,7 +24,7 @@ h2 {
     text-align: center;
 }
 
-.settings-page > * {
+.room-appearance-page > * {
     margin-bottom: 20px;
     width: 100%;
 }
