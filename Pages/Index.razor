@@ -11,8 +11,10 @@
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject MusicService _musicService
+@inject RoomService _roomService
 
-<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+<div
+    style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     @if (_environment == GameEnvironment.None)
     {
         <PixelButton OnClick="PlayGame">
@@ -22,22 +24,33 @@
     else if (_environment == GameEnvironment.Home)
     {
         <div style="display: flex; flex-direction: column; align-items: center;">
-            <GameModeSelector 
-                CurrentGameMode="@_currentGameMode" 
-                OnGameModeChanged=HandleGameModeChanged />
-            <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
-                Settings
-            </PixelButton>
+            <GameModeSelector CurrentGameMode="@_currentGameMode" OnGameModeChanged=HandleGameModeChanged />
+            <div style="display: flex; gap: 10px;">
+                <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
+                    Settings
+                </PixelButton>
+                <PixelButton OnClick="() => _environment = GameEnvironment.RoomAppearance">
+                    Room Appearance
+                </PixelButton>
+            </div>
 
-            <GameCanvas 
-                CurrentGameMode="@_currentGameMode"
-                OnKeyboardEvent="@HandleKeyboardEvent" />
+            <GameCanvas CurrentGameMode="@_currentGameMode" OnKeyboardEvent="@HandleKeyboardEvent" />
         </div>
     }
     else if (_environment == GameEnvironment.Settings)
     {
         <div style="display: flex; flex-direction: column; align-items: center;">
             <GameSettings />
+
+            <PixelButton OnClick="() => _environment = GameEnvironment.Home">
+                Back to Home
+            </PixelButton>
+        </div>
+    }
+    else if (_environment == GameEnvironment.RoomAppearance)
+    {
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <RoomAppearance />
 
             <PixelButton OnClick="() => _environment = GameEnvironment.Home">
                 Back to Home
@@ -57,7 +70,9 @@
     private async Task PlayGame()
     {
         if (_environment != GameEnvironment.None) return;
-        
+
+        await _roomService.InitializeAsync();
+
         await _musicService.InitializeAsync();
 
         await _musicService.PlayTrack(MusicTrack.MatchaGreenTea);

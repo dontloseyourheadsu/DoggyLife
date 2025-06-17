@@ -1,0 +1,57 @@
+@page "/room-appearance"
+@using DoggyLife.Components
+@using DoggyLife.Data.Database
+@using DoggyLife.Models.Storage.Settings
+@using Microsoft.EntityFrameworkCore
+@using SqliteWasmHelper
+@inject ISqliteWasmDbContextFactory<AppDbContext> Factory
+@inject NavigationManager NavigationManager
+
+<div class="room-appearance-page">
+    <RoomSettingsManager Settings="@_roomSettings" OnSettingsUpdated="HandleRoomSettingsUpdated" />
+</div>
+
+@code {
+    private RoomSettings? _roomSettings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        try
+        {
+            await LoadRoomSettings();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during initialization: {ex.Message}");
+        }
+    }
+
+    private async Task LoadRoomSettings()
+    {
+        try
+        {
+            using var ctx = await Factory.CreateDbContextAsync();
+            _roomSettings = await ctx.RoomSettings.FirstOrDefaultAsync();
+
+            if (_roomSettings is null)
+            {
+                _roomSettings = new RoomSettings();
+                ctx.RoomSettings.Add(_roomSettings);
+                await ctx.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading room settings: {ex.Message}");
+            // Continue with null settings
+            _roomSettings = new RoomSettings();
+        }
+    }
+
+    private void HandleRoomSettingsUpdated(RoomSettings settings)
+    {
+        _roomSettings = settings;
+        Console.WriteLine("Room settings updated");
+    }
+}

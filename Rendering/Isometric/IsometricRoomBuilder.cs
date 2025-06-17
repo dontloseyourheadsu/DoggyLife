@@ -1,12 +1,13 @@
-﻿using SkiaSharp;
+﻿using DoggyLife.Services;
+using SkiaSharp;
 
 namespace DoggyLife.Rendering.Isometric;
 
 public static class IsometricRoomBuilder
 {
-    public static void DrawIsometricRoom(SKCanvas canvas, int width, int height)
+    public static void DrawIsometricRoom(SKCanvas canvas, int width, int height, RoomService? roomService = null)
     {
-        var floorColors = new List<SKColor>
+        var floorColors = roomService?.GetFloorColors() ?? new List<SKColor>
         {
             new SKColor(90, 90, 120),
             new SKColor(50, 50, 70)
@@ -18,11 +19,11 @@ public static class IsometricRoomBuilder
             floorColors[1]   // dark floor color
         );
 
-        var wallColors = new List<SKColor>
+        var wallColors = roomService?.GetWallColors() ?? new List<SKColor>
         {
             new SKColor(70, 70, 100),  // light wall color
             new SKColor(70, 70, 100),  // dark wall color
-            new SKColor(30, 30, 50),      // optional outline color
+            new SKColor(30, 30, 50),  // optional outline color
             new SKColor(30, 30, 50)    // optional stripe color
         };
 
@@ -34,8 +35,8 @@ public static class IsometricRoomBuilder
             WallSide.Left,
             wallColors[0],  // light wall color
             wallColors[1],  // dark wall color
-            wallColors[2],      // optional outline color
-            wallColors[3]    // optional stripe color
+            wallColors[2],  // optional outline color
+            wallColors[3]   // optional stripe color
             );
         IsometricWallBuilder.DrawVerticalWall(
             canvas,
@@ -44,8 +45,8 @@ public static class IsometricRoomBuilder
             WallSide.Right,
             wallColors[0],  // light wall color
             wallColors[1],  // dark wall color
-            wallColors[2],      // optional outline color
-            wallColors[3]    // optional stripe color
+            wallColors[2],  // optional outline color
+            wallColors[3]   // optional stripe color
             );
     }
 }

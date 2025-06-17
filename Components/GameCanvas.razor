@@ -7,12 +7,14 @@
 @using DoggyLife.Rendering
 @using DoggyLife.Rendering.Isometric
 @using DoggyLife.Models
+@using DoggyLife.Services
 @using DoggyLife.Settings
 @using SkiaSharp
 @using SkiaSharp.Views.Blazor
 @using System.Numerics
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
+@inject RoomService RoomService
 
 <div @onkeydown="OnKeyPress" tabindex="0" @ref="ContainerRef">
     <SKCanvasView Width="@_room.Width" Height="@_room.Height" EnableRenderLoop="true" IgnorePixelScaling="true"
@@ -65,7 +67,7 @@
 
     private ElementReference ContainerRef;
     private DotNetObjectReference<GameCanvas>? _objRef;
-    private VerletSystem _verletSystem;
+    private VerletSystem _verletSystem = null!;
     private float _deltaTime = 0.016f;
 
     // Editor properties
@@ -153,10 +155,10 @@
     [JSInvokable]
     public async Task OnBrowserResize(int width, int height)
     {
-        await SetCanvasSize(width, height);
+        SetCanvasSize(width, height);
     }
 
-    public async Task SetCanvasSize(int windowWidth, int windowHeight)
+    public void SetCanvasSize(int windowWidth, int windowHeight)
     {
         var maxCanvasSize = (Math.Min(windowWidth, windowHeight) / 2) - 100;
         maxCanvasSize = Math.Max(maxCanvasSize, 20);
@@ -356,7 +358,8 @@
         var canvas = e.Surface.Canvas;
         canvas.Clear(SKColors.Black);
 
-        IsometricRoomBuilder.DrawIsometricRoom(canvas, _room.Width, _room.Height);
+        // Use RoomService for drawing the room with custom colors
+        IsometricRoomBuilder.DrawIsometricRoom(canvas, _room.Width, _room.Height, RoomService);
 
         if (CurrentGameMode == GameMode.FloorEditor)
             DrawingHelper.DrawFloorHologram(canvas, _room, _hologram);

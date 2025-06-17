@@ -17,4 +17,8 @@ public enum GameEnvironment
     /// Represents the home environment.
     /// </summary>
     Home = 1,
+    /// <summary>
+    /// Represents the room appearance customization environment.
+    /// </summary>
+    RoomAppearance = 2,
 }
