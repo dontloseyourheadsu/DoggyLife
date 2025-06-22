@@ -1,5 +1,3 @@
-using DoggyLife.Rendering.Isometric;
-
 namespace DoggyLife.Models.Objects;
 
 /// <summary>
@@ -23,11 +21,6 @@ public class Hologram
     public float MoveSpeed { get; set; }
 
     /// <summary>
-    /// Gets or sets the wall cursor of the hologram.
-    /// </summary>
-    public WallCursor WallCursor { get; set; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="Hologram"/> class with default values.
     /// </summary>
     public Hologram()
@@ -35,6 +28,5 @@ public class Hologram
         X = 0;
         Y = 0;
         MoveSpeed = 0.1f; // Default move speed
-        WallCursor = new WallCursor(WallSide.Left, 0, 0);
     }
 }

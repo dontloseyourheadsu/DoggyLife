@@ -100,6 +100,42 @@
         await JSRuntime.InvokeVoidAsync("moveDog", x, y, z);
     }
 
+    // Specific methods for dog animation states that match the DogAnimationState enum
+    public async Task SetDogRightWalkingAsync()
+    {
+        await SetDogStateAsync(0); // RightWalking = 0
+    }
+
+    public async Task SetDogLeftWalkingAsync()
+    {
+        await SetDogStateAsync(1); // LeftWalking = 1
+    }
+
+    public async Task SetDogBackWalkingAsync()
+    {
+        await SetDogStateAsync(2); // BackWalking = 2
+    }
+
+    public async Task SetDogFrontWalkingAsync()
+    {
+        await SetDogStateAsync(3); // FrontWalking = 3
+    }
+
+    public async Task SetDogFrontSittingAsync()
+    {
+        await SetDogStateAsync(4); // FrontSitting = 4
+    }
+
+    public async Task SetDogRightSittingAsync()
+    {
+        await SetDogStateAsync(5); // RightSitting = 5
+    }
+
+    public async Task SetDogLeftSittingAsync()
+    {
+        await SetDogStateAsync(6); // LeftSitting = 6
+    }
+
     // Camera control methods
     public async Task ToggleCameraRotationAsync()
     {

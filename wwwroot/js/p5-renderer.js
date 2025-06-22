@@ -41,26 +41,52 @@ window.createP5RoomRenderer = function (containerId, width, height) {
   p5Instance = new p5(function (p) {
     // Keyboard state tracking
     let keys = {};
+    // Store the last update time for frame-independent animation
+    let lastUpdateTime = 0;
+    // Dog object reference
+    let dog = null;
 
     p.setup = function () {
       p.createCanvas(width, height, p.WEBGL);
       p.angleMode(p.RADIANS);
 
-      // Preload one of the user-provided dog images
-      const dogImagePath = window.dogSprites
-        ? window.dogSprites.getCurrentDogSprite()
-        : "images/dogs/dog1.png";
+      // Load dog animation system
+      if (!window.P5DogAnimation) {
+        const script = document.createElement("script");
+        script.src = "js/p5-dog-animation.js";
+        script.onload = function () {
+          initializeDog();
+        };
+        document.head.appendChild(script);
+      } else {
+        initializeDog();
+      }
 
-      p.loadImage(
-        dogImagePath,
-        (img) => {
-          console.log("Dog image loaded successfully from:", dogImagePath);
-          dogImage = img;
+      async function initializeDog() {
+        // Get the dog sprite path
+        const dogImagePath = window.dogSprites
+          ? window.dogSprites.getCurrentDogSprite()
+          : "images/dogs/dog1.png";
+
+        // Create the dog animation instance at the initial position
+        try {
+          dog = await window.P5DogAnimation.loadDogSpriteSheet(
+            p,
+            "main",
+            dogImagePath
+          );
+
+          // Position the dog at the initial position
+          dog.x = dogPosition.x;
+          dog.y = dogPosition.y;
+          dog.z = dogPosition.z;
+          dog.scale = dogScale;
+
+          console.log("Dog animation initialized with sprite:", dogImagePath);
           dogSpritesheetLoaded = true;
-        },
-        (err) => {
-          console.error("Error loading dog image:", err);
-          // Create a fallback colored rectangle if image fails to load
+        } catch (err) {
+          console.error("Error initializing dog animation:", err);
+          // Create a fallback image if animation fails to load
           dogImage = p.createGraphics(100, 100);
           dogImage.background(255, 150, 150);
           dogImage.fill(100, 100, 255);
@@ -68,7 +94,7 @@ window.createP5RoomRenderer = function (containerId, width, height) {
           dogImage.textAlign(p.CENTER, p.CENTER);
           dogImage.text("DOG", 50, 50);
         }
-      );
+      }
 
       // Set up keyboard event listeners
       window.addEventListener("keydown", (e) => {
@@ -104,16 +130,29 @@ window.createP5RoomRenderer = function (containerId, width, height) {
             // Switch to next dog type
             if (window.dogSprites) {
               const newDogPath = window.dogSprites.nextDogType();
-              p.loadImage(
-                newDogPath,
-                (img) => {
-                  console.log("Switched to new dog image:", newDogPath);
-                  dogImage = img;
-                },
-                (err) => {
-                  console.error("Error loading new dog image:", err);
-                }
-              );
+
+              if (window.P5DogAnimation && dog) {
+                // Use our animation system if available
+                window.P5DogAnimation.loadDogSpriteSheet(p, "main", newDogPath)
+                  .then(() => {
+                    console.log("Switched to new dog sprite:", newDogPath);
+                  })
+                  .catch((err) => {
+                    console.error("Error loading new dog sprite:", err);
+                  });
+              } else {
+                // Fallback to simple image
+                p.loadImage(
+                  newDogPath,
+                  (img) => {
+                    console.log("Switched to new dog image:", newDogPath);
+                    dogImage = img;
+                  },
+                  (err) => {
+                    console.error("Error loading new dog image:", err);
+                  }
+                );
+              }
             }
             break;
         }
@@ -126,6 +165,14 @@ window.createP5RoomRenderer = function (containerId, width, height) {
 
     p.draw = function () {
       p.background(50);
+
+      // Calculate delta time for animation
+      const now = p.millis() / 1000; // convert to seconds
+      const deltaTime = now - lastUpdateTime;
+      lastUpdateTime = now;
+
+      // Store previous position for animation state calculation
+      const prevDogPosition = { ...dogPosition };
 
       // Process continuous key controls
       // Camera controls
@@ -156,11 +203,34 @@ window.createP5RoomRenderer = function (containerId, width, height) {
       p.updateCamera();
       p.drawRoom();
 
-      // Draw dog image centered at position - exactly like in your example
-      if (dogImage) {
-        p.push();
+      // Draw the animated dog using our animation system
+      if (dog && window.P5DogAnimation) {
+        // Update dog position
+        dog.move(dogPosition.x, dogPosition.y, dogPosition.z, deltaTime);
+        dog.scale = dogScale;
 
-        // Position at the dog's position
+        // Make sure the dog faces the camera
+        p.push();
+        // Make dog face the camera based on camera position
+        let dx = Math.cos(cameraAngle);
+        let dz = Math.sin(cameraAngle);
+        let angle = Math.atan2(dz, dx);
+        p.translate(dogPosition.x, dogPosition.y, dogPosition.z);
+        p.rotateY(angle + dogRotationY);
+
+        // Get current frame as texture and draw it
+        const tex = dog.getFrameAsTexture();
+        if (tex) {
+          p.texture(tex);
+          p.noStroke();
+          p.plane(dog.spriteWidth * dogScale, dog.spriteHeight * dogScale);
+          tex.remove(); // Clean up the texture
+        }
+        p.pop();
+      }
+      // Fallback to simple dog image if animation system isn't ready
+      else if (dogImage) {
+        p.push();
         p.translate(dogPosition.x, dogPosition.y, dogPosition.z);
 
         // Make it face the camera based on the fixed camera angle
@@ -175,23 +245,22 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         let dogWidth = dogSize * dogScale;
         let dogHeight = dogSize * dogScale * (dogImage.height / dogImage.width);
         p.plane(dogWidth, dogHeight);
-
-        p.pop();
-
-        // Draw helpful axis lines for 3D orientation
-        p.push();
-        p.strokeWeight(3);
-        // X axis - red
-        p.stroke(255, 0, 0);
-        p.line(-100, 0, 0, 100, 0, 0);
-        // Y axis - green
-        p.stroke(0, 255, 0);
-        p.line(0, -100, 0, 0, 100, 0);
-        // Z axis - blue
-        p.stroke(0, 0, 255);
-        p.line(0, 0, -100, 0, 0, 100);
         p.pop();
       }
+
+      // Draw helpful axis lines for 3D orientation
+      p.push();
+      p.strokeWeight(3);
+      // X axis - red
+      p.stroke(255, 0, 0);
+      p.line(-100, 0, 0, 100, 0, 0);
+      // Y axis - green
+      p.stroke(0, 255, 0);
+      p.line(0, -100, 0, 0, 100, 0);
+      // Z axis - blue
+      p.stroke(0, 0, 255);
+      p.line(0, 0, -100, 0, 0, 100);
+      p.pop();
     };
 
     p.drawRoom = function () {
@@ -385,15 +454,23 @@ window.resizeP5Canvas = function (width, height) {
 
 // Dog control functions
 window.setDogState = function (stateId) {
-  // This function is kept for backward compatibility
+  // Update dog state using the dog animation system
+  if (window.P5DogAnimation) {
+    return window.P5DogAnimation.updateDogState("main", stateId);
+  }
   return false;
 };
 
 window.moveDog = function (x, y, z) {
-  // Allow C# to move the dog in 3D space
+  // Update dog position and animation state based on movement
   dogPosition.x = x || 0;
   dogPosition.y = y || 0;
   if (z !== undefined) dogPosition.z = z;
+
+  // If using the dog animation system, update the dog directly
+  if (window.P5DogAnimation) {
+    window.P5DogAnimation.updateDogState("main", null, x, y, z);
+  }
   return true;
 };
 
@@ -417,7 +494,19 @@ window.setCameraTilt = function (tilt) {
 
 // Function to change the dog image from C#
 window.setDogImage = function (imageUrl) {
-  if (p5Instance) {
+  // Use the dog animation system if available
+  if (window.P5DogAnimation) {
+    window.P5DogAnimation.loadDogSpriteSheet(p5Instance, "main", imageUrl)
+      .then(() => {
+        console.log("New dog sprite sheet loaded successfully:", imageUrl);
+      })
+      .catch((err) => {
+        console.error("Error loading new dog sprite sheet:", err);
+      });
+    return true;
+  }
+  // Fallback to simple image if animation system isn't available
+  else if (p5Instance) {
     p5Instance.loadImage(
       imageUrl,
       (img) => {
