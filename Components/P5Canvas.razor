@@ -1,0 +1,130 @@
+@using DoggyLife.Models.Storage.Settings
+@using DoggyLife.Services
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject RoomService RoomService
+@implements IAsyncDisposable
+
+<div id="@CanvasContainerId" class="p5-canvas-container" style="width: @Width; height: @Height;"></div>
+
+<div class="p5-canvas-controls">
+    <h4>Keyboard Controls:</h4>
+    <ul>
+        <li><strong>Arrow Keys</strong>: Adjust camera angle</li>
+        <li><strong>W/S</strong>: Move dog forward/backward</li>
+        <li><strong>A/D</strong>: Move dog left/right</li>
+        <li><strong>R/F</strong>: Move dog up/down</li>
+        <li><strong>Q/E</strong>: Scale dog smaller/larger</li>
+        <li><strong>1-5</strong>: Move dog to preset positions</li>
+        <li><strong>N</strong>: Next dog sprite</li>
+    </ul>
+</div>
+
+@code {
+    [Parameter]
+    public string Width { get; set; } = "800px";
+
+    [Parameter]
+    public string Height { get; set; } = "600px";
+
+    [Parameter]
+    public EventCallback<object> OnP5Ready { get; set; }
+
+    private string CanvasContainerId => $"p5-canvas-{Id}";
+    private readonly string Id = Guid.NewGuid().ToString("N");
+    private DotNetObjectReference<P5Canvas>? _objectReference;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objectReference = DotNetObjectReference.Create(this);
+
+            // Register this component with JavaScript
+            await JSRuntime.InvokeVoidAsync("initializeP5DotNetReference", _objectReference);
+
+            // Initialize p5 canvas
+            await JSRuntime.InvokeVoidAsync("initializeP5Canvas", CanvasContainerId,
+            int.Parse(Width.Replace("px", "")),
+            int.Parse(Height.Replace("px", "")));
+
+            // Request room data from C#
+            await JSRuntime.InvokeVoidAsync("requestRoomData");
+
+            // Notify parent component that p5 is ready
+            await OnP5Ready.InvokeAsync(null);
+        }
+    }
+
+    [JSInvokable]
+    public Task<object> GetRoomDataForP5()
+    {
+        var colors = RoomService.GetRoomColors();
+
+        // Get floor colors
+        var floorColors = RoomService.GetFloorColors();
+        var wallColors = RoomService.GetWallColors();
+
+        // Convert to format expected by JavaScript (RGB string)
+        var result = new
+        {
+            floorLightColor = $"{floorColors[0].Red},{floorColors[0].Green},{floorColors[0].Blue}",
+            floorDarkColor = $"{floorColors[1].Red},{floorColors[1].Green},{floorColors[1].Blue}",
+            wallLightColor = $"{wallColors[0].Red},{wallColors[0].Green},{wallColors[0].Blue}",
+            wallDarkColor = $"{wallColors[2].Red},{wallColors[2].Green},{wallColors[2].Blue}"
+        };
+
+        return Task.FromResult<object>(result);
+    }
+
+    // Update the p5.js canvas when settings change
+    public async Task UpdateCanvasAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("requestRoomData");
+    }
+
+    // Resize the p5.js canvas
+    public async Task ResizeCanvasAsync(int width, int height)
+    {
+        await JSRuntime.InvokeVoidAsync("resizeP5Canvas", width, height);
+    }
+
+    // Control dog animation and position
+    public async Task SetDogStateAsync(int stateId)
+    {
+        await JSRuntime.InvokeVoidAsync("setDogState", stateId);
+    }
+
+    public async Task MoveDogAsync(float x, float y, float z = 0)
+    {
+        await JSRuntime.InvokeVoidAsync("moveDog", x, y, z);
+    }
+
+    // Camera control methods
+    public async Task ToggleCameraRotationAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("toggleCameraRotation");
+    }
+
+    public async Task SetCameraPositionAsync(float distance, float height, float angle)
+    {
+        await JSRuntime.InvokeVoidAsync("setCameraPosition", distance, height, angle);
+    }
+
+    public async Task SetCameraTiltAsync(float tilt)
+    {
+        await JSRuntime.InvokeVoidAsync("setCameraTilt", tilt);
+    }
+
+    // Method to change the dog image
+    public async Task SetDogImageAsync(string imageUrl)
+    {
+        await JSRuntime.InvokeVoidAsync("setDogImage", imageUrl);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _objectReference?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

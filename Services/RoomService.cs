@@ -106,4 +106,13 @@ public class RoomService
             _currentSettings.GetWallStripeColor()
         };
     }
+
+    // Get all room colors (combined floor and wall colors)
+    public List<SKColor> GetRoomColors()
+    {
+        var colors = new List<SKColor>();
+        colors.AddRange(GetFloorColors());
+        colors.AddRange(GetWallColors());
+        return colors;
+    }
 }

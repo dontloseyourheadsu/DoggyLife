@@ -1,54 +1,31 @@
 @using DoggyLife.Models.Storage.Settings
-@using DoggyLife.Rendering.Isometric
 @using DoggyLife.Services
-@using SkiaSharp
-@using SkiaSharp.Views.Blazor
 @inject RoomService RoomService
 
 <div class="room-visualizer">
     <h4>Room Preview</h4>
     <div class="visualizer-canvas">
-        <SKCanvasView Width="300" Height="200" OnPaintSurface="OnPaintSurface" @ref="canvasView" />
+        <P5Canvas Width="300px" Height="200px" @ref="p5Canvas" OnP5Ready="OnP5Ready" />
     </div>
 </div>
 
 @code {
-    private SKCanvasView? canvasView;
+    private P5Canvas? p5Canvas;
 
     [Parameter]
     public RoomSettings? Settings { get; set; }
     
-    public void RefreshCanvas()
+    public async Task RefreshCanvas()
     {
-        canvasView?.Invalidate();
+        if (p5Canvas != null)
+        {
+            await p5Canvas.UpdateCanvasAsync();
+        }
     }
 
-    protected void OnPaintSurface(SKPaintSurfaceEventArgs args)
+    private async Task OnP5Ready(object _)
     {
-        var canvas = args.Surface.Canvas;
-        var info = args.Info;
-        
-        // Clear the canvas
-        canvas.Clear(SKColors.Black);
-        
-        var roomService = RoomService;
-        
-        if (Settings != null)
-        {
-            // Use a temporary RoomService to visualize custom settings
-            roomService = new RoomService(null!);
-            
-            // Set up dummy RoomService to use the settings being previewed
-            var field = typeof(RoomService).GetField("_currentSettings", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            if (field != null)
-            {
-                field.SetValue(roomService, Settings);
-            }
-        }
-        
-        // Draw the room preview
-        IsometricRoomBuilder.DrawIsometricRoom(canvas, info.Width, info.Height, roomService);
+        // P5.js canvas is ready and initialized
+        await RefreshCanvas();
     }
 }

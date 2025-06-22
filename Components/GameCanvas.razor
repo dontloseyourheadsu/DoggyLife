@@ -9,55 +9,62 @@
 @using DoggyLife.Models
 @using DoggyLife.Services
 @using DoggyLife.Settings
-@using SkiaSharp
-@using SkiaSharp.Views.Blazor
 @using System.Numerics
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject RoomService RoomService
 
 <div @onkeydown="OnKeyPress" tabindex="0" @ref="ContainerRef">
-    <SKCanvasView Width="@_room.Width" Height="@_room.Height" EnableRenderLoop="true" IgnorePixelScaling="true"
-        OnPaintSurface="OnGamePaint" />
+    <P5Canvas Width="@($"{_room.Width}px")" Height="@($"{_room.Height}px")" @ref="p5Canvas" OnP5Ready="OnP5Ready" />
 
     <div style="margin-top: 20px; text-align: center;">
         <p>Dog Animation Controls</p>
         <div style="margin-top: 10px;">
             <strong>Dog 0 Controls:</strong><br />
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.FrontSitting)">Sitting Front</button>
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.LeftSitting)">Sitting Left</button>
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.RightSitting)">Sitting Right</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.FrontSitting)">Sitting
+                Front</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.LeftSitting)">Sitting Left</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.RightSitting)">Sitting
+                Right</button>
         </div>
         <div style="margin-top: 5px;">
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.FrontWalking)">Walking Front</button>
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.LeftWalking)">Walking Left</button>
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.RightWalking)">Walking Right</button>
-            <button @onclick="() => SetDogState(_dog, DogAnimationState.BackWalking)">Walking Back</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.FrontWalking)">Walking
+                Front</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.LeftWalking)">Walking Left</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.RightWalking)">Walking
+                Right</button>
+            <button @onclick="async () => await SetDogState(_dog, DogAnimationState.BackWalking)">Walking Back</button>
         </div>
 
-        <div style="margin-top: 20px;">
-            <p><strong>Dog 1 Controls:</strong></p>
-            <div style="margin-top: 10px;">
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.FrontSitting)">Sitting Front</button>
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.LeftSitting)">Sitting Left</button>
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.RightSitting)">Sitting Right</button>
+        <div style="margin-top: 15px;">
+            <strong>Move Dog:</strong><br />
+            <div>
+                <button @onclick="async () => await MoveDog(0, -50)">Up</button>
             </div>
-            <div style="margin-top: 5px;">
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.FrontWalking)">Walking Front</button>
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.LeftWalking)">Walking Left</button>
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.RightWalking)">Walking Right</button>
-                <button @onclick="() => SetDogState(_dog1, DogAnimationState.BackWalking)">Walking Back</button>
+            <div>
+                <button @onclick="async () => await MoveDog(-50, 0)">Left</button>
+                <button @onclick="async () => await MoveDog(0, 0)">Center</button>
+                <button @onclick="async () => await MoveDog(50, 0)">Right</button>
+            </div>
+            <div>
+                <button @onclick="async () => await MoveDog(0, 50)">Down</button>
             </div>
         </div>
+
+        <!-- Keep the existing controls -->
     </div>
 </div>
 
 @code {
     private Room _room = new Room
     {
-        Width = 300,
-        Height = 300,
+        Width = 800,
+        Height = 600
     };
+
+    private P5Canvas? p5Canvas;
+    private Dog _dog = new Dog();
+    private Dog _dog1 = new Dog();
 
     [Parameter]
     public GameMode CurrentGameMode { get; set; } = GameMode.Interaction;
@@ -66,327 +73,54 @@
     public EventCallback<KeyboardEventArgs> OnKeyboardEvent { get; set; }
 
     private ElementReference ContainerRef;
-    private DotNetObjectReference<GameCanvas>? _objRef;
-    private VerletSystem _verletSystem = null!;
-    private float _deltaTime = 0.016f;
 
-    // Editor properties
-    private Hologram _hologram = new Hologram
+    private async Task OnP5Ready(object _)
     {
-        X = 0,
-        Y = 0,
-        MoveSpeed = 0.1f,
-        WallCursor = new WallCursor(WallSide.Left, 0, 0)
-    };
-
-    // Dog properties - Dog 0
-    private Dog _dog = new Dog
-    {
-        X = 150,
-        Y = 150,
-        Scale = 0.5f,
-        Size = 25,
-        Animation = new DogAnimation()
-    };
-
-    // Dog properties - Dog 1 (new)
-    private Dog _dog1 = new Dog
-    {
-        X = 100,
-        Y = 100,
-        Scale = 0.5f,
-        Size = 25,
-        Animation = new DogAnimation()
-    };
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        await LoadAssets();
+        // P5.js canvas is ready and initialized
+        await RefreshCanvas();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task RefreshCanvas()
     {
-        if (firstRender)
+        if (p5Canvas != null)
         {
-            _objRef = DotNetObjectReference.Create(this);
-
-            // Setup JS resize handler
-            await JSRuntime.InvokeVoidAsync("setupResizeHandler", _objRef);
-
-            SetupVerletSystem();
-
-            // Initialize dog positions to the center or default
-            _dog.X = _room.Width / 2;
-            _dog.Y = _room.Height / 2;
-
-            _dog1.X = _room.Width / 3; // Place second dog at 1/3 of width
-            _dog1.Y = _room.Height / 3; // Place second dog at 1/3 of height
-
-            UpdateDogScale();
+            await p5Canvas.UpdateCanvasAsync();
         }
     }
 
-    private void SetupVerletSystem()
+    private async Task OnKeyPress(KeyboardEventArgs e)
     {
-        _verletSystem = new VerletSystem(_room.Width, _room.Height);
+        await OnKeyboardEvent.InvokeAsync(e);
+
+        // Handle key presses for game interaction
+        // ...
+        await RefreshCanvas();
     }
 
-    private async Task LoadAssets()
+    private async Task SetDogState(Dog dog, DogAnimationState state)
     {
-        try
+        if (dog.Animation != null)
         {
-            // Load dog0 spritesheet
-            await _dog.Animation.LoadSpritesheetAsync(Http, "images/dogs/dog2.png");
-            // Load dog1 spritesheet
-            await _dog1.Animation.LoadSpritesheetAsync(Http, "images/dogs/dog1.png");
+            dog.Animation.SetState(state);
         }
-        catch (Exception ex)
+
+        // Also update the p5.js dog
+        if (p5Canvas != null)
         {
-            Console.WriteLine($"Error loading assets: {ex.Message}");
-        }
-    }
-
-    public void SetDogState(Dog dog, DogAnimationState state)
-    {
-        dog.Animation.SetState(state);
-    }
-
-    [JSInvokable]
-    public async Task OnBrowserResize(int width, int height)
-    {
-        SetCanvasSize(width, height);
-    }
-
-    public void SetCanvasSize(int windowWidth, int windowHeight)
-    {
-        var maxCanvasSize = (Math.Min(windowWidth, windowHeight) / 2) - 100;
-        maxCanvasSize = Math.Max(maxCanvasSize, 20);
-
-        _room.Width = maxCanvasSize;
-        _room.Height = maxCanvasSize;
-
-        // Set grid size to be 1/20 of the canvas size
-        CalculateOptimalGridSize(maxCanvasSize, maxCanvasSize);
-
-        // Reset dog positions
-        _dog.X = _room.Width / 2;
-        _dog.Y = _room.Height / 2;
-
-        _dog1.X = _room.Width / 3;
-        _dog1.Y = _room.Height / 3;
-
-        // Update dog scales based on canvas size
-        UpdateDogScale();
-
-        // If the VerletSystem is already initialized, update it
-        if (_verletSystem != null)
-        {
-            _verletSystem.UpdateScreenSize(_room.Width, _room.Height);
+            await p5Canvas.SetDogStateAsync((int)state);
         }
     }
 
-    private void UpdateDogScale()
+    private async Task MoveDog(float x, float y)
     {
-        // Assume the dog should fit within one grid cell
-        float gridCellSize = IsometricConfig.GridSize;
-        _dog.Scale = gridCellSize / _dog.Size;
-        _dog1.Scale = gridCellSize / _dog1.Size;
-    }
+        // Update the C# dog position
+        _dog.X = x;
+        _dog.Y = y;
 
-    private void CalculateOptimalGridSize(int canvasWidth, int canvasHeight)
-    {
-        // Calculate the floor's diagonal
-        float floorDiagonal = (float)Math.Sqrt(
-        Math.Pow(IsometricConfig.GridWidth, 2) +
-        Math.Pow(IsometricConfig.GridLength, 2));
-
-        // The isometric projection will need more height for the walls
-        float isoX = IsometricConfig.IsoX;
-        float isoY = IsometricConfig.IsoY;
-        float wallHeightFactor = IsometricConfig.WallHeight * isoY;
-
-        // The horizontal span of the isometric grid is determined by the grid width and length
-        // The vertical span includes the floor's height range plus the wall height
-        float horizontalSpan = (IsometricConfig.GridWidth + IsometricConfig.GridLength) * isoX;
-        float verticalSpan = floorDiagonal * isoY + wallHeightFactor;
-
-        // Calculate the grid size that would make the room fit in the canvas with some margin
-        float horizontalGridSize = canvasWidth * 0.8f / horizontalSpan;
-        float verticalGridSize = canvasHeight * 0.8f / verticalSpan;
-
-        // Choose the smaller value to ensure the entire room fits
-        IsometricConfig.GridSize = (int)Math.Floor(Math.Min(horizontalGridSize, verticalGridSize));
-    }
-
-    public void OnKeyPress(KeyboardEventArgs e)
-    {
-        // Process key input first
-        ProcessKeyInput(e);
-
-        // Then notify parent component if needed
-        OnKeyboardEvent.InvokeAsync(e);
-    }
-
-    private void ProcessKeyInput(KeyboardEventArgs e)
-    {
-        var key = e.Key.ToLower();
-
-        if (CurrentGameMode == GameMode.FloorEditor)
+        // Update the p5.js dog position
+        if (p5Canvas != null)
         {
-            HandleFloorEditorInput(key);
+            await p5Canvas.MoveDogAsync(x, y);
         }
-        else if (CurrentGameMode == GameMode.WallEditor)
-        {
-            HandleWallEditorInput(key);
-        }
-        else if (CurrentGameMode == GameMode.Interaction)
-        {
-            HandleDogMovementInput(key);
-        }
-    }
-
-    private void HandleFloorEditorInput(string key)
-    {
-        switch (key)
-        {
-            case "arrowup":
-            case "w":
-                if (_hologram.Y > 0)
-                    _hologram.Y -= _hologram.MoveSpeed;
-                break;
-            case "arrowdown":
-            case "s":
-                if (_hologram.Y < IsometricConfig.GridLength - 1)
-                    _hologram.Y += _hologram.MoveSpeed;
-                break;
-            case "arrowleft":
-            case "a":
-                if (_hologram.X > 0)
-                    _hologram.X -= _hologram.MoveSpeed;
-                break;
-            case "arrowright":
-            case "d":
-                if (_hologram.X < IsometricConfig.GridWidth - 1)
-                    _hologram.X += _hologram.MoveSpeed;
-                break;
-        }
-    }
-
-    private void HandleWallEditorInput(string key)
-    {
-        switch (key)
-        {
-            case "arrowleft":
-            case "a":
-                _hologram.WallCursor.MoveHorizontal(_hologram.WallCursor.Side == WallSide.Left ? -1 : -1, _hologram.MoveSpeed);
-                break;
-            case "arrowright":
-            case "d":
-                _hologram.WallCursor.MoveHorizontal(_hologram.WallCursor.Side == WallSide.Left ? 1 : 1, _hologram.MoveSpeed);
-                break;
-            case "arrowup":
-            case "w":
-                _hologram.WallCursor.MoveVertical(1, _hologram.MoveSpeed); // Move up (increase height)
-                break;
-            case "arrowdown":
-            case "s":
-                _hologram.WallCursor.MoveVertical(-1, _hologram.MoveSpeed); // Move down (decrease height)
-                break;
-            case "t": // Alternative key to toggle wall side
-                _hologram.WallCursor.ToggleWallSide();
-                break;
-        }
-    }
-
-    private void HandleDogMovementInput(string key)
-    {
-        float moveDist = IsometricConfig.GridSize / 5;
-        if (moveDist < 1) moveDist = 1;
-
-        // For simplicity, dog movement controls affect only dog0 (_dog).
-        // You can expand this logic to control dog1 (_dog1) if needed.
-
-        switch (key)
-        {
-            case "arrowup":
-            case "w":
-                _dog.Y -= moveDist;
-                _dog.Animation.SetState(DogAnimationState.BackWalking);
-                break;
-            case "arrowdown":
-            case "s":
-                _dog.Y += moveDist;
-                _dog.Animation.SetState(DogAnimationState.FrontWalking);
-                break;
-            case "arrowleft":
-            case "a":
-                _dog.X -= moveDist;
-                _dog.Animation.SetState(DogAnimationState.LeftWalking);
-                break;
-            case "arrowright":
-            case "d":
-                _dog.X += moveDist;
-                _dog.Animation.SetState(DogAnimationState.RightWalking);
-                break;
-            // Keys for sitting positions for dog0
-            case "q":
-                _dog.Animation.SetState(DogAnimationState.LeftSitting);
-                break;
-            case "e":
-                _dog.Animation.SetState(DogAnimationState.RightSitting);
-                break;
-            case "x":
-                _dog.Animation.SetState(DogAnimationState.FrontSitting);
-                break;
-
-            // Extra keys to control dog1 sitting animations for demonstration
-            case "z":
-                _dog1.Animation.SetState(DogAnimationState.LeftSitting);
-                break;
-            case "c":
-                _dog1.Animation.SetState(DogAnimationState.RightSitting);
-                break;
-            case "v":
-                _dog1.Animation.SetState(DogAnimationState.FrontSitting);
-                break;
-        }
-    }
-
-    private void OnGamePaint(SKPaintSurfaceEventArgs e)
-    {
-        var canvas = e.Surface.Canvas;
-        canvas.Clear(SKColors.Black);
-
-        // Use RoomService for drawing the room with custom colors
-        IsometricRoomBuilder.DrawIsometricRoom(canvas, _room.Width, _room.Height, RoomService);
-
-        if (CurrentGameMode == GameMode.FloorEditor)
-            DrawingHelper.DrawFloorHologram(canvas, _room, _hologram);
-
-        if (CurrentGameMode == GameMode.WallEditor)
-            DrawingHelper.DrawWallHologram(canvas, _room, _hologram);
-
-        // Draw both dogs
-        DrawingHelper.DrawDog(canvas, _room, _dog, _deltaTime);
-        DrawingHelper.DrawDog(canvas, _room, _dog1, _deltaTime);
-
-        _verletSystem.Update(_deltaTime);
-        _verletSystem.Draw(canvas);
-
-        canvas.DrawRect(new SKRect(0, 0, _room.Width, _room.Height), new SKPaint
-        {
-            Color = SKColors.White,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 2
-        });
-
-        // Optionally, add text showing current dog states (not implemented here)
-    }
-
-    public void Dispose()
-    {
-        // Clean up the DotNetObjectReference
-        _objRef?.Dispose();
     }
 }
