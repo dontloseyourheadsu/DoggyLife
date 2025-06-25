@@ -74,8 +74,15 @@ window.initializeP5DotNetReference = function (reference) {
 };
 
 // Create p5.js canvas in the specified container
-window.initializeP5Canvas = function (containerId, width, height) {
+window.initializeP5Canvas = function (containerId) {
   // First include p5-renderer.js script if not already loaded
+  // Height = Width = 80% of min value between window width and height
+  let width = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+  let height = width;
+
+  console.log("Initializing p5.js canvas in container:", containerId);
+  console.log("Canvas dimensions:", width, height);
+
   if (!window.createP5RoomRenderer) {
     console.log("Loading p5-renderer.js script");
     const script = document.createElement("script");
