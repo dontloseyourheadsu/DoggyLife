@@ -1,0 +1,22 @@
+@using DoggyLife.Models.Storage.Settings
+@using DoggyLife.Services
+@inject RoomService RoomService
+
+<div class="room-visualizer">
+    <h4>Room Preview</h4>
+    <div class="visualizer-canvas">
+        <P5Canvas @ref="p5Canvas" />
+    </div>
+</div>
+
+@code {
+    private P5Canvas? p5Canvas;
+
+    [Parameter]
+    public RoomSettings? Settings { get; set; }
+
+    public void RefreshCanvas()
+    {
+        p5Canvas = new P5Canvas();
+    }
+}

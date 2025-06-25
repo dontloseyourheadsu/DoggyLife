@@ -2,9 +2,9 @@
 let roomSize = 400;
 let tileSize = 50;
 let floorTiles = 8;
-let cameraDistance = 800;
-let cameraAngle = Math.PI / 4; // QUARTER_PI (fixed position as in your example)
-let cameraHeight = -550;
+let cameraDistance = 325; // Ultra-close camera for maximum room size in viewport
+let cameraAngle = Math.PI / 4; // QUARTER_PI (fixed position)
+let cameraHeight = -270; // Further adjusted camera height for the very close camera
 
 // Image for dog sprite
 let dogImage = null;
@@ -22,11 +22,7 @@ let dogSpritesheetLoaded = false;
 let dogPosition = { x: 100, y: 100, z: 100 }; // Initial position matching your example
 let dogScale = 1.0; // Scale of the dog image
 let dogSize = 100; // Size of the dog plane
-let dogRotationY = Math.PI * 2.2; // Make dog face the camera
-
-// Camera variables
-let cameraAutoRotate = false; // Camera doesn't rotate
-let cameraTilt = 0; // No tilt, looking at center (0,0,0) as in your example
+let dogRotationY = Math.PI * 2; // Make dog face the camera
 
 let p5Instance = null;
 
@@ -46,9 +42,21 @@ window.createP5RoomRenderer = function (containerId, width, height) {
     // Dog object reference
     let dog = null;
 
+    // Centralized function to update perspective projection
+    function updatePerspective() {
+      const fov = p.TWO_PI / 3.8; // Extra wide FOV (approximately 95 degrees) for extreme close-up camera
+      const aspect = p.width / p.height;
+      const near = 0.1;
+      const far = 5000;
+      p.perspective(fov, aspect, near, far);
+    }
+
     p.setup = function () {
       p.createCanvas(width, height, p.WEBGL);
       p.angleMode(p.RADIANS);
+
+      // Set initial perspective
+      updatePerspective();
 
       // Load dog animation system
       if (!window.P5DogAnimation) {
@@ -86,13 +94,6 @@ window.createP5RoomRenderer = function (containerId, width, height) {
           dogSpritesheetLoaded = true;
         } catch (err) {
           console.error("Error initializing dog animation:", err);
-          // Create a fallback image if animation fails to load
-          dogImage = p.createGraphics(100, 100);
-          dogImage.background(255, 150, 150);
-          dogImage.fill(100, 100, 255);
-          dogImage.textSize(20);
-          dogImage.textAlign(p.CENTER, p.CENTER);
-          dogImage.text("DOG", 50, 50);
         }
       }
 
@@ -102,10 +103,6 @@ window.createP5RoomRenderer = function (containerId, width, height) {
 
         // One-time key actions
         switch (e.key) {
-          case "t":
-            // Toggle camera rotation
-            cameraAutoRotate = !cameraAutoRotate;
-            break;
           case "1":
             // Move dog to position 1 (front)
             dogPosition = { x: 0, y: 0, z: 150 };
@@ -175,11 +172,6 @@ window.createP5RoomRenderer = function (containerId, width, height) {
       const prevDogPosition = { ...dogPosition };
 
       // Process continuous key controls
-      // Camera controls
-      if (keys["ArrowLeft"]) cameraAngle += 0.03;
-      if (keys["ArrowRight"]) cameraAngle -= 0.03;
-      if (keys["ArrowUp"]) cameraTilt -= 0.01;
-      if (keys["ArrowDown"]) cameraTilt += 0.01;
 
       // Dog position controls
       if (keys["w"]) dogPosition.z -= 5;
@@ -194,7 +186,6 @@ window.createP5RoomRenderer = function (containerId, width, height) {
       if (keys["e"]) dogScale += 0.1;
 
       // Keep values in reasonable ranges
-      cameraTilt = Math.max(-1, Math.min(0, cameraTilt));
       dogScale = Math.max(0.5, Math.min(10, dogScale));
 
       p.ambientLight(60);
@@ -387,9 +378,12 @@ window.createP5RoomRenderer = function (containerId, width, height) {
     };
 
     p.updateCamera = function () {
-      // Calculate camera position (fixed position as in your example)
+      // Calculate camera position (fixed position)
       let x = cameraDistance * Math.cos(cameraAngle);
       let z = cameraDistance * Math.sin(cameraAngle);
+
+      // Update perspective projection
+      updatePerspective();
 
       // Use a fixed camera looking at the center (0,0,0)
       p.camera(x, cameraHeight, z, 0, 0, 0, 0, 1, 0);
@@ -398,23 +392,21 @@ window.createP5RoomRenderer = function (containerId, width, height) {
       p.push();
       p.noLights(); // Disable lighting for UI elements
       p.fill(255);
-      p.textSize(16);
-      p.textAlign(p.LEFT, p.TOP);
-      p.text(
-        `Camera: ${Math.round(x)}, ${Math.round(cameraHeight)}, ${Math.round(
-          z
-        )}`,
-        10,
-        10
-      );
-      p.text(
-        `Dog position: (${Math.round(dogPosition.x)}, ${Math.round(
-          dogPosition.y
-        )}, ${Math.round(dogPosition.z)})`,
-        10,
-        30
-      );
       p.pop();
+    };
+
+    // Add window resize handler to maintain correct perspective
+    p.windowResized = function () {
+      // Check if we should resize to full window (can be controlled by a flag)
+      // This can be activated by a parameter or setting in the future
+      if (window.useFullWindowMode) {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
+      }
+
+      // Update perspective with new dimensions
+      updatePerspective();
+
+      // No need to call redraw() as we're using continuous draw mode
     };
   }, containerId);
 
@@ -449,6 +441,17 @@ function convertColor(colorString) {
 window.resizeP5Canvas = function (width, height) {
   if (p5Instance) {
     p5Instance.resizeCanvas(width, height);
+
+    // Update perspective when canvas is resized
+    if (p5Instance._renderer) {
+      // Call perspective through p5Instance, accessing private function
+      const p = p5Instance;
+      const fov = p.TWO_PI / 3.8; // Extra wide FOV (approximately 95 degrees)
+      const aspect = width / height;
+      const near = 0.1;
+      const far = 5000;
+      p.perspective(fov, aspect, near, far);
+    }
   }
 };
 
@@ -474,12 +477,6 @@ window.moveDog = function (x, y, z) {
   return true;
 };
 
-// Camera control functions
-window.toggleCameraRotation = function () {
-  cameraAutoRotate = !cameraAutoRotate;
-  return cameraAutoRotate;
-};
-
 window.setCameraPosition = function (distance, height, angle) {
   cameraDistance = distance;
   cameraHeight = height;
@@ -488,7 +485,7 @@ window.setCameraPosition = function (distance, height, angle) {
 };
 
 window.setCameraTilt = function (tilt) {
-  cameraTilt = tilt;
+  // Function kept for compatibility but does nothing
   return true;
 };
 
@@ -520,4 +517,47 @@ window.setDogImage = function (imageUrl) {
     return true;
   }
   return false;
+};
+
+// Function to toggle full-window mode
+window.toggleFullWindowMode = function (enabled) {
+  window.useFullWindowMode = enabled;
+
+  // If enabling full window mode, resize canvas immediately
+  if (enabled && p5Instance) {
+    p5Instance.resizeCanvas(p5Instance.windowWidth, p5Instance.windowHeight); // Update perspective
+    if (p5Instance._renderer) {
+      const p = p5Instance;
+      const fov = p.TWO_PI / 3.8; // Extra wide FOV (approximately 95 degrees)
+      const aspect = p.width / p.height;
+      const near = 0.1;
+      const far = 5000;
+      p.perspective(fov, aspect, near, far);
+    }
+  }
+
+  return true;
+};
+
+// Function to switch between perspective and orthographic projections
+window.setCameraProjection = function (useOrthographic) {
+  if (!p5Instance) return false;
+
+  if (useOrthographic) {
+    // Set orthographic projection with reasonable parameters
+    const scale = 1.2;
+    const width = p5Instance.width * scale;
+    const height = p5Instance.height * scale;
+    p5Instance.ortho(-width / 2, width / 2, -height / 2, height / 2, 0.1, 5000);
+  } else {
+    // Revert to perspective projection
+    const p = p5Instance;
+    const fov = p.TWO_PI / 3.8; // Extra wide FOV (approximately 95 degrees)
+    const aspect = p.width / p.height;
+    const near = 0.1;
+    const far = 5000;
+    p.perspective(fov, aspect, near, far);
+  }
+
+  return true;
 };

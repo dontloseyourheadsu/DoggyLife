@@ -14,7 +14,7 @@
 @inject RoomService _roomService
 
 <div
-    style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
     @if (_environment == GameEnvironment.None)
     {
         <PixelButton OnClick="PlayGame">
@@ -23,9 +23,9 @@
     }
     else if (_environment == GameEnvironment.Home)
     {
-        <div style="display: flex; flex-direction: column; align-items: center;">
-            <GameModeSelector CurrentGameMode="@_currentGameMode" OnGameModeChanged=HandleGameModeChanged />
-            <div style="display: flex; gap: 10px;">
+        <div style="display: flex; flex-direction: column; align-items: center; overflow-y: scroll; height: 100%; width: 100%;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 1em;">
+                <GameModeSelector CurrentGameMode="@_currentGameMode" OnGameModeChanged=HandleGameModeChanged />
                 <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
                     Settings
                 </PixelButton>
@@ -34,7 +34,9 @@
                 </PixelButton>
             </div>
 
-            <GameCanvas CurrentGameMode="@_currentGameMode" OnKeyboardEvent="@HandleKeyboardEvent" />
+            <div>
+                <P5Canvas />
+            </div>
         </div>
     }
     else if (_environment == GameEnvironment.Settings)
