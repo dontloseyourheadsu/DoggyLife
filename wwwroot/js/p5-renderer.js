@@ -70,6 +70,21 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         initializeDog();
       }
 
+      // Load dog AI system if not already loaded
+      if (!window.DogAI) {
+        const aiScript = document.createElement("script");
+        aiScript.src = "js/dog-ai.js";
+        aiScript.onload = function () {
+          console.log("Dog AI module loaded");
+          // Initialize AI with starting position
+          window.DogAI.init(dogPosition.x, dogPosition.y, dogPosition.z);
+        };
+        document.head.appendChild(aiScript);
+      } else {
+        // Initialize AI with starting position if script already loaded
+        window.DogAI.init(dogPosition.x, dogPosition.y, dogPosition.z);
+      }
+
       async function initializeDog() {
         // Get the dog sprite path
         const dogImagePath = window.dogSprites
@@ -123,6 +138,14 @@ window.createP5RoomRenderer = function (containerId, width, height) {
             // Move dog to center
             dogPosition = { x: 0, y: 0, z: 0 };
             break;
+          case "t":
+          case "T":
+            // Toggle dog AI
+            if (window.DogAI) {
+              const enabled = window.DogAI.toggle();
+              console.log("Dog AI " + (enabled ? "enabled" : "disabled"));
+            }
+            break;
           case "n":
             // Switch to next dog type
             if (window.dogSprites) {
@@ -171,19 +194,78 @@ window.createP5RoomRenderer = function (containerId, width, height) {
       // Store previous position for animation state calculation
       const prevDogPosition = { ...dogPosition };
 
-      // Process continuous key controls
+      // Process dog AI if enabled
+      if (window.DogAI && window.DogAI.enabled) {
+        // Update dog AI and get new position
+        const aiUpdate = window.DogAI.update(deltaTime);
+        
+        // Store previous position to detect movement direction
+        const prevX = dogPosition.x;
+        const prevZ = dogPosition.z;
+        
+        // Update dog position
+        dogPosition.x = aiUpdate.x;
+        dogPosition.y = aiUpdate.y;
+        dogPosition.z = aiUpdate.z;
+        
+        // Detect movement direction
+        const moveDx = dogPosition.x - prevX;
+        const moveDz = dogPosition.z - prevZ;
+        const isMoving = Math.abs(moveDx) > 0.1 || Math.abs(moveDz) > 0.1;
 
-      // Dog position controls
-      if (keys["w"]) dogPosition.z -= 5;
-      if (keys["s"]) dogPosition.z += 5;
-      if (keys["a"]) dogPosition.x -= 5;
-      if (keys["d"]) dogPosition.x += 5;
+        // Set dog animation based on AI state and movement
+        if (dog && window.P5DogAnimation) {
+          if (aiUpdate.state === "sitting") {
+            // Detect facing direction to choose correct sitting animation
+            const dx = Math.cos(cameraAngle);
+            const dz = Math.sin(cameraAngle);
+            const angle = Math.atan2(dz, dx);
 
-      // Dog height and scale controls
-      if (keys["r"]) dogPosition.y -= 5;
-      if (keys["f"]) dogPosition.y += 5;
-      if (keys["q"]) dogScale -= 0.1;
-      if (keys["e"]) dogScale += 0.1;
+            // Choose sitting animation based on angle
+            if (angle > -Math.PI / 4 && angle < Math.PI / 4) {
+              dog.setState(window.P5DogAnimation.DogAnimationState.RightSitting);
+            } else if (angle >= Math.PI / 4 && angle < (3 * Math.PI) / 4) {
+              dog.setState(window.P5DogAnimation.DogAnimationState.FrontSitting);
+            } else if (
+              (angle >= (3 * Math.PI) / 4 && angle <= Math.PI) ||
+              (angle >= -Math.PI && angle < (-3 * Math.PI) / 4)
+            ) {
+              dog.setState(window.P5DogAnimation.DogAnimationState.LeftSitting);
+            } else {
+              dog.setState(window.P5DogAnimation.DogAnimationState.FrontSitting);
+            }
+          } else if (isMoving) {
+            // For walking state, calculate direction of movement
+            const moveAngle = Math.atan2(moveDz, moveDx);
+            
+            // Determine walking animation based on movement direction
+            const normalizedAngle = (moveAngle + 2 * Math.PI) % (2 * Math.PI);
+            
+            if (normalizedAngle >= (7 * Math.PI) / 4 || normalizedAngle < Math.PI / 4) {
+              dog.setState(window.P5DogAnimation.DogAnimationState.RightWalking);
+            } else if (normalizedAngle >= Math.PI / 4 && normalizedAngle < (3 * Math.PI) / 4) {
+              dog.setState(window.P5DogAnimation.DogAnimationState.BackWalking);
+            } else if (normalizedAngle >= (3 * Math.PI) / 4 && normalizedAngle < (5 * Math.PI) / 4) {
+              dog.setState(window.P5DogAnimation.DogAnimationState.LeftWalking);
+            } else {
+              dog.setState(window.P5DogAnimation.DogAnimationState.FrontWalking);
+            }
+          }
+        }
+      } else {
+        // Manual controls when AI is disabled
+        // Dog position controls
+        if (keys["w"]) dogPosition.z -= 5;
+        if (keys["s"]) dogPosition.z += 5;
+        if (keys["a"]) dogPosition.x -= 5;
+        if (keys["d"]) dogPosition.x += 5;
+
+        // Dog height and scale controls
+        if (keys["r"]) dogPosition.y -= 5;
+        if (keys["f"]) dogPosition.y += 5;
+        if (keys["q"]) dogScale -= 0.1;
+        if (keys["e"]) dogScale += 0.1;
+      }
 
       // Keep values in reasonable ranges
       dogScale = Math.max(0.5, Math.min(10, dogScale));
@@ -517,6 +599,65 @@ window.setDogImage = function (imageUrl) {
     return true;
   }
   return false;
+};
+
+// Dog AI control functions for C# integration
+window.enableDogAI = function () {
+  if (window.DogAI) {
+    window.DogAI.start();
+    return true;
+  }
+  return false;
+};
+
+window.disableDogAI = function () {
+  if (window.DogAI) {
+    window.DogAI.stop();
+    return true;
+  }
+  return false;
+};
+
+window.toggleDogAI = function () {
+  if (window.DogAI) {
+    return window.DogAI.toggle();
+  }
+  return false;
+};
+
+window.configureDogAI = function (config) {
+  if (!window.DogAI) return false;
+
+  if (config.roomBounds) {
+    window.DogAI.setRoomBounds(
+      config.roomBounds.minX,
+      config.roomBounds.maxX,
+      config.roomBounds.minZ,
+      config.roomBounds.maxZ,
+      config.roomBounds.y
+    );
+  }
+
+  if (config.moveSpeed !== undefined) window.DogAI.moveSpeed = config.moveSpeed;
+  if (config.sittingProbability !== undefined)
+    window.DogAI.sittingProbability = config.sittingProbability;
+  if (config.minSitTime !== undefined)
+    window.DogAI.minSitTime = config.minSitTime;
+  if (config.maxSitTime !== undefined)
+    window.DogAI.maxSitTime = config.maxSitTime;
+  if (config.minWalkTime !== undefined)
+    window.DogAI.minWalkTime = config.minWalkTime;
+  if (config.maxWalkTime !== undefined)
+    window.DogAI.maxWalkTime = config.maxWalkTime;
+
+  return true;
+};
+
+window.getDogAIState = function () {
+  if (window.DogAI) {
+    return window.DogAI.getState();
+  }
+  return null;
 };
 
 // Function to toggle full-window mode
