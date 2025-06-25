@@ -73,7 +73,12 @@ window.DogAI = {
         Math.random() * (this.roomBounds.maxZ - this.roomBounds.minZ) +
         this.roomBounds.minZ,
     };
-    console.log("New dog target:", this.currentTarget, "Current position:", this.dogPosition);
+    console.log(
+      "New dog target:",
+      this.currentTarget,
+      "Current position:",
+      this.dogPosition
+    );
     return this.currentTarget;
   },
 
@@ -100,15 +105,27 @@ window.DogAI = {
       // Move dog position
       const oldX = this.dogPosition.x;
       const oldZ = this.dogPosition.z;
-      
+
       // Apply movement with speed
       this.dogPosition.x += normalizedDx * this.moveSpeed * deltaTime;
       this.dogPosition.z += normalizedDz * this.moveSpeed * deltaTime;
-      
+
       // Log movement for debugging (only occasionally to avoid console spam)
       if (Math.random() < 0.05) {
-        console.log(`Dog moved from (${oldX.toFixed(1)}, ${oldZ.toFixed(1)}) to (${this.dogPosition.x.toFixed(1)}, ${this.dogPosition.z.toFixed(1)})`);
-        console.log(`Target: (${this.currentTarget.x.toFixed(1)}, ${this.currentTarget.z.toFixed(1)}), Distance: ${distance.toFixed(1)}`);
+        console.log(
+          `Dog moved from (${oldX.toFixed(1)}, ${oldZ.toFixed(
+            1
+          )}) to (${this.dogPosition.x.toFixed(
+            1
+          )}, ${this.dogPosition.z.toFixed(1)})`
+        );
+        console.log(
+          `Target: (${this.currentTarget.x.toFixed(
+            1
+          )}, ${this.currentTarget.z.toFixed(1)}), Distance: ${distance.toFixed(
+            1
+          )}`
+        );
       }
     }
 

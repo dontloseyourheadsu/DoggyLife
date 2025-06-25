@@ -198,16 +198,16 @@ window.createP5RoomRenderer = function (containerId, width, height) {
       if (window.DogAI && window.DogAI.enabled) {
         // Update dog AI and get new position
         const aiUpdate = window.DogAI.update(deltaTime);
-        
+
         // Store previous position to detect movement direction
         const prevX = dogPosition.x;
         const prevZ = dogPosition.z;
-        
+
         // Update dog position
         dogPosition.x = aiUpdate.x;
         dogPosition.y = aiUpdate.y;
         dogPosition.z = aiUpdate.z;
-        
+
         // Detect movement direction
         const moveDx = dogPosition.x - prevX;
         const moveDz = dogPosition.z - prevZ;
@@ -223,32 +223,51 @@ window.createP5RoomRenderer = function (containerId, width, height) {
 
             // Choose sitting animation based on angle
             if (angle > -Math.PI / 4 && angle < Math.PI / 4) {
-              dog.setState(window.P5DogAnimation.DogAnimationState.RightSitting);
+              dog.setState(
+                window.P5DogAnimation.DogAnimationState.RightSitting
+              );
             } else if (angle >= Math.PI / 4 && angle < (3 * Math.PI) / 4) {
-              dog.setState(window.P5DogAnimation.DogAnimationState.FrontSitting);
+              dog.setState(
+                window.P5DogAnimation.DogAnimationState.FrontSitting
+              );
             } else if (
               (angle >= (3 * Math.PI) / 4 && angle <= Math.PI) ||
               (angle >= -Math.PI && angle < (-3 * Math.PI) / 4)
             ) {
               dog.setState(window.P5DogAnimation.DogAnimationState.LeftSitting);
             } else {
-              dog.setState(window.P5DogAnimation.DogAnimationState.FrontSitting);
+              dog.setState(
+                window.P5DogAnimation.DogAnimationState.FrontSitting
+              );
             }
           } else if (isMoving) {
             // For walking state, calculate direction of movement
             const moveAngle = Math.atan2(moveDz, moveDx);
-            
+
             // Determine walking animation based on movement direction
             const normalizedAngle = (moveAngle + 2 * Math.PI) % (2 * Math.PI);
-            
-            if (normalizedAngle >= (7 * Math.PI) / 4 || normalizedAngle < Math.PI / 4) {
-              dog.setState(window.P5DogAnimation.DogAnimationState.RightWalking);
-            } else if (normalizedAngle >= Math.PI / 4 && normalizedAngle < (3 * Math.PI) / 4) {
+
+            if (
+              normalizedAngle >= (7 * Math.PI) / 4 ||
+              normalizedAngle < Math.PI / 4
+            ) {
+              dog.setState(
+                window.P5DogAnimation.DogAnimationState.RightWalking
+              );
+            } else if (
+              normalizedAngle >= Math.PI / 4 &&
+              normalizedAngle < (3 * Math.PI) / 4
+            ) {
               dog.setState(window.P5DogAnimation.DogAnimationState.BackWalking);
-            } else if (normalizedAngle >= (3 * Math.PI) / 4 && normalizedAngle < (5 * Math.PI) / 4) {
+            } else if (
+              normalizedAngle >= (3 * Math.PI) / 4 &&
+              normalizedAngle < (5 * Math.PI) / 4
+            ) {
               dog.setState(window.P5DogAnimation.DogAnimationState.LeftWalking);
             } else {
-              dog.setState(window.P5DogAnimation.DogAnimationState.FrontWalking);
+              dog.setState(
+                window.P5DogAnimation.DogAnimationState.FrontWalking
+              );
             }
           }
         }
