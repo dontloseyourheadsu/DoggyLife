@@ -1,4 +1,6 @@
 @using DoggyLife.Models;
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 
 <div class="game-mode-selector">
     <PixelButton OnClick="ToggleGameMode">
@@ -9,12 +11,15 @@
 @code {
     [Parameter]
     public GameMode CurrentGameMode { get; set; } = GameMode.Interaction;
-    
+
     [Parameter]
     public EventCallback<GameMode> OnGameModeChanged { get; set; }
-    
+
     private async Task ToggleGameMode()
     {
+        // First disable hologram if it was enabled
+        await DisableHologramMode();
+
         CurrentGameMode = CurrentGameMode switch
         {
             GameMode.Interaction => GameMode.FloorEditor,
@@ -23,7 +28,47 @@
             GameMode.Viewer => GameMode.Interaction,
             _ => GameMode.Interaction
         };
-        
+
+        // Enable hologram for editor modes
+        await EnableHologramForMode(CurrentGameMode);
+
         await OnGameModeChanged.InvokeAsync(CurrentGameMode);
+    }
+
+    private async Task EnableHologramForMode(GameMode mode)
+    {
+        try
+        {
+            switch (mode)
+            {
+                case GameMode.FloorEditor:
+                case GameMode.WallEditor:
+                    // Enable hologram with 2x2x2 floor cell size (each floor cell is 50 units, so 100x100x100)
+                    await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100);
+                    break;
+                case GameMode.Interaction:
+                case GameMode.Viewer:
+                default:
+                    // Disable hologram for non-editor modes
+                    await DisableHologramMode();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error enabling hologram mode: {ex.Message}");
+        }
+    }
+
+    private async Task DisableHologramMode()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("disableHologramMode");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error disabling hologram mode: {ex.Message}");
+        }
     }
 }
