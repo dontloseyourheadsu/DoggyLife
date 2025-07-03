@@ -6,6 +6,17 @@ let cameraDistance = 325; // Ultra-close camera for maximum room size in viewpor
 let cameraAngle = Math.PI / 4; // QUARTER_PI (fixed position)
 let cameraHeight = -270; // Further adjusted camera height for the very close camera
 
+// Debug mode flag
+let debugMode = true; // Set to true for debugging
+
+// Debug camera control variables
+let debugCameraDistance = 500;
+let debugCameraAngleX = 0; // Vertical rotation
+let debugCameraAngleY = 0; // Horizontal rotation
+let isDragging = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+
 // Image for dog sprite
 let dogImage = null;
 
@@ -19,10 +30,19 @@ let roomSettings = {
 
 // Dog variables
 let dogSpritesheetLoaded = false;
-let dogPosition = { x: 100, y: 100, z: 100 }; // Initial position matching your example
+let dogPosition = { x: 0, y: 150, z: 0 }; // Position dog so bottom is on floor (floorY - dogSize/2)
 let dogScale = 1.0; // Scale of the dog image
 let dogSize = 100; // Size of the dog plane
 let dogRotationY = Math.PI * 2; // Make dog face the camera
+
+// Room bounds for collision detection
+let roomBounds = {
+  minX: -200, // Room edge (full room size/2)
+  maxX: 200,
+  minZ: -200,
+  maxZ: 200,
+  floorY: 200, // Floor level (roomSize/2)
+};
 
 let p5Instance = null;
 
@@ -175,12 +195,68 @@ window.createP5RoomRenderer = function (containerId, width, height) {
               }
             }
             break;
+          case "d":
+          case "D":
+            // Toggle debug mode
+            debugMode = !debugMode;
+            console.log("Debug mode " + (debugMode ? "enabled" : "disabled"));
+            break;
         }
       });
 
       window.addEventListener("keyup", (e) => {
         keys[e.key] = false;
       });
+
+      // Debug mode mouse controls
+      if (debugMode) {
+        // Mouse press
+        p.canvas.addEventListener("mousedown", (e) => {
+          isDragging = true;
+          lastMouseX = e.clientX;
+          lastMouseY = e.clientY;
+          e.preventDefault();
+        });
+
+        // Mouse release
+        window.addEventListener("mouseup", (e) => {
+          isDragging = false;
+        });
+
+        // Mouse move
+        window.addEventListener("mousemove", (e) => {
+          if (isDragging) {
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+
+            // Update camera angles based on mouse movement
+            debugCameraAngleY += deltaX * 0.01; // Horizontal rotation
+            debugCameraAngleX += deltaY * 0.01; // Vertical rotation
+
+            // Clamp vertical rotation to prevent flipping
+            debugCameraAngleX = Math.max(
+              -Math.PI / 2 + 0.1,
+              Math.min(Math.PI / 2 - 0.1, debugCameraAngleX)
+            );
+
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+          }
+        });
+
+        // Mouse wheel for zoom
+        p.canvas.addEventListener("wheel", (e) => {
+          e.preventDefault();
+          const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+          debugCameraDistance *= zoomFactor;
+
+          // Clamp zoom distance
+          debugCameraDistance = Math.max(
+            50,
+            Math.min(2000, debugCameraDistance)
+          );
+        });
+      }
     };
 
     p.draw = function () {
@@ -272,22 +348,54 @@ window.createP5RoomRenderer = function (containerId, width, height) {
           }
         }
       } else {
-        // Manual controls when AI is disabled
-        // Dog position controls
-        if (keys["w"]) dogPosition.z -= 5;
-        if (keys["s"]) dogPosition.z += 5;
-        if (keys["a"]) dogPosition.x -= 5;
-        if (keys["d"]) dogPosition.x += 5;
+        // Manual controls when AI is disabled - only allow WASD if not in debug mode
+        if (!debugMode) {
+          // Dog position controls with bounds checking
+          let newX = dogPosition.x;
+          let newZ = dogPosition.z;
+          let newY = dogPosition.y;
 
-        // Dog height and scale controls
-        if (keys["r"]) dogPosition.y -= 5;
-        if (keys["f"]) dogPosition.y += 5;
-        if (keys["q"]) dogScale -= 0.1;
-        if (keys["e"]) dogScale += 0.1;
+          if (keys["w"]) newZ -= 5;
+          if (keys["s"]) newZ += 5;
+          if (keys["a"]) newX -= 5;
+          if (keys["d"]) newX += 5;
+
+          // Check bounds and apply movement (with margin for dog size)
+          const dogMargin = dogSize / 2; // Half dog size as margin
+          if (
+            newX >= roomBounds.minX + dogMargin &&
+            newX <= roomBounds.maxX - dogMargin
+          ) {
+            dogPosition.x = newX;
+          }
+          if (
+            newZ >= roomBounds.minZ + dogMargin &&
+            newZ <= roomBounds.maxZ - dogMargin
+          ) {
+            dogPosition.z = newZ;
+          }
+
+          // Dog height controls (for testing/debugging)
+          if (keys["r"]) newY -= 5;
+          if (keys["f"]) newY += 5;
+          dogPosition.y = Math.max(
+            roomBounds.floorY - dogSize,
+            Math.min(roomBounds.floorY + 50, newY)
+          );
+
+          // Dog scale controls
+          if (keys["q"]) dogScale -= 0.1;
+          if (keys["e"]) dogScale += 0.1;
+        }
       }
 
       // Keep values in reasonable ranges
       dogScale = Math.max(0.5, Math.min(10, dogScale));
+
+      // Update hologram system if available
+      if (window.HologramSystem) {
+        window.HologramSystem.update(deltaTime);
+      }
 
       p.ambientLight(60);
       p.directionalLight(255, 255, 255, -1, 0.5, -1);
@@ -340,19 +448,59 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         p.pop();
       }
 
-      // Draw helpful axis lines for 3D orientation
-      p.push();
-      p.strokeWeight(3);
-      // X axis - red
-      p.stroke(255, 0, 0);
-      p.line(-100, 0, 0, 100, 0, 0);
-      // Y axis - green
-      p.stroke(0, 255, 0);
-      p.line(0, -100, 0, 0, 100, 0);
-      // Z axis - blue
-      p.stroke(0, 0, 255);
-      p.line(0, 0, -100, 0, 0, 100);
-      p.pop();
+      // Draw helpful axis lines for 3D orientation (debug mode only)
+      if (debugMode) {
+        p.push();
+        p.strokeWeight(3);
+        // X axis - red
+        p.stroke(255, 0, 0);
+        p.line(-100, 0, 0, 100, 0, 0);
+        // Y axis - green
+        p.stroke(0, 255, 0);
+        p.line(0, -100, 0, 0, 100, 0);
+        // Z axis - blue
+        p.stroke(0, 0, 255);
+        p.line(0, 0, -100, 0, 0, 100);
+        p.pop();
+      }
+
+      // Draw hologram if enabled
+      if (window.HologramSystem) {
+        window.HologramSystem.draw(p);
+      }
+
+      // Draw debug info if in debug mode
+      if (debugMode) {
+        p.push();
+        p.fill(255, 255, 0); // Yellow text
+        p.textAlign(p.LEFT, p.TOP);
+        p.textSize(12);
+
+        // Move to 2D space for UI
+        p.camera();
+        p.ortho();
+        p.translate(-p.width / 2, -p.height / 2);
+
+        let debugText = "DEBUG MODE (Press D to toggle)\n";
+        debugText += "Mouse: Click+Drag to rotate, Scroll to zoom\n";
+        debugText += `Camera Distance: ${debugCameraDistance.toFixed(1)}\n`;
+        debugText += `Camera Angles: X=${debugCameraAngleX.toFixed(
+          2
+        )}, Y=${debugCameraAngleY.toFixed(2)}\n`;
+        if (window.HologramSystem && window.HologramSystem.enabled) {
+          const state = window.HologramSystem.getState();
+          if (state.hologram) {
+            debugText += `Hologram: (${state.hologram.position.x.toFixed(
+              1
+            )}, ${state.hologram.position.y.toFixed(
+              1
+            )}, ${state.hologram.position.z.toFixed(1)})`;
+          }
+        }
+
+        p.text(debugText, 10, 10);
+        p.pop();
+      }
     };
 
     p.drawRoom = function () {
@@ -479,21 +627,29 @@ window.createP5RoomRenderer = function (containerId, width, height) {
     };
 
     p.updateCamera = function () {
-      // Calculate camera position (fixed position)
-      let x = cameraDistance * Math.cos(cameraAngle);
-      let z = cameraDistance * Math.sin(cameraAngle);
-
       // Update perspective projection
       updatePerspective();
 
-      // Use a fixed camera looking at the center (0,0,0)
-      p.camera(x, cameraHeight, z, 0, 0, 0, 0, 1, 0);
+      if (debugMode) {
+        // Debug camera with free movement
+        const x =
+          debugCameraDistance *
+          Math.cos(debugCameraAngleX) *
+          Math.cos(debugCameraAngleY);
+        const y = debugCameraDistance * Math.sin(debugCameraAngleX);
+        const z =
+          debugCameraDistance *
+          Math.cos(debugCameraAngleX) *
+          Math.sin(debugCameraAngleY);
 
-      // Draw camera position indicator
-      p.push();
-      p.noLights(); // Disable lighting for UI elements
-      p.fill(255);
-      p.pop();
+        // Use debug camera looking at the center (0,0,0)
+        p.camera(x, y, z, 0, 0, 0, 0, 1, 0);
+      } else {
+        // Original fixed camera
+        let x = cameraDistance * Math.cos(cameraAngle);
+        let z = cameraDistance * Math.sin(cameraAngle);
+        p.camera(x, cameraHeight, z, 0, 0, 0, 0, 1, 0);
+      }
     };
 
     // Add window resize handler to maintain correct perspective
@@ -720,4 +876,92 @@ window.setCameraProjection = function (useOrthographic) {
   }
 
   return true;
+};
+
+// Hologram control functions for C# integration
+window.enableHologramMode = function (
+  x = 0,
+  y = 0,
+  z = 0,
+  width = 50,
+  height = 50,
+  depth = 50
+) {
+  if (window.HologramSystem) {
+    const position = { x: x, y: y, z: z };
+    const size = { width: width, height: height, depth: depth };
+    window.HologramSystem.enable(position, size);
+    console.log("Hologram mode enabled via C# interop");
+    return true;
+  }
+  return false;
+};
+
+window.disableHologramMode = function () {
+  if (window.HologramSystem) {
+    window.HologramSystem.disable();
+    console.log("Hologram mode disabled via C# interop");
+    return true;
+  }
+  return false;
+};
+
+window.toggleHologramMode = function (
+  x = 0,
+  y = 0,
+  z = 0,
+  width = 50,
+  height = 50,
+  depth = 50
+) {
+  if (window.HologramSystem) {
+    const position = { x: x, y: y, z: z };
+    const size = { width: width, height: height, depth: depth };
+    const enabled = window.HologramSystem.toggle(position, size);
+    console.log(
+      "Hologram mode " + (enabled ? "enabled" : "disabled") + " via C# interop"
+    );
+    return enabled;
+  }
+  return false;
+};
+
+window.setHologramPosition = function (x, y, z) {
+  if (window.HologramSystem) {
+    window.HologramSystem.setPosition(x, y, z);
+    return true;
+  }
+  return false;
+};
+
+window.setHologramSize = function (width, height, depth) {
+  if (window.HologramSystem) {
+    window.HologramSystem.setSize(width, height, depth);
+    return true;
+  }
+  return false;
+};
+
+window.getHologramState = function () {
+  if (window.HologramSystem) {
+    return window.HologramSystem.getState();
+  }
+  return null;
+};
+
+// Debug mode control functions
+window.setDebugMode = function (enabled) {
+  debugMode = enabled;
+  console.log("Debug mode " + (debugMode ? "enabled" : "disabled"));
+  return debugMode;
+};
+
+window.toggleDebugMode = function () {
+  debugMode = !debugMode;
+  console.log("Debug mode " + (debugMode ? "enabled" : "disabled"));
+  return debugMode;
+};
+
+window.getDebugMode = function () {
+  return debugMode;
 };

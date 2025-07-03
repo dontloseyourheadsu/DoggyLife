@@ -3,11 +3,11 @@ window.DogAI = {
   // Configuration
   enabled: false,
   roomBounds: {
-    minX: -150,
+    minX: -150, // Room bounds with margin for dog size (200 - 50)
     maxX: 150,
     minZ: -150,
     maxZ: 150,
-    y: 0, // Height where dog stands
+    y: 150, // Dog bottom on floor (floorY - dogSize/2 = 200 - 50)
   },
 
   // Movement parameters
@@ -28,7 +28,7 @@ window.DogAI = {
   // Initialize the AI
   init: function (startX, startY, startZ) {
     this.dogPosition.x = startX || 0;
-    this.dogPosition.y = startY || 0;
+    this.dogPosition.y = startY || this.roomBounds.y; // Use floor level by default
     this.dogPosition.z = startZ || 0;
     this.pickNewTarget();
     this.currentState = "idle";
@@ -106,9 +106,22 @@ window.DogAI = {
       const oldX = this.dogPosition.x;
       const oldZ = this.dogPosition.z;
 
-      // Apply movement with speed
-      this.dogPosition.x += normalizedDx * this.moveSpeed * deltaTime;
-      this.dogPosition.z += normalizedDz * this.moveSpeed * deltaTime;
+      // Apply movement with speed and bounds checking
+      const newX =
+        this.dogPosition.x + normalizedDx * this.moveSpeed * deltaTime;
+      const newZ =
+        this.dogPosition.z + normalizedDz * this.moveSpeed * deltaTime;
+
+      // Apply bounds checking
+      this.dogPosition.x = Math.max(
+        this.roomBounds.minX,
+        Math.min(this.roomBounds.maxX, newX)
+      );
+      this.dogPosition.z = Math.max(
+        this.roomBounds.minZ,
+        Math.min(this.roomBounds.maxZ, newZ)
+      );
+      this.dogPosition.y = this.roomBounds.y; // Keep on floor level
 
       // Log movement for debugging (only occasionally to avoid console spam)
       if (Math.random() < 0.05) {
