@@ -397,6 +397,11 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         window.HologramSystem.update(deltaTime);
       }
 
+      // Update wall hologram system if available
+      if (window.WallHologramSystem) {
+        window.WallHologramSystem.update(deltaTime);
+      }
+
       p.ambientLight(60);
       p.directionalLight(255, 255, 255, -1, 0.5, -1);
 
@@ -469,6 +474,11 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         window.HologramSystem.draw(p);
       }
 
+      // Draw wall hologram if enabled
+      if (window.WallHologramSystem) {
+        window.WallHologramSystem.draw(p);
+      }
+
       // Draw debug info if in debug mode
       if (debugMode) {
         p.push();
@@ -490,11 +500,23 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         if (window.HologramSystem && window.HologramSystem.enabled) {
           const state = window.HologramSystem.getState();
           if (state.hologram) {
-            debugText += `Hologram: (${state.hologram.position.x.toFixed(
+            debugText += `Floor Hologram: (${state.hologram.position.x.toFixed(
               1
             )}, ${state.hologram.position.y.toFixed(
               1
-            )}, ${state.hologram.position.z.toFixed(1)})`;
+            )}, ${state.hologram.position.z.toFixed(1)})\n`;
+          }
+        }
+        if (window.WallHologramSystem && window.WallHologramSystem.enabled) {
+          const state = window.WallHologramSystem.getState();
+          if (state.hologram) {
+            debugText += `Wall Hologram [${
+              state.currentWall
+            }]: (${state.hologram.position.x.toFixed(
+              1
+            )}, ${state.hologram.position.y.toFixed(
+              1
+            )}, ${state.hologram.position.z.toFixed(1)})\n`;
           }
         }
 
@@ -885,25 +907,51 @@ window.enableHologramMode = function (
   z = 0,
   width = 50,
   height = 50,
-  depth = 50
+  depth = 50,
+  mode = "floor"
 ) {
+  // Disable both systems first
   if (window.HologramSystem) {
-    const position = { x: x, y: y, z: z };
-    const size = { width: width, height: height, depth: depth };
-    window.HologramSystem.enable(position, size);
-    console.log("Hologram mode enabled via C# interop");
-    return true;
+    window.HologramSystem.disable();
+  }
+  if (window.WallHologramSystem) {
+    window.WallHologramSystem.disable();
+  }
+
+  if (mode === "wall") {
+    if (window.WallHologramSystem) {
+      const position = { x: x, y: y, z: z };
+      const size = { width: width, height: height, depth: depth };
+      window.WallHologramSystem.enable(position, size, "back");
+      console.log("Wall hologram mode enabled via C# interop");
+      return true;
+    }
+  } else {
+    if (window.HologramSystem) {
+      const position = { x: x, y: y, z: z };
+      const size = { width: width, height: height, depth: depth };
+      window.HologramSystem.enable(position, size);
+      console.log("Floor hologram mode enabled via C# interop");
+      return true;
+    }
   }
   return false;
 };
 
 window.disableHologramMode = function () {
+  let success = false;
   if (window.HologramSystem) {
     window.HologramSystem.disable();
-    console.log("Hologram mode disabled via C# interop");
-    return true;
+    success = true;
   }
-  return false;
+  if (window.WallHologramSystem) {
+    window.WallHologramSystem.disable();
+    success = true;
+  }
+  if (success) {
+    console.log("Hologram mode disabled via C# interop");
+  }
+  return success;
 };
 
 window.toggleHologramMode = function (
@@ -912,39 +960,62 @@ window.toggleHologramMode = function (
   z = 0,
   width = 50,
   height = 50,
-  depth = 50
+  depth = 50,
+  mode = "floor"
 ) {
-  if (window.HologramSystem) {
-    const position = { x: x, y: y, z: z };
-    const size = { width: width, height: height, depth: depth };
-    const enabled = window.HologramSystem.toggle(position, size);
-    console.log(
-      "Hologram mode " + (enabled ? "enabled" : "disabled") + " via C# interop"
-    );
-    return enabled;
+  // Check if any hologram is currently enabled
+  const floorEnabled = window.HologramSystem && window.HologramSystem.enabled;
+  const wallEnabled =
+    window.WallHologramSystem && window.WallHologramSystem.enabled;
+
+  if (floorEnabled || wallEnabled) {
+    // Disable all holograms
+    window.disableHologramMode();
+    return false;
+  } else {
+    // Enable the requested hologram mode
+    return window.enableHologramMode(x, y, z, width, height, depth, mode);
   }
-  return false;
 };
 
 window.setHologramPosition = function (x, y, z) {
-  if (window.HologramSystem) {
+  let success = false;
+  if (window.HologramSystem && window.HologramSystem.enabled) {
     window.HologramSystem.setPosition(x, y, z);
-    return true;
+    success = true;
   }
-  return false;
+  if (window.WallHologramSystem && window.WallHologramSystem.enabled) {
+    window.WallHologramSystem.setPosition(x, y, z);
+    success = true;
+  }
+  return success;
 };
 
 window.setHologramSize = function (width, height, depth) {
-  if (window.HologramSystem) {
+  let success = false;
+  if (window.HologramSystem && window.HologramSystem.enabled) {
     window.HologramSystem.setSize(width, height, depth);
-    return true;
+    success = true;
   }
-  return false;
+  if (window.WallHologramSystem && window.WallHologramSystem.enabled) {
+    window.WallHologramSystem.setSize(width, height, depth);
+    success = true;
+  }
+  return success;
 };
 
 window.getHologramState = function () {
-  if (window.HologramSystem) {
-    return window.HologramSystem.getState();
+  if (window.WallHologramSystem && window.WallHologramSystem.enabled) {
+    return {
+      type: "wall",
+      ...window.WallHologramSystem.getState(),
+    };
+  }
+  if (window.HologramSystem && window.HologramSystem.enabled) {
+    return {
+      type: "floor",
+      ...window.HologramSystem.getState(),
+    };
   }
   return null;
 };

@@ -42,9 +42,12 @@
             switch (mode)
             {
                 case GameMode.FloorEditor:
+                    // Enable floor hologram with 2x2x2 floor cell size (each floor cell is 50 units, so 100x100x100)
+                    await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100, "floor");
+                    break;
                 case GameMode.WallEditor:
-                    // Enable hologram with 2x2x2 floor cell size (each floor cell is 50 units, so 100x100x100)
-                    await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100);
+                    // Enable wall hologram with 2x2x2 wall cell size
+                    await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100, "wall");
                     break;
                 case GameMode.Interaction:
                 case GameMode.Viewer:
