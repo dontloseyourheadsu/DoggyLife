@@ -1,9 +1,9 @@
 @using DoggyLife.Components
 @using DoggyLife.Data.Database
+@using DoggyLife.Models
 @using DoggyLife.Models.Storage.Settings
 @using DoggyLife.Services
 @using Microsoft.EntityFrameworkCore
-@using SkiaSharp
 @inject RoomService RoomService
 @inject SqliteWasmHelper.ISqliteWasmDbContextFactory<AppDbContext> Factory
 @inject IJSRuntime JSRuntime
@@ -230,55 +230,42 @@
     private void ResetToDefaults()
     {
         // Reset to default colors from RoomService
-        byte r, g, b;
         
         // Floor light color
-        r = RoomService.DefaultFloorLightColor.Red;
-        g = RoomService.DefaultFloorLightColor.Green;
-        b = RoomService.DefaultFloorLightColor.Blue;
-        _previewSettings.FloorLightRed = r;
-        _previewSettings.FloorLightGreen = g;
-        _previewSettings.FloorLightBlue = b;
+        var floorLightColor = RoomService.DefaultFloorLightColor;
+        _previewSettings.FloorLightRed = floorLightColor.Red;
+        _previewSettings.FloorLightGreen = floorLightColor.Green;
+        _previewSettings.FloorLightBlue = floorLightColor.Blue;
         
         // Floor dark color
-        r = RoomService.DefaultFloorDarkColor.Red;
-        g = RoomService.DefaultFloorDarkColor.Green;
-        b = RoomService.DefaultFloorDarkColor.Blue;
-        _previewSettings.FloorDarkRed = r;
-        _previewSettings.FloorDarkGreen = g;
-        _previewSettings.FloorDarkBlue = b;
+        var floorDarkColor = RoomService.DefaultFloorDarkColor;
+        _previewSettings.FloorDarkRed = floorDarkColor.Red;
+        _previewSettings.FloorDarkGreen = floorDarkColor.Green;
+        _previewSettings.FloorDarkBlue = floorDarkColor.Blue;
         
         // Wall light color
-        r = RoomService.DefaultWallLightColor.Red;
-        g = RoomService.DefaultWallLightColor.Green;
-        b = RoomService.DefaultWallLightColor.Blue;
-        _previewSettings.WallLightRed = r;
-        _previewSettings.WallLightGreen = g;
-        _previewSettings.WallLightBlue = b;
+        var wallLightColor = RoomService.DefaultWallLightColor;
+        _previewSettings.WallLightRed = wallLightColor.Red;
+        _previewSettings.WallLightGreen = wallLightColor.Green;
+        _previewSettings.WallLightBlue = wallLightColor.Blue;
         
         // Wall dark color
-        r = RoomService.DefaultWallDarkColor.Red;
-        g = RoomService.DefaultWallDarkColor.Green;
-        b = RoomService.DefaultWallDarkColor.Blue;
-        _previewSettings.WallDarkRed = r;
-        _previewSettings.WallDarkGreen = g;
-        _previewSettings.WallDarkBlue = b;
+        var wallDarkColor = RoomService.DefaultWallDarkColor;
+        _previewSettings.WallDarkRed = wallDarkColor.Red;
+        _previewSettings.WallDarkGreen = wallDarkColor.Green;
+        _previewSettings.WallDarkBlue = wallDarkColor.Blue;
         
         // Wall outline color
-        r = RoomService.DefaultWallOutlineColor.Red;
-        g = RoomService.DefaultWallOutlineColor.Green;
-        b = RoomService.DefaultWallOutlineColor.Blue;
-        _previewSettings.WallOutlineRed = r;
-        _previewSettings.WallOutlineGreen = g;
-        _previewSettings.WallOutlineBlue = b;
+        var wallOutlineColor = RoomService.DefaultWallOutlineColor;
+        _previewSettings.WallOutlineRed = wallOutlineColor.Red;
+        _previewSettings.WallOutlineGreen = wallOutlineColor.Green;
+        _previewSettings.WallOutlineBlue = wallOutlineColor.Blue;
         
         // Wall stripe color
-        r = RoomService.DefaultWallStripeColor.Red;
-        g = RoomService.DefaultWallStripeColor.Green;
-        b = RoomService.DefaultWallStripeColor.Blue;
-        _previewSettings.WallStripeRed = r;
-        _previewSettings.WallStripeGreen = g;
-        _previewSettings.WallStripeBlue = b;
+        var wallStripeColor = RoomService.DefaultWallStripeColor;
+        _previewSettings.WallStripeRed = wallStripeColor.Red;
+        _previewSettings.WallStripeGreen = wallStripeColor.Green;
+        _previewSettings.WallStripeBlue = wallStripeColor.Blue;
 
         UpdatePreview();
     }
