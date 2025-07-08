@@ -1,7 +1,7 @@
 using DoggyLife.Data.Database;
+using DoggyLife.Models;
 using DoggyLife.Models.Storage.Settings;
 using Microsoft.EntityFrameworkCore;
-using SkiaSharp;
 using SqliteWasmHelper;
 
 namespace DoggyLife.Services;
@@ -12,13 +12,13 @@ public class RoomService
     private RoomSettings? _currentSettings;
 
     // Default colors stored as static variables so they can be changed later if needed
-    public static readonly SKColor DefaultFloorLightColor = new SKColor(90, 90, 120);
-    public static readonly SKColor DefaultFloorDarkColor = new SKColor(50, 50, 70);
+    public static readonly Color DefaultFloorLightColor = new(90, 90, 120);
+    public static readonly Color DefaultFloorDarkColor = new(50, 50, 70);
 
-    public static readonly SKColor DefaultWallLightColor = new SKColor(70, 70, 100);
-    public static readonly SKColor DefaultWallDarkColor = new SKColor(70, 70, 100);
-    public static readonly SKColor DefaultWallOutlineColor = new SKColor(30, 30, 50);
-    public static readonly SKColor DefaultWallStripeColor = new SKColor(30, 30, 50);
+    public static readonly Color DefaultWallLightColor = new(70, 70, 100);
+    public static readonly Color DefaultWallDarkColor = new(70, 70, 100);
+    public static readonly Color DefaultWallOutlineColor = new(30, 30, 50);
+    public static readonly Color DefaultWallStripeColor = new(30, 30, 50);
 
     public RoomService(ISqliteWasmDbContextFactory<AppDbContext> dbFactory)
     {
@@ -70,14 +70,14 @@ public class RoomService
     }
 
     // Get the current colors for floor
-    public List<SKColor> GetFloorColors()
+    public List<Color> GetFloorColors()
     {
         if (_currentSettings == null)
         {
-            return new List<SKColor> { DefaultFloorLightColor, DefaultFloorDarkColor };
+            return new List<Color> { DefaultFloorLightColor, DefaultFloorDarkColor };
         }
 
-        return new List<SKColor>
+        return new List<Color>
         {
             _currentSettings.GetFloorLightColor(),
             _currentSettings.GetFloorDarkColor()
@@ -85,11 +85,11 @@ public class RoomService
     }
 
     // Get the current colors for walls
-    public List<SKColor> GetWallColors()
+    public List<Color> GetWallColors()
     {
         if (_currentSettings == null)
         {
-            return new List<SKColor>
+            return new List<Color>
             {
                 DefaultWallLightColor,
                 DefaultWallDarkColor,
@@ -98,7 +98,7 @@ public class RoomService
             };
         }
 
-        return new List<SKColor>
+        return new List<Color>
         {
             _currentSettings.GetWallLightColor(),
             _currentSettings.GetWallDarkColor(),
@@ -108,9 +108,9 @@ public class RoomService
     }
 
     // Get all room colors (combined floor and wall colors)
-    public List<SKColor> GetRoomColors()
+    public List<Color> GetRoomColors()
     {
-        var colors = new List<SKColor>();
+        var colors = new List<Color>();
         colors.AddRange(GetFloorColors());
         colors.AddRange(GetWallColors());
         return colors;

@@ -1,6 +1,4 @@
-﻿using SkiaSharp;
-
-namespace DoggyLife.Settings;
+﻿namespace DoggyLife.Settings;
 
 /// <summary>
 /// Shared configuration parameters for isometric rendering.
@@ -41,26 +39,6 @@ public static class IsometricConfig
     /// Get isometric Y transformation factor based on angle.
     /// </summary>
     public static float IsoY => (float)Math.Sin(IsometricAngle * Math.PI / 180f);
-
-    /// <summary>
-    /// Dark floor color
-    /// </summary>
-    public static readonly SKColor FloorColorDark = new SKColor(60, 60, 90);
-
-    /// <summary>
-    /// Light floor color
-    /// </summary>
-    public static readonly SKColor FloorColorLight = new SKColor(90, 90, 120);
-
-    /// <summary>
-    /// Dark wall color
-    /// </summary>
-    public static readonly SKColor WallColorDark = new SKColor(40, 40, 70);
-
-    /// <summary>
-    /// Light wall color
-    /// </summary>
-    public static readonly SKColor WallColorLight = new SKColor(70, 70, 100);
 
     /// <summary>
     /// Get the offset X position to center the grid on canvas.

@@ -1,5 +1,3 @@
-using SkiaSharp;
-
 namespace DoggyLife.Models.Storage.Settings;
 
 public class RoomSettings
@@ -32,12 +30,54 @@ public class RoomSettings
     public byte WallStripeGreen { get; set; } = 30;
     public byte WallStripeBlue { get; set; } = 50;
 
-    // Helper methods to get the actual SKColor objects
-    public SKColor GetFloorLightColor() => new SKColor(FloorLightRed, FloorLightGreen, FloorLightBlue);
-    public SKColor GetFloorDarkColor() => new SKColor(FloorDarkRed, FloorDarkGreen, FloorDarkBlue);
+    // Color helper methods
+    public DoggyLife.Models.Color GetFloorLightColor() => new(FloorLightRed, FloorLightGreen, FloorLightBlue);
+    public DoggyLife.Models.Color GetFloorDarkColor() => new(FloorDarkRed, FloorDarkGreen, FloorDarkBlue);
+    
+    public DoggyLife.Models.Color GetWallLightColor() => new(WallLightRed, WallLightGreen, WallLightBlue);
+    public DoggyLife.Models.Color GetWallDarkColor() => new(WallDarkRed, WallDarkGreen, WallDarkBlue);
+    public DoggyLife.Models.Color GetWallOutlineColor() => new(WallOutlineRed, WallOutlineGreen, WallOutlineBlue);
+    public DoggyLife.Models.Color GetWallStripeColor() => new(WallStripeRed, WallStripeGreen, WallStripeBlue);
 
-    public SKColor GetWallLightColor() => new SKColor(WallLightRed, WallLightGreen, WallLightBlue);
-    public SKColor GetWallDarkColor() => new SKColor(WallDarkRed, WallDarkGreen, WallDarkBlue);
-    public SKColor GetWallOutlineColor() => new SKColor(WallOutlineRed, WallOutlineGreen, WallOutlineBlue);
-    public SKColor GetWallStripeColor() => new SKColor(WallStripeRed, WallStripeGreen, WallStripeBlue);
+    public void SetFloorLightColor(DoggyLife.Models.Color color)
+    {
+        FloorLightRed = color.Red;
+        FloorLightGreen = color.Green;
+        FloorLightBlue = color.Blue;
+    }
+
+    public void SetFloorDarkColor(DoggyLife.Models.Color color)
+    {
+        FloorDarkRed = color.Red;
+        FloorDarkGreen = color.Green;
+        FloorDarkBlue = color.Blue;
+    }
+
+    public void SetWallLightColor(DoggyLife.Models.Color color)
+    {
+        WallLightRed = color.Red;
+        WallLightGreen = color.Green;
+        WallLightBlue = color.Blue;
+    }
+
+    public void SetWallDarkColor(DoggyLife.Models.Color color)
+    {
+        WallDarkRed = color.Red;
+        WallDarkGreen = color.Green;
+        WallDarkBlue = color.Blue;
+    }
+
+    public void SetWallOutlineColor(DoggyLife.Models.Color color)
+    {
+        WallOutlineRed = color.Red;
+        WallOutlineGreen = color.Green;
+        WallOutlineBlue = color.Blue;
+    }
+
+    public void SetWallStripeColor(DoggyLife.Models.Color color)
+    {
+        WallStripeRed = color.Red;
+        WallStripeGreen = color.Green;
+        WallStripeBlue = color.Blue;
+    }
 }
