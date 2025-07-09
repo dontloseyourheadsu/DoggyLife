@@ -1,0 +1,11 @@
+﻿<button @onclick="OnClick" class="pixel-button">
+    @ChildContent
+</button>
+
+@code {
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
