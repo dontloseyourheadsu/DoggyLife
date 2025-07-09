@@ -6,21 +6,14 @@
 @using Microsoft.EntityFrameworkCore
 @using SqliteWasmHelper
 @inject ISqliteWasmDbContextFactory<AppDbContext> Factory
-@inject NavigationManager NavigationManager
 
-<div class="settings-page">
-    <h2>Game Settings</h2>
+<Container>
+    <h2 style="color: white;">Game Settings</h2>
 
     <UserManager User="@_user" OnUserUpdated="HandleUserUpdated" />
 
     <MusicSettingsManager />
-
-    <div class="back-button">
-        <PixelButton OnClick="NavigateToHome">
-            Back to Home
-        </PixelButton>
-    </div>
-</div>
+</Container>
 
 @code {
     private User? _user;
@@ -61,10 +54,5 @@
     private void HandleUserUpdated(User user)
     {
         _user = user;
-    }
-
-    private void NavigateToHome()
-    {
-        NavigationManager.NavigateTo("/");
     }
 }
