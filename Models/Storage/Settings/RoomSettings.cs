@@ -33,7 +33,7 @@ public class RoomSettings
     // Color helper methods
     public DoggyLife.Models.Color GetFloorLightColor() => new(FloorLightRed, FloorLightGreen, FloorLightBlue);
     public DoggyLife.Models.Color GetFloorDarkColor() => new(FloorDarkRed, FloorDarkGreen, FloorDarkBlue);
-    
+
     public DoggyLife.Models.Color GetWallLightColor() => new(WallLightRed, WallLightGreen, WallLightBlue);
     public DoggyLife.Models.Color GetWallDarkColor() => new(WallDarkRed, WallDarkGreen, WallDarkBlue);
     public DoggyLife.Models.Color GetWallOutlineColor() => new(WallOutlineRed, WallOutlineGreen, WallOutlineBlue);
