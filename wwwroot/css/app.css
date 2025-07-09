@@ -3,9 +3,19 @@
     src: url('../fonts/PressStart2P-Regular.ttf') format('truetype');
 }
 
+:root {
+    --primary-color: #927CB0;
+    --secondary-color: #4D3663;
+}
+
 * {
     box-sizing: border-box;
     font-family: 'Press Start 2P', sans-serif !important;
+    color: white;
+}
+
+input {
+    color: black;
 }
 
 html, body, #app, main {

@@ -4,23 +4,19 @@
 
 <div class="game-mode-selector">
     <PixelButton OnClick="ToggleGameMode">
-        Mode: @CurrentGameMode
+        Mode: @_currentGameMode
     </PixelButton>
 </div>
 
 @code {
-    [Parameter]
-    public GameMode CurrentGameMode { get; set; } = GameMode.Interaction;
-
-    [Parameter]
-    public EventCallback<GameMode> OnGameModeChanged { get; set; }
+    private GameMode _currentGameMode = GameMode.Interaction;
 
     private async Task ToggleGameMode()
     {
         // First disable hologram if it was enabled
         await DisableHologramMode();
 
-        CurrentGameMode = CurrentGameMode switch
+        _currentGameMode = _currentGameMode switch
         {
             GameMode.Interaction => GameMode.FloorEditor,
             GameMode.FloorEditor => GameMode.WallEditor,
@@ -30,9 +26,7 @@
         };
 
         // Enable hologram for editor modes
-        await EnableHologramForMode(CurrentGameMode);
-
-        await OnGameModeChanged.InvokeAsync(CurrentGameMode);
+        await EnableHologramForMode(_currentGameMode);
     }
 
     private async Task EnableHologramForMode(GameMode mode)

@@ -13,8 +13,7 @@
 @inject MusicService _musicService
 @inject RoomService _roomService
 
-<div
-    style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
+<div class="screens-container">
     @if (_environment == GameEnvironment.None)
     {
         <PixelButton OnClick="PlayGame">
@@ -23,47 +22,41 @@
     }
     else if (_environment == GameEnvironment.Home)
     {
-        <div style="display: flex; flex-direction: column; align-items: center; overflow-y: scroll; height: 100%; width: 100%;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 1em;">
-                <GameModeSelector CurrentGameMode="@_currentGameMode" OnGameModeChanged=HandleGameModeChanged />
-                <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
-                    Settings
-                </PixelButton>
-                <PixelButton OnClick="() => _environment = GameEnvironment.RoomAppearance">
-                    Room Appearance
-                </PixelButton>
-            </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center;">
+            <GameModeSelector />
 
-            <div>
-                <P5Canvas />
-            </div>
+            <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
+                Settings
+            </PixelButton>
+            <PixelButton OnClick="() => _environment = GameEnvironment.RoomAppearance">
+                Room Appearance
+            </PixelButton>
+        </div>
+
+        <div>
+            <P5Canvas />
         </div>
     }
     else if (_environment == GameEnvironment.Settings)
     {
-        <div style="display: flex; flex-direction: column; align-items: center;">
-            <GameSettings />
+        <GameSettings />
 
-            <PixelButton OnClick="() => _environment = GameEnvironment.Home">
-                Back to Home
-            </PixelButton>
-        </div>
+        <PixelButton OnClick="() => _environment = GameEnvironment.Home">
+            Back to Home
+        </PixelButton>
     }
     else if (_environment == GameEnvironment.RoomAppearance)
     {
-        <div style="display: flex; flex-direction: column; align-items: center;">
-            <RoomAppearance />
+        <RoomAppearance />
 
-            <PixelButton OnClick="() => _environment = GameEnvironment.Home">
-                Back to Home
-            </PixelButton>
-        </div>
+        <PixelButton OnClick="() => _environment = GameEnvironment.Home">
+            Back to Home
+        </PixelButton>
     }
 </div>
 
 @code {
     private GameEnvironment _environment = GameEnvironment.None;
-    private GameMode _currentGameMode = GameMode.Interaction;
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,16 +73,5 @@
         await _musicService.PlayTrack(MusicTrack.MatchaGreenTea);
         _environment = GameEnvironment.Home;
         StateHasChanged();
-    }
-
-    private void HandleGameModeChanged(GameMode newMode)
-    {
-        _currentGameMode = newMode;
-        StateHasChanged();
-    }
-
-    private void HandleKeyboardEvent(KeyboardEventArgs e)
-    {
-        // You can handle global keyboard events here if needed
     }
 }
