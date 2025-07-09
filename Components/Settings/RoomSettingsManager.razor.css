@@ -5,6 +5,9 @@
     margin-bottom: 20px;
     width: 100%;
     max-width: 500px;
+    height: 400px;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .room-settings-manager h3 {
@@ -50,18 +53,26 @@
     margin-top: 1rem;
 }
 
-.room-visualizer {
-    margin: 1rem 0;
-    border: 1px solid #666;
-    padding: 10px;
-    border-radius: 4px;
+.visualizer-container {
+    width: 100%;
+    display: flex;
+    gap: 10px;
 }
 
-.visualizer-canvas {
+.visualizer-container > div {
     width: 100%;
-    height: 200px;
-    background-color: #000;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.visualizer-container > div > div {
+    border: black 3px solid;
+    display: flex;
+    width: 100%;
+    height: 20px;
+}
+
+.visualizer-container > div > div > div {
+    flex-grow: 1;
 }

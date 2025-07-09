@@ -1,15 +1,12 @@
-@page "/room-appearance"
 @using DoggyLife.Components
+@using DoggyLife.Components.Settings
 @using DoggyLife.Data.Database
 @using DoggyLife.Models.Storage.Settings
 @using Microsoft.EntityFrameworkCore
 @using SqliteWasmHelper
 @inject ISqliteWasmDbContextFactory<AppDbContext> Factory
-@inject NavigationManager NavigationManager
 
-<div class="room-appearance-page">
-    <RoomSettingsManager Settings="@_roomSettings" OnSettingsUpdated="HandleRoomSettingsUpdated" />
-</div>
+<RoomSettingsManager Settings="@_roomSettings" OnSettingsUpdated="HandleRoomSettingsUpdated" />
 
 @code {
     private RoomSettings? _roomSettings;

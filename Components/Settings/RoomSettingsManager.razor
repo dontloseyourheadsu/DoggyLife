@@ -8,47 +8,60 @@
 @inject SqliteWasmHelper.ISqliteWasmDbContextFactory<AppDbContext> Factory
 @inject IJSRuntime JSRuntime
 
-<div class="room-settings-manager">
+<Container Style="max-height: 80%; overflow-y: scroll;">
     <h3>Room Appearance</h3>
 
     <div class="room-settings-section">
         <h4>Floor Colors</h4>
         <div class="color-setting-row">
             <span>Light Floor:</span>
-            <input type="color" @bind-value="@FloorLightColorHex" @bind-value:event="oninput"
-                @onchange="UpdatePreview" />
+            <input type="color" @bind-value="@FloorLightColorHex" @bind-value:event="oninput" />
         </div>
         <div class="color-setting-row">
             <span>Dark Floor:</span>
-            <input type="color" @bind-value="@FloorDarkColorHex" @bind-value:event="oninput"
-                @onchange="UpdatePreview" />
+            <input type="color" @bind-value="@FloorDarkColorHex" @bind-value:event="oninput" />
         </div>
     </div>
 
     <div class="room-settings-section">
         <h4>Wall Colors</h4>
+
         <div class="color-setting-row">
             <span>Light Wall:</span>
-            <input type="color" @bind-value="@WallLightColorHex" @bind-value:event="oninput"
-                @onchange="UpdatePreview" />
+            <input type="color" @bind-value="@WallLightColorHex" @bind-value:event="oninput" />
         </div>
         <div class="color-setting-row">
             <span>Dark Wall:</span>
-            <input type="color" @bind-value="@WallDarkColorHex" @bind-value:event="oninput" @onchange="UpdatePreview" />
+            <input type="color" @bind-value="@WallDarkColorHex" @bind-value:event="oninput" />
         </div>
         <div class="color-setting-row">
             <span>Wall Outline:</span>
-            <input type="color" @bind-value="@WallOutlineColorHex" @bind-value:event="oninput"
-                @onchange="UpdatePreview" />
+            <input type="color" @bind-value="@WallOutlineColorHex" @bind-value:event="oninput" />
         </div>
         <div class="color-setting-row">
             <span>Wall Stripe:</span>
-            <input type="color" @bind-value="@WallStripeColorHex" @bind-value:event="oninput"
-                @onchange="UpdatePreview" />
+            <input type="color" @bind-value="@WallStripeColorHex" @bind-value:event="oninput" />
         </div>
     </div>
 
-    <RoomColorVisualizer Settings="@_previewSettings" @ref="_visualizer" />
+    <div class="visualizer-container">
+        <div>
+            <span>Floor Colors</span>
+            <div>
+                <div style="background-color: @FloorLightColorHex;"></div>
+                <div style="background-color: @FloorDarkColorHex;"></div>
+            </div>
+        </div>
+        <div>
+            <span>Wall Colors</span>
+            <div>
+                <div style="background-color: @WallLightColorHex;"></div>
+                <div style="background-color: @WallDarkColorHex;"></div>
+                <div style="background-color: @WallOutlineColorHex;"></div>
+                <div style="background-color: @WallStripeColorHex;"></div>
+            </div>
+        </div>
+    </div>
 
     <div class="settings-actions">
         <PixelButton OnClick="ResetToDefaults">
@@ -58,7 +71,7 @@
             Apply Changes
         </PixelButton>
     </div>
-</div>
+</Container>
 
 @code {
     [Parameter]
@@ -68,9 +81,6 @@
     public EventCallback<RoomSettings> OnSettingsUpdated { get; set; }
 
     private RoomSettings _previewSettings = new();
-    private RoomColorVisualizer? _visualizer;
-
-    // Hex color representation for input controls
     private string FloorLightColorHex
     {
         get => ToHex(_previewSettings.FloorLightRed, _previewSettings.FloorLightGreen, _previewSettings.FloorLightBlue);
@@ -194,11 +204,6 @@
         target.Id = source.Id;
     }
 
-    private void UpdatePreview()
-    {
-        _visualizer?.RefreshCanvas();
-    }
-
     private async Task SaveSettings()
     {
         // Clone the preview settings back to the actual settings
@@ -253,8 +258,6 @@
         _previewSettings.WallStripeRed = wallStripeColor.Red;
         _previewSettings.WallStripeGreen = wallStripeColor.Green;
         _previewSettings.WallStripeBlue = wallStripeColor.Blue;
-
-        UpdatePreview();
     }
 
     // Helper for color conversion between hex and RGB
