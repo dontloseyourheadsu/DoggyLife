@@ -9,7 +9,7 @@
 </div>
 
 @code {
-    private RoomModes _currentGameMode = RoomModes.Interaction;
+    private RoomMode _currentGameMode = RoomMode.Interaction;
 
     private async Task ToggleGameMode()
     {
@@ -18,33 +18,33 @@
 
         _currentGameMode = _currentGameMode switch
         {
-            RoomModes.Interaction => RoomModes.FloorEditor,
-            RoomModes.FloorEditor => RoomModes.WallEditor,
-            RoomModes.WallEditor => RoomModes.Viewer,
-            RoomModes.Viewer => RoomModes.Interaction,
-            _ => RoomModes.Interaction
+            RoomMode.Interaction => RoomMode.FloorEditor,
+            RoomMode.FloorEditor => RoomMode.WallEditor,
+            RoomMode.WallEditor => RoomMode.Viewer,
+            RoomMode.Viewer => RoomMode.Interaction,
+            _ => RoomMode.Interaction
         };
 
         // Enable hologram for editor modes
         await EnableHologramForMode(_currentGameMode);
     }
 
-    private async Task EnableHologramForMode(RoomModes mode)
+    private async Task EnableHologramForMode(RoomMode mode)
     {
         try
         {
             switch (mode)
             {
-                case RoomModes.FloorEditor:
+                case RoomMode.FloorEditor:
                     // Enable floor hologram with 2x2x2 floor cell size (each floor cell is 50 units, so 100x100x100)
                     await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100, "floor");
                     break;
-                case RoomModes.WallEditor:
+                case RoomMode.WallEditor:
                     // Enable wall hologram with 2x2x2 wall cell size
                     await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100, "wall");
                     break;
-                case RoomModes.Interaction:
-                case RoomModes.Viewer:
+                case RoomMode.Interaction:
+                case RoomMode.Viewer:
                 default:
                     // Disable hologram for non-editor modes
                     await DisableHologramMode();
