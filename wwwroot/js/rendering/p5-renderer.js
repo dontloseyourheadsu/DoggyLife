@@ -7,7 +7,7 @@ let cameraAngle = Math.PI / 4; // QUARTER_PI (fixed position)
 let cameraHeight = -270; // Further adjusted camera height for the very close camera
 
 // Debug mode flag
-let debugMode = true; // Set to true for debugging
+let debugMode = false; // Set to true for debugging
 
 // Debug camera control variables
 let debugCameraDistance = 500;
