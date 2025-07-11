@@ -1,4 +1,5 @@
 @using DoggyLife.Models;
+@using DoggyLife.Models.Modes
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 
@@ -9,7 +10,7 @@
 </div>
 
 @code {
-    private GameMode _currentGameMode = GameMode.Interaction;
+    private RoomMode _currentGameMode = RoomMode.Interaction;
 
     private async Task ToggleGameMode()
     {
@@ -18,33 +19,33 @@
 
         _currentGameMode = _currentGameMode switch
         {
-            GameMode.Interaction => GameMode.FloorEditor,
-            GameMode.FloorEditor => GameMode.WallEditor,
-            GameMode.WallEditor => GameMode.Viewer,
-            GameMode.Viewer => GameMode.Interaction,
-            _ => GameMode.Interaction
+            RoomMode.Interaction => RoomMode.FloorEditor,
+            RoomMode.FloorEditor => RoomMode.WallEditor,
+            RoomMode.WallEditor => RoomMode.Viewer,
+            RoomMode.Viewer => RoomMode.Interaction,
+            _ => RoomMode.Interaction
         };
 
         // Enable hologram for editor modes
         await EnableHologramForMode(_currentGameMode);
     }
 
-    private async Task EnableHologramForMode(GameMode mode)
+    private async Task EnableHologramForMode(RoomMode mode)
     {
         try
         {
             switch (mode)
             {
-                case GameMode.FloorEditor:
+                case RoomMode.FloorEditor:
                     // Enable floor hologram with 2x2x2 floor cell size (each floor cell is 50 units, so 100x100x100)
                     await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100, "floor");
                     break;
-                case GameMode.WallEditor:
+                case RoomMode.WallEditor:
                     // Enable wall hologram with 2x2x2 wall cell size
                     await JSRuntime.InvokeVoidAsync("enableHologramMode", 0, 0, 0, 100, 100, 100, "wall");
                     break;
-                case GameMode.Interaction:
-                case GameMode.Viewer:
+                case RoomMode.Interaction:
+                case RoomMode.Viewer:
                 default:
                     // Disable hologram for non-editor modes
                     await DisableHologramMode();

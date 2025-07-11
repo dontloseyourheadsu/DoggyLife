@@ -1,9 +1,9 @@
-﻿namespace DoggyLife.Models;
+﻿namespace DoggyLife.Models.Modes;
 
 /// <summary>
-/// Enum representing different game modes.
+/// Enum representing different game room modes.
 /// </summary>
-public enum GameMode
+public enum RoomMode
 {
     /// <summary>
     /// Game mode for editing the floor.
