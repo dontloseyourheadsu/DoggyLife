@@ -8,8 +8,6 @@
 @using Microsoft.EntityFrameworkCore
 @using System.Numerics
 @using SqliteWasmHelper
-@inject IJSRuntime JSRuntime
-@inject HttpClient Http
 @inject MusicService _musicService
 @inject RoomService _roomService
 
@@ -58,20 +56,17 @@
 @code {
     private GameEnvironment _environment = GameEnvironment.None;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
     private async Task PlayGame()
     {
         if (_environment != GameEnvironment.None) return;
 
         await _roomService.InitializeAsync();
-
         await _musicService.InitializeAsync();
 
         await _musicService.PlayTrack(MusicTrack.MatchaGreenTea);
+
         _environment = GameEnvironment.Home;
+
         StateHasChanged();
     }
 }
