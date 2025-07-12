@@ -7,19 +7,11 @@ using SqliteWasmHelper;
 
 namespace DoggyLife.Services;
 
-public class MusicService
+public sealed class MusicService(ILogger<MusicService> logger, IJSRuntime jsRuntime, ISqliteWasmDbContextFactory<AppDbContext> dbFactory)
 {
-    private readonly IJSRuntime _jsRuntime;
-    private readonly ISqliteWasmDbContextFactory<AppDbContext> _dbFactory;
-    private MusicTrack _currentTrack = MusicTrack.None;
-    private bool _isMuted = false;
+    public MusicTrack CurrentTrack { get; private set; } = MusicTrack.None;
+    public bool IsMuted { get; private set; } = false;
     private static bool _isInitialized = false;
-
-    public MusicService(IJSRuntime jsRuntime, ISqliteWasmDbContextFactory<AppDbContext> dbFactory)
-    {
-        _jsRuntime = jsRuntime;
-        _dbFactory = dbFactory;
-    }
 
     public async Task InitializeAsync()
     {
@@ -34,39 +26,32 @@ public class MusicService
         try
         {
             // Load mute settings from database
-            using var ctx = await _dbFactory.CreateDbContextAsync();
+            using var ctx = await dbFactory.CreateDbContextAsync();
 
-            Console.WriteLine("Loading existing music settings from database...");
             var settingsList = await ctx.MusicSettings.ToListAsync();
-            Console.WriteLine($"Found {settingsList.Count} music settings entries in the database.");
             var settings = settingsList.FirstOrDefault();
 
-            Console.WriteLine($"Found {settingsList.Count} music settings entries in the database.");
-            if (settings == null)
+            if (settings is null)
             {
-                Console.WriteLine("No existing music settings found, creating default settings...");
                 // Create default settings if none exist
                 settings = new MusicSettings { IsMuted = false };
                 ctx.MusicSettings.Add(settings);
                 await ctx.SaveChangesAsync();
-                Console.WriteLine("Default music settings created.");
             }
 
             // Apply the mute setting
-            _isMuted = settings.IsMuted;
-            Console.WriteLine($"Music settings loaded: IsMuted = {_isMuted}");
+            IsMuted = settings.IsMuted;
             await ApplyMuteSettingAsync();
-            Console.WriteLine($"Music settings loaded: IsMuted = {_isMuted}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading music settings: {ex.Message}");
+            logger.LogError("Error loading music settings: {Message}", ex.Message);
         }
     }
 
     public async Task PlayTrack(MusicTrack track)
     {
-        if (_currentTrack == track) return;
+        if (CurrentTrack == track) return;
 
         string trackName = track switch
         {
@@ -74,35 +59,18 @@ public class MusicService
             _ => string.Empty
         };
 
-        if (!string.IsNullOrEmpty(trackName))
+        if (!string.IsNullOrWhiteSpace(trackName))
         {
-            await _jsRuntime.InvokeVoidAsync("changeTrack", trackName);
-            _currentTrack = track;
+            await jsRuntime.InvokeVoidAsync("changeTrack", trackName);
+            CurrentTrack = track;
 
-            // Apply mute setting after changing track
             await ApplyMuteSettingAsync();
         }
     }
 
     public async Task ToggleMuteAsync()
     {
-        _isMuted = !_isMuted;
-        await ApplyMuteSettingAsync();
-        await SaveMuteSettingAsync();
-    }
-
-    public async Task MuteAsync()
-    {
-        if (_isMuted) return;
-        _isMuted = true;
-        await ApplyMuteSettingAsync();
-        await SaveMuteSettingAsync();
-    }
-
-    public async Task UnmuteAsync()
-    {
-        if (!_isMuted) return;
-        _isMuted = false;
+        IsMuted = !IsMuted;
         await ApplyMuteSettingAsync();
         await SaveMuteSettingAsync();
     }
@@ -111,18 +79,18 @@ public class MusicService
     {
         try
         {
-            if (_isMuted)
+            if (IsMuted)
             {
-                await _jsRuntime.InvokeVoidAsync("muteAudio");
+                await jsRuntime.InvokeVoidAsync("muteAudio");
             }
             else
             {
-                await _jsRuntime.InvokeVoidAsync("unmuteAudio");
+                await jsRuntime.InvokeVoidAsync("unmuteAudio");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error applying mute setting: {ex.Message}");
+            logger.LogError("Error applying mute setting: {Message}", ex.Message);
         }
     }
 
@@ -130,17 +98,17 @@ public class MusicService
     {
         try
         {
-            using var ctx = await _dbFactory.CreateDbContextAsync();
+            using var ctx = await dbFactory.CreateDbContextAsync();
             var settings = await ctx.MusicSettings.FirstOrDefaultAsync();
 
             if (settings == null)
             {
-                settings = new MusicSettings { IsMuted = _isMuted };
+                settings = new MusicSettings { IsMuted = IsMuted };
                 ctx.MusicSettings.Add(settings);
             }
             else
             {
-                settings.IsMuted = _isMuted;
+                settings.IsMuted = IsMuted;
                 ctx.MusicSettings.Update(settings);
             }
 
@@ -148,10 +116,7 @@ public class MusicService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving music settings: {ex.Message}");
+            logger.LogError("Error saving music settings: {Message}", ex.Message);
         }
     }
-
-    public MusicTrack CurrentTrack => _currentTrack;
-    public bool IsMuted => _isMuted;
 }
