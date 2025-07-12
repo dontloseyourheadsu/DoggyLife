@@ -1,15 +1,4 @@
-// P5.js Dog Animation Module for DoggyLife
 
-// Dog animation states that match C# DogAnimationState enum
-const DogAnimationState = {
-  RightWalking: 0,
-  LeftWalking: 1,
-  BackWalking: 2,
-  FrontWalking: 3,
-  FrontSitting: 4,
-  RightSitting: 5,
-  LeftSitting: 6,
-};
 
 // Main dog class for p5.js
 class P5Dog {

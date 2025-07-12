@@ -2,40 +2,7 @@
 window.createP5RoomRenderer = function (containerId, width, height) {
   // Create new sketch
   p5Instance = new p5(function (p) {
-    // Keyboard state tracking
-    let keys = {};
-    // Store the last update time for frame-independent animation
-    let lastUpdateTime = 0;
-    // Dog object reference
-    let dog = null;
-
-    // Centralized function to update perspective projection
-    function updatePerspective() {
-      const fov = p.TWO_PI / 3.8; // Extra wide FOV (approximately 95 degrees) for extreme close-up camera
-      const aspect = p.width / p.height;
-      const near = 0.1;
-      const far = 5000;
-      p.perspective(fov, aspect, near, far);
-    }
-
     p.setup = function () {
-      p.createCanvas(width, height, p.WEBGL);
-      p.angleMode(p.RADIANS);
-
-      // Set initial perspective
-      updatePerspective();
-
-      // Load dog animation system
-      if (!window.P5DogAnimation) {
-        const script = document.createElement("script");
-        script.src = "js/p5-dog-animation.js";
-        script.onload = function () {
-          initializeDog();
-        };
-        document.head.appendChild(script);
-      } else {
-        initializeDog();
-      }
 
       // Load dog AI system if not already loaded
       if (!window.DogAI) {
@@ -52,32 +19,7 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         window.DogAI.init(dogPosition.x, dogPosition.y, dogPosition.z);
       }
 
-      async function initializeDog() {
-        // Get the dog sprite path
-        const dogImagePath = window.dogSprites
-          ? window.dogSprites.getCurrentDogSprite()
-          : "images/dogs/dog1.png";
-
-        // Create the dog animation instance at the initial position
-        try {
-          dog = await window.P5DogAnimation.loadDogSpriteSheet(
-            p,
-            "main",
-            dogImagePath
-          );
-
-          // Position the dog at the initial position
-          dog.x = dogPosition.x;
-          dog.y = dogPosition.y;
-          dog.z = dogPosition.z;
-          dog.scale = dogScale;
-
-          console.log("Dog animation initialized with sprite:", dogImagePath);
-          dogSpritesheetLoaded = true;
-        } catch (err) {
-          console.error("Error initializing dog animation:", err);
-        }
-      }
+      
 
       // Set up keyboard event listeners
       window.addEventListener("keydown", (e) => {
