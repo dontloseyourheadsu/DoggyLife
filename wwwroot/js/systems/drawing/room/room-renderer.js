@@ -62,7 +62,7 @@ export class RoomRenderer {
       ];
     }
 
-    drawRoom = function () {
+    draw = function () {
       this.drawFloor();
       this.drawWalls();
     };
