@@ -1,94 +1,8 @@
-// p5.js rendering script for DoggyLife
-let roomSize = 400;
-let tileSize = 50;
-let floorTiles = 8;
-let cameraDistance = 325; // Ultra-close camera for maximum room size in viewport
-let cameraAngle = Math.PI / 4; // QUARTER_PI (fixed position)
-let cameraHeight = -270; // Further adjusted camera height for the very close camera
-
-// Debug mode flag
-let debugMode = false; // Set to true for debugging
-
-// Debug camera control variables
-let debugCameraDistance = 500;
-let debugCameraAngleX = 0; // Vertical rotation
-let debugCameraAngleY = 0; // Horizontal rotation
-let isDragging = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-
-// Image for dog sprite
-let dogImage = null;
-
-// Room settings that will be populated from C#
-let roomSettings = {
-  floorLightColor: [220, 220, 220],
-  floorDarkColor: [180, 180, 180],
-  wallLightColor: [200, 150, 150],
-  wallDarkColor: [160, 120, 120],
-};
-
-// Dog variables
-let dogSpritesheetLoaded = false;
-let dogPosition = { x: 0, y: 150, z: 0 }; // Position dog so bottom is on floor (floorY - dogSize/2)
-let dogScale = 1.0; // Scale of the dog image
-let dogSize = 100; // Size of the dog plane
-let dogRotationY = Math.PI * 2; // Make dog face the camera
-
-// Room bounds for collision detection
-let roomBounds = {
-  minX: -200, // Room edge (full room size/2)
-  maxX: 200,
-  minZ: -200,
-  maxZ: 200,
-  floorY: 200, // Floor level (roomSize/2)
-};
-
-let p5Instance = null;
-
 // Initialize p5 sketch in instance mode
 window.createP5RoomRenderer = function (containerId, width, height) {
-  // Remove any existing sketch
-  if (p5Instance) {
-    p5Instance.remove();
-  }
-
   // Create new sketch
   p5Instance = new p5(function (p) {
-    // Keyboard state tracking
-    let keys = {};
-    // Store the last update time for frame-independent animation
-    let lastUpdateTime = 0;
-    // Dog object reference
-    let dog = null;
-
-    // Centralized function to update perspective projection
-    function updatePerspective() {
-      const fov = p.TWO_PI / 3.8; // Extra wide FOV (approximately 95 degrees) for extreme close-up camera
-      const aspect = p.width / p.height;
-      const near = 0.1;
-      const far = 5000;
-      p.perspective(fov, aspect, near, far);
-    }
-
     p.setup = function () {
-      p.createCanvas(width, height, p.WEBGL);
-      p.angleMode(p.RADIANS);
-
-      // Set initial perspective
-      updatePerspective();
-
-      // Load dog animation system
-      if (!window.P5DogAnimation) {
-        const script = document.createElement("script");
-        script.src = "js/p5-dog-animation.js";
-        script.onload = function () {
-          initializeDog();
-        };
-        document.head.appendChild(script);
-      } else {
-        initializeDog();
-      }
 
       // Load dog AI system if not already loaded
       if (!window.DogAI) {
@@ -105,32 +19,7 @@ window.createP5RoomRenderer = function (containerId, width, height) {
         window.DogAI.init(dogPosition.x, dogPosition.y, dogPosition.z);
       }
 
-      async function initializeDog() {
-        // Get the dog sprite path
-        const dogImagePath = window.dogSprites
-          ? window.dogSprites.getCurrentDogSprite()
-          : "images/dogs/dog1.png";
-
-        // Create the dog animation instance at the initial position
-        try {
-          dog = await window.P5DogAnimation.loadDogSpriteSheet(
-            p,
-            "main",
-            dogImagePath
-          );
-
-          // Position the dog at the initial position
-          dog.x = dogPosition.x;
-          dog.y = dogPosition.y;
-          dog.z = dogPosition.z;
-          dog.scale = dogScale;
-
-          console.log("Dog animation initialized with sprite:", dogImagePath);
-          dogSpritesheetLoaded = true;
-        } catch (err) {
-          console.error("Error initializing dog animation:", err);
-        }
-      }
+      
 
       // Set up keyboard event listeners
       window.addEventListener("keydown", (e) => {
@@ -693,16 +582,11 @@ window.createP5RoomRenderer = function (containerId, width, height) {
 };
 
 // Function to update room colors from C#
-window.updateRoomColors = function (
-  floorLightColor,
-  floorDarkColor,
-  wallLightColor,
-  wallDarkColor
-) {
-  roomSettings.floorLightColor = convertColor(floorLightColor);
-  roomSettings.floorDarkColor = convertColor(floorDarkColor);
-  roomSettings.wallLightColor = convertColor(wallLightColor);
-  roomSettings.wallDarkColor = convertColor(wallDarkColor);
+function updateRoomColors (roomData) {
+  roomSettings.floorLightColor = convertColor(roomData.FloorLightColor);
+  roomSettings.floorDarkColor = convertColor(roomData.FloorDarkColor);
+  roomSettings.wallLightColor = convertColor(roomData.WallLightColor);
+  roomSettings.wallDarkColor = convertColor(roomData.WallDarkColor);
 };
 
 // Helper function to convert C# color values to arrays [r,g,b]
