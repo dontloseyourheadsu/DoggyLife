@@ -78,7 +78,7 @@ export class DogAI {
     const angle = Math.random() * 2 * Math.PI;
     this.currentDirection = {
       x: Math.cos(angle),
-      z: Math.sin(angle)
+      z: Math.sin(angle),
     };
   }
 
