@@ -1,8 +1,10 @@
-import { Dog } from '../entities/room/dog';
-import { DogAI } from '../systems/ai/room/dog-ai';
-import { DebugKeyListener } from '../systems/input/room/debug-listener';
+import { Dog } from "../entities/room/dog";
+import { DogAI } from "../systems/ai/room/dog-ai";
+import { DebugKeyListener } from "../systems/input/room/debug-listener";
 import { KeyListener } from "../systems/input/room/key-listener";
-import { RoomRenderer } from '../systems/drawing/room/room-renderer';
+import { RoomRenderer } from "../systems/drawing/room/room-renderer";
+import { FloorHologramSystem } from "../entities/room/floor-hologram";
+import { WallHologramSystem } from "../entities/room/wall-hologram";
 
 export function createRoomCanvas(
   canvasWidth,
@@ -11,14 +13,13 @@ export function createRoomCanvas(
   roomData
 ) {
   const sketch = (p5Instance) => {
-
     // Camera settings
     let cameraDistance = 325;
     let cameraAngle = Math.PI / 4;
     let cameraHeight = -270;
 
     // Room renderer instance
-    let roomRenderer = new RoomRenderer(p5Instance, roomData, 400); 
+    let roomRenderer = new RoomRenderer(p5Instance, roomData, 400);
 
     // Dog rendering data
     let dog = new Dog();
@@ -29,6 +30,13 @@ export function createRoomCanvas(
 
     // Debug mode settings
     let debugKeyListener = new DebugKeyListener(false);
+
+    // Hologram systems
+    let floorHologramSystem = new FloorHologramSystem();
+    let wallHologramSystem = new WallHologramSystem();
+
+    // Initialize room bounds for floor hologram system
+    floorHologramSystem.roomBounds = roomRenderer.roomBounds;
 
     // Key listener
     let keyListener = new KeyListener();
@@ -67,24 +75,21 @@ export function createRoomCanvas(
       lastUpdateTime = timeNowInSeconds;
 
       // Update dog AI or keep position if AI is disabled
-      let dogUpdatedPosition = dogAI && dogAI.enabled
-        ? dogAI.update(deltaTime)
-        : dog.position;
+      let dogUpdatedPosition =
+        dogAI && dogAI.enabled ? dogAI.update(deltaTime) : dog.position;
 
-      // TODO: Insert Floor and Wall Hologram updates
-      if (window.HologramSystem) {
-        window.HologramSystem.update(deltaTime);
-      }
-      // Update wall hologram system if available
-      if (window.WallHologramSystem) {
-        window.WallHologramSystem.update(deltaTime);
-      }
+      // Update hologram systems
+      floorHologramSystem.update(deltaTime);
+      wallHologramSystem.update(deltaTime);
 
-      // TODO: Implement bellow p methods for p5Instance
       p5Instance.ambientLight(60);
       p5Instance.directionalLight(255, 255, 255, -1, 0.5, -1);
       updateCamera();
       roomRenderer.draw();
+
+      // Render hologram systems
+      floorHologramSystem.draw(p5Instance);
+      wallHologramSystem.draw(p5Instance);
 
       // Update dog position
       dog.move(dogUpdatedPosition, deltaTime);
@@ -95,27 +100,29 @@ export function createRoomCanvas(
       // Update perspective projection
       updatePerspective();
 
-      if (debugMode) {
+      if (debugKeyListener.active) {
         // Debug camera with free movement
         const x =
           debugKeyListener.debugCameraDistance *
           Math.cos(debugKeyListener.debugCameraAngleX) *
           Math.cos(debugKeyListener.debugCameraAngleY);
-        const y = debugKeyListener.debugCameraDistance * Math.sin(debugKeyListener.debugCameraAngleX);
+        const y =
+          debugKeyListener.debugCameraDistance *
+          Math.sin(debugKeyListener.debugCameraAngleX);
         const z =
           debugKeyListener.debugCameraDistance *
           Math.cos(debugKeyListener.debugCameraAngleX) *
           Math.sin(debugKeyListener.debugCameraAngleY);
 
         // Use debug camera looking at the center (0,0,0)
-        p.camera(x, y, z, 0, 0, 0, 0, 1, 0);
+        p5Instance.camera(x, y, z, 0, 0, 0, 0, 1, 0);
       } else {
         // Original fixed camera
         let x = cameraDistance * Math.cos(cameraAngle);
         let z = cameraDistance * Math.sin(cameraAngle);
-        p.camera(x, cameraHeight, z, 0, 0, 0, 0, 1, 0);
+        p5Instance.camera(x, cameraHeight, z, 0, 0, 0, 0, 1, 0);
       }
-    };
+    }
 
     /**
      * Updates the perspective of the canvas based on the current dimensions.
@@ -127,8 +134,45 @@ export function createRoomCanvas(
       const far = 5000;
       p5Instance.perspective(fov, aspect, near, far);
     }
+
+    // Expose hologram systems for external access
+    p5Instance.getFloorHologramSystem = () => floorHologramSystem;
+    p5Instance.getWallHologramSystem = () => wallHologramSystem;
+
+    // Helper functions for hologram control
+    p5Instance.toggleFloorHologram = (position, size) => {
+      return floorHologramSystem.toggle(position, size);
+    };
+
+    p5Instance.toggleWallHologram = (position, size, wall) => {
+      return wallHologramSystem.toggle(position, size, wall);
+    };
+
+    p5Instance.enableFloorHologram = (position, size) => {
+      return floorHologramSystem.enable(position, size);
+    };
+
+    p5Instance.enableWallHologram = (position, size, wall) => {
+      return wallHologramSystem.enable(position, size, wall);
+    };
+
+    p5Instance.disableAllHolograms = () => {
+      floorHologramSystem.disable();
+      wallHologramSystem.disable();
+    };
+
+    // Cleanup function
+    p5Instance.cleanup = () => {
+      floorHologramSystem.cleanup();
+      wallHologramSystem.cleanup();
+      keyListener.cleanup?.();
+      debugKeyListener.cleanup?.();
+    };
   };
 
   // Create the p5 instance with the sketch and container ID
-  return new p5(sketch, canvasContainerId);
+  const p5Instance = new p5(sketch, canvasContainerId);
+
+  // Return the p5 instance with additional methods
+  return p5Instance;
 }
