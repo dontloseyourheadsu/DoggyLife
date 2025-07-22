@@ -3,6 +3,8 @@
 @using DoggyLife.Data.Database
 @using DoggyLife.Models.Storage
 @using DoggyLife.Models
+@using DoggyLife.Models.Modes
+@using DoggyLife.Components.Room
 @using DoggyLife.Pages.Screens
 @using DoggyLife.Services
 @using Microsoft.EntityFrameworkCore
@@ -11,7 +13,7 @@
 @inject MusicService _musicService
 @inject RoomService _roomService
 
-<div class="screens-container">
+<div class="screens-container" style="overflow-y: scroll;">
     @if (_environment == GameEnvironment.None)
     {
         <PixelButton OnClick="PlayGame">
@@ -21,7 +23,7 @@
     else if (_environment == GameEnvironment.Home)
     {
         <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center;">
-            <GameModeSelector />
+            <GameModeSelector OnRoomModeChanged="HandleRoomModeChanged" />
 
             <PixelButton OnClick="() => _environment = GameEnvironment.Settings">
                 Settings
@@ -31,8 +33,9 @@
             </PixelButton>
         </div>
 
-        <div>
+        <div style="display:flex; gap: 2em; flex-wrap: wrap;">
             <RoomCanvas />
+            <HologramItemSelector CurrentRoomMode="_currentRoomMode" />
         </div>
     }
     else if (_environment == GameEnvironment.Settings)
@@ -55,6 +58,7 @@
 
 @code {
     private GameEnvironment _environment = GameEnvironment.None;
+    private RoomMode _currentRoomMode = RoomMode.Interaction;
 
     private async Task PlayGame()
     {
@@ -67,6 +71,12 @@
 
         _environment = GameEnvironment.Home;
 
+        StateHasChanged();
+    }
+
+    private void HandleRoomModeChanged(RoomMode newMode)
+    {
+        _currentRoomMode = newMode;
         StateHasChanged();
     }
 }
