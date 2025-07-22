@@ -101,22 +101,21 @@ export class Dog {
         newPosition.z || this.dogRenderer.z,
         deltaTime
       );
-
     }
   }
-  
+
   /**
    * Renders the dog on the canvas with dog renderer.
-   * @param {*} p5Instance 
-   * @param {*} cameraAngle 
+   * @param {*} p5Instance
+   * @param {*} cameraAngle
    */
   render(p5Instance, cameraAngle) {
     // Keep scale values in reasonable ranges
-    this.dog.scale = Math.max(0.5, Math.min(10, this.dog.scale));
-    
+    this.scale = Math.max(0.5, Math.min(10, this.scale));
+
     // Make sure the dog faces the camera
     p5Instance.push();
-    
+
     // Make dog face the camera based on camera position
     let dx = Math.cos(cameraAngle);
     let dz = Math.sin(cameraAngle);
@@ -129,13 +128,16 @@ export class Dog {
     if (tex) {
       p5Instance.texture(tex);
       p5Instance.noStroke();
-      p5Instance.plane(this.dogRenderer.spriteWidth * this.scale, this.dogRenderer.spriteHeight * this.scale);
+      p5Instance.plane(
+        this.dogRenderer.spriteWidth * this.scale,
+        this.dogRenderer.spriteHeight * this.scale
+      );
       tex.remove(); // Clean up the texture
     }
 
     p5Instance.pop();
   }
-    
+
   /**
    * Updates the dog's animation frame.
    * @param {*} deltaTime
