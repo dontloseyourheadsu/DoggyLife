@@ -57,3 +57,43 @@ window.disableHologramMode = function () {
 
   currentP5Instance.disableAllHolograms();
 };
+
+/**
+ * Global function to select a hologram item (called from C#)
+ * @param {string} itemId - The ID of the selected item
+ * @param {string} itemName - The name of the selected item
+ * @param {string} itemType - The type of the item (bed, shelf, couch, window, painting)
+ */
+window.selectHologramItem = function (itemId, itemName, itemType) {
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for hologram item selection");
+    return;
+  }
+
+  console.log(
+    `Hologram item selected: ${itemName} (${itemId}) - Type: ${itemType}`
+  );
+
+  // For now, this is a placeholder for future functionality
+  // The selected item information is available for the hologram systems to use
+  if (currentP5Instance.setSelectedHologramItem) {
+    currentP5Instance.setSelectedHologramItem(itemId, itemName, itemType);
+  }
+};
+
+/**
+ * Global function to clear hologram item selection (called from C#)
+ */
+window.clearHologramItemSelection = function () {
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for hologram item selection");
+    return;
+  }
+
+  console.log("Hologram item selection cleared");
+
+  // Clear the selected item
+  if (currentP5Instance.clearSelectedHologramItem) {
+    currentP5Instance.clearSelectedHologramItem();
+  }
+};
