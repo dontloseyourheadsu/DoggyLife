@@ -161,6 +161,27 @@ export function createRoomCanvas(
       wallHologramSystem.disable();
     };
 
+    // Selected hologram item functionality
+    let selectedHologramItem = null;
+
+    p5Instance.setSelectedHologramItem = (itemId, itemName, itemType) => {
+      selectedHologramItem = {
+        id: itemId,
+        name: itemName,
+        type: itemType,
+      };
+      console.log(`Selected hologram item set:`, selectedHologramItem);
+    };
+
+    p5Instance.clearSelectedHologramItem = () => {
+      selectedHologramItem = null;
+      console.log("Selected hologram item cleared");
+    };
+
+    p5Instance.getSelectedHologramItem = () => {
+      return selectedHologramItem;
+    };
+
     // Cleanup function
     p5Instance.cleanup = () => {
       floorHologramSystem.cleanup();
