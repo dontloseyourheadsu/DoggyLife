@@ -1,0 +1,114 @@
+@using DoggyLife.Models.Canvas
+@using DoggyLife.Models.Modes
+@using DoggyLife.Services
+@using Microsoft.JSInterop
+@inject HologramItemService HologramItemService
+@inject IJSRuntime JSRuntime
+
+<div class="hologram-selector">
+    @if (_availableItems.Any())
+    {
+        <div class="hologram-selector-title">
+            Select @(_currentRoomMode == RoomMode.FloorEditor ? "Floor" : "Wall") Item:
+        </div>
+
+        <div class="hologram-items-grid">
+            @foreach (var item in _availableItems)
+            {
+                <PixelButton OnClick="() => SelectItem(item)">
+                    @item.DisplayName
+                </PixelButton>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public RoomMode CurrentRoomMode
+    {
+        get => _currentRoomMode;
+        set
+        {
+            if (_currentRoomMode != value)
+            {
+                _currentRoomMode = value;
+                UpdateAvailableItems();
+                ClearSelection();
+            }
+        }
+    }
+
+    private RoomMode _currentRoomMode = RoomMode.Interaction;
+    private List<HologramItem> _availableItems = new();
+    private HologramItem? _selectedItem;
+
+    protected override void OnInitialized()
+    {
+        UpdateAvailableItems();
+    }
+
+    private void UpdateAvailableItems()
+    {
+        _availableItems = HologramItemService.GetAvailableItems(_currentRoomMode);
+        StateHasChanged();
+    }
+
+    private async Task SelectItem(HologramItem item)
+    {
+        // Toggle selection - if clicking the same item, deselect it
+        if (_selectedItem?.Id == item.Id)
+        {
+            ClearSelection();
+            return;
+        }
+
+        _selectedItem = item;
+
+        try
+        {
+            // Call JavaScript function to handle item selection
+            await JSRuntime.InvokeVoidAsync("selectHologramItem", item.Id, item.Name, item.Type.ToString().ToLower());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error selecting hologram item: {ex.Message}");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task ClearSelection()
+    {
+        _selectedItem = null;
+
+        try
+        {
+            // Call JavaScript function to clear item selection
+            await JSRuntime.InvokeVoidAsync("clearHologramItemSelection");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing hologram item selection: {ex.Message}");
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Gets the currently selected item (for external access)
+    /// </summary>
+    /// <returns>The currently selected hologram item, or null if none selected</returns>
+    public HologramItem? GetSelectedItem()
+    {
+        return _selectedItem;
+    }
+
+    /// <summary>
+    /// Clears the current selection (for external access)
+    /// </summary>
+    public async Task ClearSelectionAsync()
+    {
+        await ClearSelection();
+    }
+}
