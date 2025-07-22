@@ -1,3 +1,5 @@
+import { DogAnimationState } from "../../../animation/room/dog/dog-animation.js";
+
 class DogRenderer {
   constructor(p5, x = 0, y = 0, z = 0) {
     this.p5 = p5;
@@ -217,3 +219,5 @@ class DogRenderer {
     return buffer;
   }
 }
+
+export { DogRenderer };

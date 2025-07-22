@@ -1,68 +1,103 @@
 // Wall-aware Hologram Module for DoggyLife
-window.WallHologramSystem = {
-  // Configuration
-  enabled: false,
-  currentHologram: null,
-  currentWall: "back", // "back" or "left"
+import { BaseHologramSystem } from "./base-hologram.js";
 
-  // Wall definitions
-  walls: {
-    back: {
-      name: "back",
-      normal: { x: 0, y: 0, z: 1 }, // Wall faces forward (positive Z)
-      position: { x: 0, y: 0, z: -200 }, // Wall is at z = -200
-      bounds: {
-        // On back wall: can move in X (left-right) and Y (up-down)
-        x: { min: -200, max: 200 }, // Left to right along the wall
-        y: { min: -200, max: 200 }, // Up to down along the wall
-        z: -200, // Fixed Z position (on the wall surface)
+export class WallHologramSystem extends BaseHologramSystem {
+  constructor() {
+    super();
+
+    // Override base settings
+    this.currentWall = "back"; // "back" or "left"
+    this.defaultSize = { width: 50, height: 50, depth: 50 };
+    this.defaultPosition = { x: -175, y: 0, z: -200 }; // Start on back wall, very close to intersection
+    this.hologramColor = [255, 0, 255, 100]; // Purple with transparency for wall mode
+    this.wireframeColor = [255, 0, 255, 255]; // Solid purple for wireframe
+
+    // Wall transition settings
+    this.transitionThreshold = 25; // How close to intersection before allowing transition (increased for easier transitions)
+    this.intersectionLine = { x: -200, z: -200 }; // Where the two walls meet
+
+    // Wall definitions
+    this.walls = {
+      back: {
+        name: "back",
+        normal: { x: 0, y: 0, z: 1 }, // Wall faces forward (positive Z)
+        position: { x: 0, y: 0, z: -200 }, // Wall is at z = -200
+        bounds: {
+          // On back wall: can move in X (left-right) and Y (up-down)
+          x: { min: -200, max: 200 }, // Left to right along the wall
+          y: { min: -200, max: 200 }, // Up to down along the wall
+          z: -200, // Fixed Z position (on the wall surface)
+        },
+        movementAxes: ["x", "y"], // Can move in X and Y directions
+        fixedAxis: "z", // Z is fixed to wall position
       },
-      movementAxes: ["x", "y"], // Can move in X and Y directions
-      fixedAxis: "z", // Z is fixed to wall position
-    },
-    left: {
-      name: "left",
-      normal: { x: 1, y: 0, z: 0 }, // Wall faces right (positive X)
-      position: { x: -200, y: 0, z: 0 }, // Wall is at x = -200
-      bounds: {
-        // On left wall: can move in Z (forward-backward) and Y (up-down)
-        x: -200, // Fixed X position (on the wall surface)
-        y: { min: -200, max: 200 }, // Up to down along the wall
-        z: { min: -200, max: 200 }, // Forward to backward along the wall
+      left: {
+        name: "left",
+        normal: { x: 1, y: 0, z: 0 }, // Wall faces right (positive X)
+        position: { x: -200, y: 0, z: 0 }, // Wall is at x = -200
+        bounds: {
+          // On left wall: can move in Z (forward-backward) and Y (up-down)
+          x: -200, // Fixed X position (on the wall surface)
+          y: { min: -200, max: 200 }, // Up to down along the wall
+          z: { min: -200, max: 200 }, // Forward to backward along the wall
+        },
+        movementAxes: ["z", "y"], // Can move in Z and Y directions
+        fixedAxis: "x", // X is fixed to wall position
       },
-      movementAxes: ["z", "y"], // Can move in Z and Y directions
-      fixedAxis: "x", // X is fixed to wall position
-    },
-  },
+    };
+  }
 
-  // Hologram settings
-  defaultSize: { width: 50, height: 50, depth: 50 },
-  defaultPosition: { x: -175, y: 0, z: -200 }, // Start on back wall, very close to intersection
-  hologramColor: [255, 0, 255, 100], // Purple with transparency for wall mode
-  wireframeColor: [255, 0, 255, 255], // Solid purple for wireframe
+  // Implement abstract method
+  initializeKeyboardState() {
+    this.keyboardState = {
+      horizontal: false, // Arrow left/right
+      vertical: false, // Arrow up/down
+      horizontalDirection: 0, // -1 for left, 1 for right
+      verticalDirection: 0, // -1 for up, 1 for down
+    };
+  }
 
-  // Movement settings
-  moveSpeed: 50, // Units per second (reduced for easier control)
-  keyboardState: {
-    horizontal: false, // Arrow left/right
-    vertical: false, // Arrow up/down
-    horizontalDirection: 0, // -1 for left, 1 for right
-    verticalDirection: 0, // -1 for up, 1 for down
-  },
+  // Implement abstract method
+  getHologramType() {
+    return "wall-cube";
+  }
 
-  // Wall transition settings
-  transitionThreshold: 25, // How close to intersection before allowing transition (increased for easier transitions)
-  intersectionLine: { x: -200, z: -200 }, // Where the two walls meet
+  // Override to add wall property
+  getAdditionalHologramProperties(wall = "back") {
+    return { wall };
+  }
 
-  // Initialize wall hologram system
-  init: function () {
-    this.setupKeyboardListeners();
-    console.log("Wall hologram system initialized");
-    return this;
-  },
+  // Override to handle wall constraints
+  updateHologramPosition(position, wall) {
+    this.currentHologram.position = this.constrainToWall(
+      position,
+      wall || this.currentWall
+    );
+  }
 
-  // Create a new wall hologram
-  createHologram: function (position = null, size = null, wall = "back") {
+  // Override to handle wall logic
+  handleAdditionalEnableLogic(wall) {
+    if (wall) {
+      this.currentWall = wall;
+      this.currentHologram.wall = wall;
+    }
+  }
+
+  // Override to add wall state
+  getAdditionalState() {
+    return {
+      currentWall: this.currentWall,
+      walls: this.walls,
+    };
+  }
+
+  // Override position constraint
+  constrainPosition(position) {
+    return this.constrainToWall(position, this.currentWall);
+  }
+
+  // Create a new wall hologram (override base method to add wall parameter)
+  createHologram(position = null, size = null, wall = "back") {
     const pos = position || { ...this.defaultPosition };
     const siz = size || { ...this.defaultSize };
 
@@ -84,10 +119,10 @@ window.WallHologramSystem = {
     );
     console.log(`🏠 Starting wall: ${this.currentWall}`);
     return this.currentHologram;
-  },
+  }
 
   // Constrain position to a specific wall
-  constrainToWall: function (position, wallName) {
+  constrainToWall(position, wallName) {
     const wall = this.walls[wallName];
     if (!wall) return position;
 
@@ -118,10 +153,10 @@ window.WallHologramSystem = {
     });
 
     return constrained;
-  },
+  }
 
   // Check if position is near the intersection and can transition
-  canTransitionWalls: function (position, fromWall, toWall) {
+  canTransitionWalls(position, fromWall, toWall) {
     const threshold = this.transitionThreshold;
     const intersection = this.intersectionLine;
 
@@ -132,10 +167,10 @@ window.WallHologramSystem = {
     );
 
     return distanceToIntersection <= threshold;
-  },
+  }
 
   // Handle wall transition
-  transitionToWall: function (newWall, currentPosition) {
+  transitionToWall(newWall, currentPosition) {
     if (!this.walls[newWall] || !this.currentHologram) return false;
 
     const oldWall = this.currentWall;
@@ -162,10 +197,10 @@ window.WallHologramSystem = {
     console.log(`Final position:`, this.currentHologram.position);
     console.log(`Current wall is now: ${this.currentWall}`);
     return true;
-  },
+  }
 
   // Map position coordinates between walls
-  mapPositionBetweenWalls: function (position, fromWall, toWall) {
+  mapPositionBetweenWalls(position, fromWall, toWall) {
     const mapped = { ...position };
 
     console.log(`🗺️ Mapping position from ${fromWall} to ${toWall}:`, position);
@@ -201,53 +236,20 @@ window.WallHologramSystem = {
 
     console.log(`🗺️ Final mapped position:`, mapped);
     return mapped;
-  },
+  }
 
-  // Enable wall hologram mode
-  enable: function (position = null, size = null, wall = "back") {
-    this.enabled = true;
-    if (!this.currentHologram) {
-      this.createHologram(position, size, wall);
-    } else {
-      // Update existing hologram
-      if (position) {
-        this.currentHologram.position = this.constrainToWall(
-          position,
-          wall || this.currentWall
-        );
-      }
-      if (size) {
-        this.currentHologram.size = { ...size };
-      }
-      if (wall) {
-        this.currentWall = wall;
-        this.currentHologram.wall = wall;
-      }
-    }
-    console.log("Wall hologram mode enabled");
-    return this;
-  },
+  // Enable wall hologram mode (override base method to add wall parameter)
+  enable(position = null, size = null, wall = "back") {
+    return super.enable(position, size, wall);
+  }
 
-  // Disable wall hologram mode
-  disable: function () {
-    this.enabled = false;
-    this.currentHologram = null;
-    console.log("Wall hologram mode disabled");
-    return this;
-  },
+  // Toggle wall hologram mode (override base method to add wall parameter)
+  toggle(position = null, size = null, wall = "back") {
+    return super.toggle(position, size, wall);
+  }
 
-  // Toggle wall hologram mode
-  toggle: function (position = null, size = null, wall = "back") {
-    if (this.enabled) {
-      this.disable();
-    } else {
-      this.enable(position, size, wall);
-    }
-    return this.enabled;
-  },
-
-  // Setup keyboard event listeners
-  setupKeyboardListeners: function () {
+  // Implement abstract method
+  setupKeyboardListeners() {
     // Remove any existing listeners first
     this.removeKeyboardListeners();
 
@@ -312,20 +314,10 @@ window.WallHologramSystem = {
 
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
-  },
+  }
 
-  // Remove keyboard listeners
-  removeKeyboardListeners: function () {
-    if (this.onKeyDown) {
-      window.removeEventListener("keydown", this.onKeyDown);
-    }
-    if (this.onKeyUp) {
-      window.removeEventListener("keyup", this.onKeyUp);
-    }
-  },
-
-  // Update hologram position based on keyboard input
-  update: function (deltaTime) {
+  // Implement abstract method
+  update(deltaTime) {
     if (!this.enabled || !this.currentHologram) return;
 
     const movement = this.moveSpeed * deltaTime;
@@ -426,10 +418,10 @@ window.WallHologramSystem = {
     }
 
     return this.currentHologram;
-  },
+  }
 
   // Check if the intended movement will reach the intersection
-  willReachIntersection: function (currentPos, intendedPos) {
+  willReachIntersection(currentPos, intendedPos) {
     const threshold = this.transitionThreshold;
     const hologramSize = this.currentHologram.size;
 
@@ -474,10 +466,10 @@ window.WallHologramSystem = {
     }
 
     return false;
-  },
+  }
 
   // Check if movement should trigger a wall transition
-  shouldTransitionWall: function (intendedPos, constrainedPos) {
+  shouldTransitionWall(intendedPos, constrainedPos) {
     const wall = this.walls[this.currentWall];
 
     // Check if any axis was constrained significantly
@@ -488,10 +480,10 @@ window.WallHologramSystem = {
     }
 
     return false;
-  },
+  }
 
   // Determine which wall we should transition to
-  getTargetWall: function (position) {
+  getTargetWall(position) {
     const intersection = this.intersectionLine;
     const threshold = this.transitionThreshold;
 
@@ -507,10 +499,10 @@ window.WallHologramSystem = {
     }
 
     return null;
-  },
+  }
 
-  // Draw the wall hologram
-  draw: function (p5Instance) {
+  // Implement abstract method
+  draw(p5Instance) {
     if (!this.enabled || !this.currentHologram || !p5Instance) return;
 
     const p = p5Instance;
@@ -522,19 +514,7 @@ window.WallHologramSystem = {
     p.translate(pos.x, pos.y, pos.z);
 
     // Set hologram material properties
-    p.fill(
-      this.hologramColor[0],
-      this.hologramColor[1],
-      this.hologramColor[2],
-      this.hologramColor[3]
-    );
-    p.stroke(
-      this.wireframeColor[0],
-      this.wireframeColor[1],
-      this.wireframeColor[2],
-      this.wireframeColor[3]
-    );
-    p.strokeWeight(2);
+    this.setHologramMaterial(p);
 
     // Draw cube that's flush with the wall
     // Adjust the cube so it appears to be "on" the wall surface
@@ -551,99 +531,9 @@ window.WallHologramSystem = {
     // Draw the cube
     p.box(size.width, size.height, size.depth);
 
-    // Draw wireframe for better visibility
-    p.noFill();
-    p.stroke(
-      this.wireframeColor[0],
-      this.wireframeColor[1],
-      this.wireframeColor[2],
-      255
-    );
-    p.strokeWeight(1);
-
-    // Draw additional wireframe lines
-    const hw = size.width / 2;
-    const hh = size.height / 2;
-    const hd = size.depth / 2;
-
-    // Draw wireframe edges
-    p.beginShape(p.LINES);
-    // Bottom face
-    p.vertex(-hw, hh, -hd);
-    p.vertex(hw, hh, -hd);
-    p.vertex(hw, hh, -hd);
-    p.vertex(hw, hh, hd);
-    p.vertex(hw, hh, hd);
-    p.vertex(-hw, hh, hd);
-    p.vertex(-hw, hh, hd);
-    p.vertex(-hw, hh, -hd);
-
-    // Top face
-    p.vertex(-hw, -hh, -hd);
-    p.vertex(hw, -hh, -hd);
-    p.vertex(hw, -hh, -hd);
-    p.vertex(hw, -hh, hd);
-    p.vertex(hw, -hh, hd);
-    p.vertex(-hw, -hh, hd);
-    p.vertex(-hw, -hh, hd);
-    p.vertex(-hw, -hh, -hd);
-
-    // Vertical edges
-    p.vertex(-hw, -hh, -hd);
-    p.vertex(-hw, hh, -hd);
-    p.vertex(hw, -hh, -hd);
-    p.vertex(hw, hh, -hd);
-    p.vertex(hw, -hh, hd);
-    p.vertex(hw, hh, hd);
-    p.vertex(-hw, -hh, hd);
-    p.vertex(-hw, hh, hd);
-    p.endShape();
+    // Draw wireframe for better visibility using base class method
+    this.drawWireframeBox(p, size);
 
     p.pop();
-  },
-
-  // Get current wall hologram state
-  getState: function () {
-    return {
-      enabled: this.enabled,
-      currentWall: this.currentWall,
-      hologram: this.currentHologram,
-      keyboardState: { ...this.keyboardState },
-      walls: this.walls,
-    };
-  },
-
-  // Set hologram position (with wall constraint)
-  setPosition: function (x, y, z) {
-    if (this.currentHologram) {
-      const newPos = { x, y, z };
-      this.currentHologram.position = this.constrainToWall(
-        newPos,
-        this.currentWall
-      );
-    }
-    return this;
-  },
-
-  // Set hologram size
-  setSize: function (width, height, depth) {
-    if (this.currentHologram) {
-      this.currentHologram.size.width = width;
-      this.currentHologram.size.height = height;
-      this.currentHologram.size.depth = depth;
-    }
-    return this;
-  },
-
-  // Clean up resources
-  cleanup: function () {
-    this.removeKeyboardListeners();
-    this.disable();
-    console.log("Wall hologram system cleaned up");
-  },
-};
-
-// Initialize the wall hologram system when the script loads
-if (typeof window !== "undefined") {
-  window.WallHologramSystem.init();
+  }
 }
