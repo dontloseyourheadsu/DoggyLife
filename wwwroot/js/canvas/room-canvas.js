@@ -1,10 +1,10 @@
-import { Dog } from "../entities/room/dog";
-import { DogAI } from "../systems/ai/room/dog-ai";
-import { DebugKeyListener } from "../systems/input/room/debug-listener";
-import { KeyListener } from "../systems/input/room/key-listener";
-import { RoomRenderer } from "../systems/drawing/room/room-renderer";
-import { FloorHologramSystem } from "../entities/room/floor-hologram";
-import { WallHologramSystem } from "../entities/room/wall-hologram";
+import { Dog } from "../entities/room/dog.js";
+import { DogAI } from "../systems/ai/room/dog-ai.js";
+import { DebugKeyListener } from "../systems/input/room/debug-listener.js";
+import { KeyListener } from "../systems/input/room/key-listener.js";
+import { RoomRenderer } from "../systems/drawing/room/room-renderer.js";
+import { FloorHologramSystem } from "../entities/room/floor-hologram.js";
+import { WallHologramSystem } from "../entities/room/wall-hologram.js";
 
 export function createRoomCanvas(
   canvasWidth,
