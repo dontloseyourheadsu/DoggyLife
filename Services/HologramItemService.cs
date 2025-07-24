@@ -1,5 +1,5 @@
-using DoggyLife.Models.Canvas;
 using DoggyLife.Models.Modes;
+using DoggyLife.Models.Room;
 
 namespace DoggyLife.Services;
 
@@ -12,9 +12,11 @@ public class HologramItemService
 
     public HologramItemService()
     {
+        // Room size is 400x400, so bounds are -200 to 200 in each direction
+        // Setting reasonable default sizes relative to room size
         _items = new Dictionary<HologramItemType, HologramItem>
         {
-            // Floor items
+            // Floor items (SizeX = width, SizeY = depth, SizeZ will be calculated as height in JS)
             {
                 HologramItemType.Bed,
                 new HologramItem
@@ -23,7 +25,10 @@ public class HologramItemService
                     Name = "bed",
                     DisplayName = "Bed",
                     Description = "A comfortable sleeping place",
-                    Type = HologramItemType.Bed
+                    Type = HologramItemType.Bed,
+                    SizeX = 120, // Width - reasonable bed width for 400 room
+                    SizeY = 80,  // Depth - bed depth
+                    SizeZ = 40   // Height will be calculated in JS, this is placeholder
                 }
             },
             {
@@ -34,7 +39,10 @@ public class HologramItemService
                     Name = "shelf",
                     DisplayName = "Shelf",
                     Description = "Storage furniture for items",
-                    Type = HologramItemType.Shelf
+                    Type = HologramItemType.Shelf,
+                    SizeX = 100, // Width
+                    SizeY = 30,  // Depth - shelves are typically shallow
+                    SizeZ = 80   // Height will be calculated in JS, this is placeholder
                 }
             },
             {
@@ -45,11 +53,14 @@ public class HologramItemService
                     Name = "couch",
                     DisplayName = "Couch",
                     Description = "A comfortable seating furniture",
-                    Type = HologramItemType.Couch
+                    Type = HologramItemType.Couch,
+                    SizeX = 150, // Width - longer than bed
+                    SizeY = 70,  // Depth
+                    SizeZ = 35   // Height will be calculated in JS, this is placeholder
                 }
             },
             
-            // Wall items
+            // Wall items (SizeX = width, SizeY = height, SizeZ will be calculated as depth in JS)
             {
                 HologramItemType.Window,
                 new HologramItem
@@ -58,7 +69,10 @@ public class HologramItemService
                     Name = "window",
                     DisplayName = "Window",
                     Description = "A window for natural light",
-                    Type = HologramItemType.Window
+                    Type = HologramItemType.Window,
+                    SizeX = 80,  // Width
+                    SizeY = 100, // Height
+                    SizeZ = 10   // Depth will be calculated in JS, this is placeholder
                 }
             },
             {
@@ -69,7 +83,10 @@ public class HologramItemService
                     Name = "painting",
                     DisplayName = "Painting",
                     Description = "Decorative wall art",
-                    Type = HologramItemType.Painting
+                    Type = HologramItemType.Painting,
+                    SizeX = 60,  // Width
+                    SizeY = 80,  // Height
+                    SizeZ = 5    // Depth will be calculated in JS, this is placeholder
                 }
             }
         };
@@ -109,10 +126,9 @@ public class HologramItemService
     /// <returns>List of wall items</returns>
     public List<HologramItem> GetWallItems()
     {
-        return _items.Values
+        return [.. _items.Values
             .Where(item => item.Type == HologramItemType.Window ||
-                          item.Type == HologramItemType.Painting)
-            .ToList();
+                          item.Type == HologramItemType.Painting)];
     }
 
     /// <summary>
