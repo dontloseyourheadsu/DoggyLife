@@ -129,6 +129,11 @@ export class BaseHologramSystem {
     return this;
   }
 
+  // Update hologram size (alias for setSize for consistency)
+  updateHologramSize(width, height, depth) {
+    return this.setSize(width, height, depth);
+  }
+
   // Remove keyboard listeners
   removeKeyboardListeners() {
     if (this.onKeyDown) {

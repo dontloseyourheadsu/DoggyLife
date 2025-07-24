@@ -1,4 +1,4 @@
-@using DoggyLife.Models.Canvas
+@using DoggyLife.Models.Room
 @using DoggyLife.Models.Modes
 @using DoggyLife.Services
 @using Microsoft.JSInterop
@@ -25,21 +25,19 @@
 
 @code {
     [Parameter]
-    public RoomMode CurrentRoomMode
-    {
-        get => _currentRoomMode;
-        set
-        {
-            if (_currentRoomMode != value)
-            {
-                _currentRoomMode = value;
-                UpdateAvailableItems();
-                ClearSelection();
-            }
-        }
-    }
+    public RoomMode CurrentRoomMode { get; set; } = RoomMode.Interaction;
 
     private RoomMode _currentRoomMode = RoomMode.Interaction;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_currentRoomMode != CurrentRoomMode)
+        {
+            _currentRoomMode = CurrentRoomMode;
+            UpdateAvailableItems();
+            await ClearSelection();
+        }
+    }
     private List<HologramItem> _availableItems = new();
     private HologramItem? _selectedItem;
 
@@ -59,7 +57,7 @@
         // Toggle selection - if clicking the same item, deselect it
         if (_selectedItem?.Id == item.Id)
         {
-            ClearSelection();
+            await ClearSelection();
             return;
         }
 
@@ -67,8 +65,10 @@
 
         try
         {
-            // Call JavaScript function to handle item selection
-            await JSRuntime.InvokeVoidAsync("selectHologramItem", item.Id, item.Name, item.Type.ToString().ToLower());
+            // Call JavaScript function to handle item selection with size information
+            await JSRuntime.InvokeVoidAsync("selectHologramItem",
+            item.Id, item.Name, item.Type.ToString().ToLower(),
+            item.SizeX, item.SizeY, item.SizeZ);
         }
         catch (Exception ex)
         {

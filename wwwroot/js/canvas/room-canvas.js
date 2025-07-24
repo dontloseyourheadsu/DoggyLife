@@ -23,7 +23,7 @@ export function createRoomCanvas(
 
     // Dog rendering data
     let dog = new Dog();
-    let dogAI = new DogAI(dog);
+    let dogAI = new DogAI(dog, true, roomRenderer.roomBounds);
 
     // Physics data
     let lastUpdateTime = 0;
@@ -164,14 +164,73 @@ export function createRoomCanvas(
     // Selected hologram item functionality
     let selectedHologramItem = null;
 
-    p5Instance.setSelectedHologramItem = (itemId, itemName, itemType) => {
+    p5Instance.setSelectedHologramItem = (
+      itemId,
+      itemName,
+      itemType,
+      sizeX,
+      sizeY,
+      sizeZ
+    ) => {
       selectedHologramItem = {
         id: itemId,
         name: itemName,
         type: itemType,
+        sizeX: sizeX,
+        sizeY: sizeY,
+        sizeZ: sizeZ,
       };
       console.log(`Selected hologram item set:`, selectedHologramItem);
+
+      // Update hologram systems with the new item size
+      // TODO: Implement height/depth calculation based on item type
+      // For floor items: use sizeX (width), sizeY (depth), calculate height
+      // For wall items: use sizeX (width), sizeY (height), calculate depth
+      const hologramSize = calculateHologramSize(itemType, sizeX, sizeY, sizeZ);
+
+      // Update active hologram system with new size
+      if (floorHologramSystem.enabled) {
+        floorHologramSystem.setSize(
+          hologramSize.width,
+          hologramSize.height,
+          hologramSize.depth
+        );
+      }
+      if (wallHologramSystem.enabled) {
+        wallHologramSystem.setSize(
+          hologramSize.width,
+          hologramSize.height,
+          hologramSize.depth
+        );
+      }
     };
+
+    // Helper function to calculate hologram dimensions based on item type
+    function calculateHologramSize(itemType, sizeX, sizeY, sizeZ) {
+      // Floor items: sizeX = width, sizeY = height, sizeZ = depth
+      if (itemType === "bed" || itemType === "shelf" || itemType === "couch") {
+        return {
+          width: sizeX,
+          height: sizeY, // Use the actual sizeY parameter
+          depth: sizeZ,
+        };
+      }
+      // Wall items: sizeX = width, sizeY = height, sizeZ = depth
+      else if (itemType === "window" || itemType === "painting") {
+        return {
+          width: sizeX,
+          height: sizeY,
+          depth: sizeZ, // Use the actual sizeZ parameter
+        };
+      }
+
+      // Default fallback
+      return {
+        width: sizeX,
+        height: sizeY,
+        depth: sizeZ,
+      };
+    }
 
     p5Instance.clearSelectedHologramItem = () => {
       selectedHologramItem = null;
