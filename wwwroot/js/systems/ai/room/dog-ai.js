@@ -5,6 +5,7 @@ export class DogAI {
   dog;
   enabled = true;
   speed = 30; // Increased speed for more noticeable movement
+  roomBounds = null; // Room bounds for constraining movement
 
   // Movement state
   currentDirection = { x: 0, z: 0 };
@@ -14,9 +15,10 @@ export class DogAI {
   restDuration = 1.0; // Rest for 1 second between movements
   isResting = false;
 
-  constructor(dog, enabled = true) {
+  constructor(dog, enabled = true, roomBounds = null) {
     this.dog = dog;
     this.enabled = enabled;
+    this.roomBounds = roomBounds;
     // Start with a random direction
     this.generateNewDirection();
   }
@@ -103,6 +105,30 @@ export class DogAI {
    * @param {*} positionUpdate
    */
   updateDogPosition(positionUpdate) {
+    // Constrain position within room bounds if available
+    if (this.roomBounds) {
+      // Add some padding to keep dog away from walls (dog size consideration)
+      const padding = 20;
+      positionUpdate.x = Math.max(
+        this.roomBounds.minX + padding,
+        Math.min(this.roomBounds.maxX - padding, positionUpdate.x)
+      );
+      positionUpdate.z = Math.max(
+        this.roomBounds.minZ + padding,
+        Math.min(this.roomBounds.maxZ - padding, positionUpdate.z)
+      );
+
+      // If we hit a boundary, generate a new direction
+      if (
+        positionUpdate.x <= this.roomBounds.minX + padding ||
+        positionUpdate.x >= this.roomBounds.maxX - padding ||
+        positionUpdate.z <= this.roomBounds.minZ + padding ||
+        positionUpdate.z >= this.roomBounds.maxZ - padding
+      ) {
+        this.generateNewDirection();
+      }
+    }
+
     // Update dog position
     this.dog.position.x = positionUpdate.x;
     this.dog.position.y = positionUpdate.y;
