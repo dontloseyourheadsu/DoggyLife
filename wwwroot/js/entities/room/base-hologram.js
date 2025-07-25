@@ -18,7 +18,6 @@ export class BaseHologramSystem {
     // Initialize after properties are set
     this.initializeKeyboardState();
     this.setupKeyboardListeners();
-    console.log("Base hologram system initialized");
   }
 
   // Abstract method - to be implemented by subclasses
@@ -44,7 +43,6 @@ export class BaseHologramSystem {
       ...this.getAdditionalHologramProperties(...args),
     };
 
-    console.log(`Hologram created at position:`, pos, `with size:`, siz);
     return this.currentHologram;
   }
 
@@ -73,7 +71,6 @@ export class BaseHologramSystem {
       }
       this.handleAdditionalEnableLogic(...args);
     }
-    console.log("Hologram mode enabled");
     return this;
   }
 
@@ -91,7 +88,6 @@ export class BaseHologramSystem {
   disable() {
     this.enabled = false;
     this.currentHologram = null;
-    console.log("Hologram mode disabled");
     return this;
   }
 
@@ -173,7 +169,6 @@ export class BaseHologramSystem {
   cleanup() {
     this.removeKeyboardListeners();
     this.disable();
-    console.log("Hologram system cleaned up");
   }
 
   // Helper method for drawing wireframe edges
