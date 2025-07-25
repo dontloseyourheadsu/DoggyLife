@@ -17,6 +17,21 @@ export class FloorHologramSystem extends BaseHologramSystem {
     this.roomBounds = null;
     this.selectedFurniture = null;
     this.selectedItemData = null;
+
+    // Rotation button properties
+    this.showRotationButtons = true;
+    this.rotationButtons = [];
+    this.buttonSize = 30; // Size of rotation buttons
+    this.buttonDistance = 120; // Distance from furniture center (increased to place outside furniture)
+
+    // Mouse interaction state
+    this.mouseState = {
+      isPressed: false,
+      lastX: 0,
+      lastY: 0,
+    };
+
+    this.setupMouseListeners();
   }
 
   // Implement abstract method
@@ -138,6 +153,103 @@ export class FloorHologramSystem extends BaseHologramSystem {
     window.addEventListener("keyup", this.onKeyUp);
   }
 
+  // Setup mouse listeners for rotation control
+  setupMouseListeners() {
+    this.onMousePressed = (e) => {
+      if (!this.enabled || !this.selectedFurniture) return;
+
+      // Find the canvas element - look for the first canvas in the document
+      const canvas = document.querySelector("canvas");
+      if (!canvas) {
+        return;
+      }
+
+      // Get canvas dimensions and click position
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      // Use the actual displayed canvas dimensions
+      const canvasWidth = rect.width;
+      const canvasHeight = rect.height;
+
+      const buttonSize = 60;
+      const margin = 10;
+
+      // Simple 2D rectangular bounds checking
+      // Bottom-left corner button (counter-clockwise)
+      if (
+        clickX >= margin &&
+        clickX <= margin + buttonSize &&
+        clickY >= canvasHeight - margin - buttonSize &&
+        clickY <= canvasHeight - margin
+      ) {
+        this.selectedFurniture.rotate(-Math.PI / 12); // -15 degrees
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      // Bottom-right corner button (clockwise)
+      if (
+        clickX >= canvasWidth - margin - buttonSize &&
+        clickX <= canvasWidth - margin &&
+        clickY >= canvasHeight - margin - buttonSize &&
+        clickY <= canvasHeight - margin
+      ) {
+        this.selectedFurniture.rotate(Math.PI / 12); // +15 degrees
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+    };
+
+    this.onMouseReleased = (e) => {
+      // Nothing needed for simple button clicks
+    };
+
+    this.onMouseMoved = (e) => {
+      // Nothing needed for simple button clicks
+    };
+  }
+
+  // Add mouse listeners dynamically
+  addMouseListeners() {
+    // Try to attach to canvas first, fallback to window
+    const canvas = document.querySelector("canvas");
+    const target = canvas || window;
+    target.addEventListener("mousedown", this.onMousePressed, {
+      passive: false,
+    });
+    target.addEventListener("mouseup", this.onMouseReleased, {
+      passive: false,
+    });
+    target.addEventListener("mousemove", this.onMouseMoved, { passive: false });
+
+    // Store the target for cleanup
+    this.mouseListenerTarget = target;
+  }
+
+  // Remove mouse listeners
+  removeMouseListeners() {
+    if (this.mouseListenerTarget) {
+      this.mouseListenerTarget.removeEventListener(
+        "mousedown",
+        this.onMousePressed
+      );
+      this.mouseListenerTarget.removeEventListener(
+        "mouseup",
+        this.onMouseReleased
+      );
+      this.mouseListenerTarget.removeEventListener(
+        "mousemove",
+        this.onMouseMoved
+      );
+      this.mouseListenerTarget = null;
+    }
+  }
+
   // Implement abstract method
   update(deltaTime) {
     if (!this.enabled || !this.currentHologram) return;
@@ -185,20 +297,11 @@ export class FloorHologramSystem extends BaseHologramSystem {
       }
     }
 
-    // Log movement occasionally for debugging
-    if (moved && Math.random() < 0.1) {
-      console.log("Hologram position:", this.currentHologram.position);
-    }
-
     return this.currentHologram;
   }
 
   // Set selected furniture item
   setSelectedItem(itemId, itemName, itemType, sizeX, sizeY, sizeZ) {
-    console.log(
-      `Floor hologram: Setting selected item ${itemName} (${itemType}) with size ${sizeX}x${sizeY}x${sizeZ}`
-    );
-
     // Clear any existing furniture first to prevent errors
     this.clearSelectedItem();
 
@@ -225,14 +328,15 @@ export class FloorHologramSystem extends BaseHologramSystem {
       this.updateFurniturePosition();
     }
 
-    console.log(
-      `Floor hologram: Selected ${itemName} with size ${sizeX}x${sizeY}x${sizeZ}`,
-      this.selectedFurniture
-    );
+    // Add mouse listeners for rotation when furniture is selected
+    this.addMouseListeners();
   }
 
   // Clear selected furniture item
   clearSelectedItem() {
+    // Remove mouse listeners first
+    this.removeMouseListeners();
+
     // Properly clean up existing furniture
     if (this.selectedFurniture) {
       // If furniture has a cleanup method, call it
@@ -243,7 +347,7 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     this.selectedItemData = null;
     this.selectedFurniture = null;
-    console.log("Floor hologram: Selected item cleared");
+    this.rotationButtons = [];
   }
 
   // Create furniture object based on selected item
@@ -255,30 +359,17 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     const { type, itemType, sizeX, sizeY, sizeZ } = this.selectedItemData;
     const furnitureType = type || itemType; // Use either property
-    console.log(
-      `Creating furniture object for type: "${furnitureType}" with size ${sizeX}x${sizeY}x${sizeZ}`
-    );
-    console.log("Full selectedItemData:", this.selectedItemData);
-
     switch (furnitureType) {
       case "couch":
         this.selectedFurniture = new CouchFurniture(sizeX, sizeY, sizeZ);
-        console.log("Created couch furniture:", this.selectedFurniture);
         break;
       case "bed":
         this.selectedFurniture = new BedFurniture(sizeX, sizeY, sizeZ);
-        console.log("Created bed furniture:", this.selectedFurniture);
         break;
       case "shelf":
         this.selectedFurniture = new ShelfFurniture(sizeX, sizeY, sizeZ);
-        console.log("Created shelf furniture:", this.selectedFurniture);
         break;
       default:
-        console.warn(`Unknown furniture type: "${furnitureType}"`);
-        console.warn(
-          "Available properties:",
-          Object.keys(this.selectedItemData)
-        );
         this.selectedFurniture = null;
         break;
     }
@@ -294,6 +385,66 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     const pos = this.currentHologram.position;
     this.selectedFurniture.setPosition(pos.x, pos.y, pos.z);
+  }
+
+  // Check if a screen position clicks on a rotation button
+  checkRotationButtonClick(screenX, screenY) {
+    for (let button of this.rotationButtons) {
+      const distance = Math.sqrt(
+        Math.pow(screenX - button.screenX, 2) +
+          Math.pow(screenY - button.screenY, 2)
+      );
+
+      if (distance <= this.buttonSize) {
+        return button;
+      }
+    }
+
+    return null;
+  }
+
+  // Update rotation button positions
+  updateRotationButtons(p5Instance) {
+    if (!this.enabled || !this.currentHologram || !this.selectedFurniture) {
+      this.rotationButtons = [];
+      return;
+    }
+
+    const pos = this.currentHologram.position;
+    const size = this.currentHologram.size;
+
+    // Position buttons below the furniture, on the floor
+    const buttonY = pos.y + size.height / 2 + 30;
+
+    // Create two rotation buttons: clockwise and counterclockwise
+    this.rotationButtons = [
+      {
+        direction: "counterclockwise",
+        worldX: pos.x - this.buttonDistance,
+        worldY: buttonY,
+        worldZ: pos.z,
+        screenX: 0, // Will be calculated later
+        screenY: 0, // Will be calculated later
+      },
+      {
+        direction: "clockwise",
+        worldX: pos.x + this.buttonDistance,
+        worldY: buttonY,
+        worldZ: pos.z,
+        screenX: 0, // Will be calculated later
+        screenY: 0, // Will be calculated later
+      },
+    ];
+
+    // Calculate screen positions (simplified approximation)
+    for (let button of this.rotationButtons) {
+      // Simple screen position approximation based on 3D to 2D projection
+      const screenX = p5Instance.width / 2 + (button.worldX - pos.x) * 2;
+      const screenY = p5Instance.height / 2 + (button.worldZ - pos.z) * 2;
+
+      button.screenX = screenX;
+      button.screenY = screenY;
+    }
   }
 
   // Override updateHologramSize to also update furniture
@@ -320,15 +471,11 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     // If we have selected furniture, render it
     if (this.selectedFurniture) {
-      console.log(
-        "Drawing furniture:",
-        this.selectedItemData.name,
-        "at position:",
-        pos
-      );
-
       // Draw the furniture object
       this.selectedFurniture.draw(p5Instance);
+
+      // Draw simple corner rotation buttons
+      this.drawRotationButtons(p5Instance);
     } else {
       // Draw the default hologram cube (without top face)
       p.push();
@@ -384,8 +531,8 @@ export class FloorHologramSystem extends BaseHologramSystem {
   drawFloorTile(p, position, size) {
     p.push();
 
-    // Position the tile on the floor, slightly below the furniture
-    p.translate(position.x, position.y + size.height / 2 + 5, position.z);
+    // Position the tile slightly above the floor level for visibility
+    p.translate(position.x, position.y + size.height / 2 - 2, position.z);
 
     // Rotate to be flat on the floor
     p.rotateX(p.HALF_PI);
@@ -418,5 +565,160 @@ export class FloorHologramSystem extends BaseHologramSystem {
     }
 
     p.pop();
+  }
+
+  // Draw simple rotation buttons in screen corners
+  drawRotationButtons(p5Instance) {
+    if (!this.selectedFurniture) return;
+
+    const p = p5Instance;
+
+    // Save the current camera state
+    p.push();
+
+    // Reset to 2D orthographic projection for UI elements
+    p.camera(0, 0, p.height / 2 / Math.tan(Math.PI / 6), 0, 0, 0, 0, 1, 0);
+    p.ortho(-p.width / 2, p.width / 2, -p.height / 2, p.height / 2, 0, 1000);
+
+    const buttonSize = 60;
+    const margin = 10;
+    const scaleFactor = 1.5; // Scale factor for the arrow
+
+    // Your perfect triangle pattern
+    const trianglePixels = [
+      [5, 0],
+      [4, 1],
+      [5, 1],
+      [6, 1],
+      [3, 2],
+      [4, 2],
+      [5, 2],
+      [6, 2],
+      [7, 2],
+      [2, 3],
+      [3, 3],
+      [4, 3],
+      [5, 3],
+      [6, 3],
+      [7, 3],
+      [8, 3],
+      [1, 4],
+      [2, 4],
+      [3, 4],
+      [4, 4],
+      [5, 4],
+      [6, 4],
+      [7, 4],
+      [8, 4],
+      [9, 4],
+      [0, 5],
+      [1, 5],
+      [2, 5],
+      [3, 5],
+      [4, 5],
+      [5, 5],
+      [6, 5],
+      [7, 5],
+      [8, 5],
+      [9, 5],
+      [10, 5],
+      [3, 6],
+      [4, 6],
+      [5, 6],
+      [6, 6],
+      [7, 6],
+      [4, 7],
+      [5, 7],
+      [6, 7],
+    ];
+
+    // Bottom-left corner button (counter-clockwise)
+    p.push();
+    p.translate(
+      -p.width / 2 + margin + buttonSize / 2,
+      p.height / 2 - margin - buttonSize / 2,
+      0
+    );
+
+    // Button background
+    p.fill(255, 165, 0, 200);
+    p.stroke(255, 140, 0);
+    p.strokeWeight(3);
+    p.circle(0, 0, buttonSize);
+
+    // Draw curved arc (counter-clockwise semicircle)
+    p.noFill();
+    p.stroke(255, 255, 255);
+    p.strokeWeight(3);
+    p.arc(0, 0, 32, 32, p.HALF_PI, 3 * p.HALF_PI);
+
+    // Draw rotated arrowhead at the end of arc
+    p.push();
+    p.translate(0, -16); // Position at top of arc
+    p.rotate(3 * p.HALF_PI + p.PI);
+    p.translate(-5 * scaleFactor, -4 * scaleFactor); // Center arrow shape
+
+    // Disable blending to prevent transparency issues
+    p.blendMode(p.REPLACE);
+    p.fill(255, 255, 255, 255); // Solid white
+    p.noStroke();
+    for (let [x, y] of trianglePixels) {
+      p.rect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor);
+    }
+    // Reset blend mode back to normal
+    p.blendMode(p.BLEND);
+    p.pop();
+
+    p.pop();
+
+    // Bottom-right corner button (clockwise)
+    p.push();
+    p.translate(
+      p.width / 2 - margin - buttonSize / 2,
+      p.height / 2 - margin - buttonSize / 2,
+      0
+    );
+
+    // Button background
+    p.fill(255, 165, 0, 200);
+    p.stroke(255, 140, 0);
+    p.strokeWeight(3);
+    p.circle(0, 0, buttonSize);
+
+    // Draw curved arc (clockwise semicircle)
+    p.noFill();
+    p.stroke(255, 255, 255);
+    p.strokeWeight(3);
+    p.arc(0, 0, 32, 32, -p.HALF_PI, p.HALF_PI);
+
+    // Draw rotated arrowhead at the end of arc
+    p.push();
+    p.translate(0, 16); // Position at bottom of arc
+    p.rotate(-(3 * p.HALF_PI + p.PI)); // Same rotation but opposite direction
+    p.translate(-5 * scaleFactor, -4 * scaleFactor); // Center arrow shape
+
+    // Disable blending to prevent transparency issues
+    p.blendMode(p.REPLACE);
+    p.fill(255, 255, 255, 255); // Solid white
+    p.noStroke();
+    for (let [x, y] of trianglePixels) {
+      p.rect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor);
+    }
+    // Reset blend mode back to normal
+    p.blendMode(p.BLEND);
+    p.pop();
+
+    p.pop();
+
+    // Restore the previous camera state
+    p.pop();
+  }
+
+  // Override cleanup to include mouse listeners
+  cleanup() {
+    super.cleanup();
+
+    // Remove mouse listeners
+    this.removeMouseListeners();
   }
 }
