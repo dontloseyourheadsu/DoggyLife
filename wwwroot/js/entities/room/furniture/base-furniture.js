@@ -11,6 +11,9 @@ export class BaseFurniture {
 
     // Position in 3D space (will be set by hologram system)
     this.position = { x: 0, y: 0, z: 0 };
+
+    // Rotation around Y-axis in radians
+    this.rotation = 0;
   }
 
   // Abstract method - to be implemented by subclasses
@@ -21,6 +24,27 @@ export class BaseFurniture {
   // Set the position of the furniture
   setPosition(x, y, z) {
     this.position = { x, y, z };
+  }
+
+  // Set the rotation of the furniture (in radians)
+  setRotation(rotation) {
+    this.rotation = rotation % (Math.PI * 2); // Keep rotation between 0 and 2π
+  }
+
+  // Rotate the furniture by a delta amount (in radians)
+  rotate(deltaRotation) {
+    const oldRotation = this.rotation;
+    this.setRotation(this.rotation + deltaRotation);
+    console.log(
+      `Furniture rotated: ${oldRotation.toFixed(3)} -> ${this.rotation.toFixed(
+        3
+      )} (delta: ${deltaRotation.toFixed(3)})`
+    );
+  }
+
+  // Get rotation in degrees for display purposes
+  getRotationDegrees() {
+    return (this.rotation * 180) / Math.PI;
   }
 
   // Update the size of the furniture
