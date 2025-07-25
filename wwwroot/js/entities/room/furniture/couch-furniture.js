@@ -39,19 +39,6 @@ export class CouchFurniture extends BaseFurniture {
     this.scaleX = this.sizeX / baseWidth;
     this.scaleY = this.sizeZ / baseHeight; // sizeZ is height for floor items
     this.scaleZ = this.sizeY / baseDepth; // sizeY is depth for floor items
-
-    console.log(
-      `Couch scaling: ${this.scaleX.toFixed(2)} x ${this.scaleY.toFixed(
-        2
-      )} x ${this.scaleZ.toFixed(2)}`
-    );
-    console.log(
-      `Size mapping: width=${this.sizeX} (scale ${this.scaleX.toFixed(
-        2
-      )}), height=${this.sizeZ} (scale ${this.scaleY.toFixed(2)}), depth=${
-        this.sizeY
-      } (scale ${this.scaleZ.toFixed(2)})`
-    );
   }
 
   updateSize(sizeX, sizeY, sizeZ) {
@@ -62,17 +49,11 @@ export class CouchFurniture extends BaseFurniture {
   draw(p5Instance) {
     const p = p5Instance;
 
-    console.log(
-      "Drawing couch at position:",
-      this.position,
-      "with scales:",
-      this.scaleX,
-      this.scaleY,
-      this.scaleZ
-    );
-
     p.push();
     p.translate(this.position.x, this.position.y, this.position.z);
+
+    // Apply rotation around Y-axis
+    p.rotateY(this.rotation);
 
     // Apply scaling
     p.scale(this.scaleX, this.scaleY, this.scaleZ);
