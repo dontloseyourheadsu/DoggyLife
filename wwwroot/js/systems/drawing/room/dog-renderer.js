@@ -42,12 +42,6 @@ class DogRenderer {
         url,
         (img) => {
           this.spriteSheet = img;
-          console.log(
-            "Spritesheet loaded with dimensions:",
-            img.width,
-            "x",
-            img.height
-          );
           resolve(true);
         },
         (err) => reject(err)

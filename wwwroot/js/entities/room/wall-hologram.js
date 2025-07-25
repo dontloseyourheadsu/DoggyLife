@@ -113,11 +113,6 @@ export class WallHologramSystem extends BaseHologramSystem {
       wall: wall,
     };
 
-    console.log(
-      `🎮 Wall hologram created on ${wall} wall at position:`,
-      validPos
-    );
-    console.log(`🏠 Starting wall: ${this.currentWall}`);
     return this.currentHologram;
   }
 
@@ -174,8 +169,6 @@ export class WallHologramSystem extends BaseHologramSystem {
     if (!this.walls[newWall] || !this.currentHologram) return false;
 
     const oldWall = this.currentWall;
-    console.log(`🔄 WALL TRANSITION: ${oldWall} → ${newWall}`);
-    console.log(`Previous position:`, currentPosition);
 
     // Map position from old wall to new wall
     const mappedPosition = this.mapPositionBetweenWalls(
@@ -183,7 +176,6 @@ export class WallHologramSystem extends BaseHologramSystem {
       oldWall,
       newWall
     );
-    console.log(`Mapped position:`, mappedPosition);
 
     // Update current wall and constrain position
     this.currentWall = newWall;
@@ -192,18 +184,12 @@ export class WallHologramSystem extends BaseHologramSystem {
       mappedPosition,
       newWall
     );
-
-    console.log(`✅ Successfully transitioned to ${newWall} wall`);
-    console.log(`Final position:`, this.currentHologram.position);
-    console.log(`Current wall is now: ${this.currentWall}`);
     return true;
   }
 
   // Map position coordinates between walls
   mapPositionBetweenWalls(position, fromWall, toWall) {
     const mapped = { ...position };
-
-    console.log(`🗺️ Mapping position from ${fromWall} to ${toWall}:`, position);
 
     // When transitioning between back and left walls, preserve the Y coordinate
     // and map the other coordinates appropriately
@@ -218,23 +204,14 @@ export class WallHologramSystem extends BaseHologramSystem {
         // Map X position to Z position
         mapped.z = position.x;
         mapped.x = this.walls.left.bounds.x; // Set to left wall position (-200)
-
-        console.log(
-          `🗺️ Back→Left: x=${position.x} mapped to z=${mapped.z}, x set to ${mapped.x}`
-        );
       } else {
         // From left wall (z,y moveable) to back wall (x,y moveable)
         // Map Z position to X position
         mapped.x = position.z;
         mapped.z = this.walls.back.bounds.z; // Set to back wall position (-200)
-
-        console.log(
-          `🗺️ Left→Back: z=${position.z} mapped to x=${mapped.x}, z set to ${mapped.z}`
-        );
       }
     }
 
-    console.log(`🗺️ Final mapped position:`, mapped);
     return mapped;
   }
 
@@ -261,33 +238,21 @@ export class WallHologramSystem extends BaseHologramSystem {
         case "ArrowLeft":
           this.keyboardState.horizontal = true;
           this.keyboardState.horizontalDirection = -1;
-          console.log(
-            `⬅️ Arrow Left pressed (current wall: ${this.currentWall})`
-          );
           e.preventDefault();
           break;
         case "ArrowRight":
           this.keyboardState.horizontal = true;
           this.keyboardState.horizontalDirection = 1;
-          console.log(
-            `➡️ Arrow Right pressed (current wall: ${this.currentWall})`
-          );
           e.preventDefault();
           break;
         case "ArrowUp":
           this.keyboardState.vertical = true;
           this.keyboardState.verticalDirection = -1;
-          console.log(
-            `⬆️ Arrow Up pressed (current wall: ${this.currentWall})`
-          );
           e.preventDefault();
           break;
         case "ArrowDown":
           this.keyboardState.vertical = true;
           this.keyboardState.verticalDirection = 1;
-          console.log(
-            `⬇️ Arrow Down pressed (current wall: ${this.currentWall})`
-          );
           e.preventDefault();
           break;
       }
@@ -354,13 +319,6 @@ export class WallHologramSystem extends BaseHologramSystem {
       // Check if the intended movement will reach the intersection BEFORE moving
       if (this.willReachIntersection(currentPos, intendedPos)) {
         const targetWall = this.currentWall === "back" ? "left" : "back";
-        console.log(
-          `🎯 Predicted intersection, transitioning to ${targetWall} wall`
-        );
-        console.log(
-          `Current wall: ${this.currentWall} → Target wall: ${targetWall}`
-        );
-
         // Transition to the other wall with the intended position
         this.transitionToWall(targetWall, intendedPos);
       } else {
@@ -377,42 +335,16 @@ export class WallHologramSystem extends BaseHologramSystem {
         );
 
         if (wasConstrained) {
-          console.log(
-            `🚧 Movement was constrained, checking for transition possibility`
-          );
-          console.log(
-            `Intended: (${intendedPos.x.toFixed(1)}, ${intendedPos.y.toFixed(
-              1
-            )}, ${intendedPos.z.toFixed(
-              1
-            )}), Constrained: (${constrainedPos.x.toFixed(
-              1
-            )}, ${constrainedPos.y.toFixed(1)}, ${constrainedPos.z.toFixed(1)})`
-          );
-
           const targetWall = this.currentWall === "back" ? "left" : "back";
           if (
             this.canTransitionWalls(intendedPos, this.currentWall, targetWall)
           ) {
-            console.log(
-              `🚧 Attempting fallback transition to ${targetWall} wall`
-            );
             this.transitionToWall(targetWall, intendedPos);
           } else {
             this.currentHologram.position = constrainedPos;
-            console.log(
-              `📍 Movement constrained, staying on ${this.currentWall} wall`
-            );
           }
         } else {
           this.currentHologram.position = constrainedPos;
-          console.log(
-            `📍 Normal movement on ${
-              this.currentWall
-            } wall: (${constrainedPos.x.toFixed(1)}, ${constrainedPos.y.toFixed(
-              1
-            )}, ${constrainedPos.z.toFixed(1)})`
-          );
         }
       }
     }
@@ -437,11 +369,6 @@ export class WallHologramSystem extends BaseHologramSystem {
         intendedEdge <= crossingThreshold && currentEdge > crossingThreshold;
 
       if (willCross) {
-        console.log(
-          `⬅️ Back wall: Hologram edge will cross to left wall (edge at x=${intendedEdge.toFixed(
-            1
-          )}, threshold=${crossingThreshold.toFixed(1)})`
-        );
         return true;
       }
     } else if (this.currentWall === "left") {
@@ -456,11 +383,6 @@ export class WallHologramSystem extends BaseHologramSystem {
         intendedEdge <= crossingThreshold && currentEdge > crossingThreshold;
 
       if (willCross) {
-        console.log(
-          `⬆️ Left wall: Hologram edge will cross to back wall (edge at z=${intendedEdge.toFixed(
-            1
-          )}, threshold=${crossingThreshold.toFixed(1)})`
-        );
         return true;
       }
     }

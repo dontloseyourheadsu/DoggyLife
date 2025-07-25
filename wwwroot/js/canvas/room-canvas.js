@@ -180,12 +180,7 @@ export function createRoomCanvas(
         sizeY: sizeY,
         sizeZ: sizeZ,
       };
-      console.log(`Selected hologram item set:`, selectedHologramItem);
 
-      // Update hologram systems with the new item size
-      // TODO: Implement height/depth calculation based on item type
-      // For floor items: use sizeX (width), sizeY (depth), calculate height
-      // For wall items: use sizeX (width), sizeY (height), calculate depth
       const hologramSize = calculateHologramSize(itemType, sizeX, sizeY, sizeZ);
 
       // Update active hologram system with new size
@@ -259,8 +254,6 @@ export function createRoomCanvas(
       // Clear selected items from hologram systems
       floorHologramSystem.clearSelectedItem();
       // wallHologramSystem.clearSelectedItem(); // When wall furniture is implemented
-
-      console.log("Selected hologram item cleared");
     };
 
     p5Instance.getSelectedHologramItem = () => {
