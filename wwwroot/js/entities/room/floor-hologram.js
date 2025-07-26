@@ -54,12 +54,12 @@ export class FloorHologramSystem extends BaseHologramSystem {
   // Create a new hologram with rotation support
   createHologram(position = null, size = null, ...args) {
     const hologram = super.createHologram(position, size, ...args);
-    
+
     // Add rotation property for furniture synchronization
     if (hologram) {
       hologram.rotation = 0; // Initialize rotation
     }
-    
+
     return hologram;
   }
   constrainPosition(position) {
@@ -220,7 +220,6 @@ export class FloorHologramSystem extends BaseHologramSystem {
         e.stopPropagation();
         return;
       }
-
     };
 
     this.onMouseReleased = (e) => {
@@ -342,7 +341,7 @@ export class FloorHologramSystem extends BaseHologramSystem {
       this.currentHologram.size = {
         width: sizeX,
         height: sizeZ, // sizeZ is the height for floor items
-        depth: sizeY,  // sizeY is the depth for floor items
+        depth: sizeY, // sizeY is the depth for floor items
       };
       this.updateFurniturePosition();
     }
@@ -408,7 +407,7 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     const pos = this.currentHologram.position;
     this.selectedFurniture.setPosition(pos.x, pos.y, pos.z);
-    
+
     // Sync hologram rotation with furniture rotation
     if (this.currentHologram.rotation !== undefined) {
       this.selectedFurniture.setRotation(this.currentHologram.rotation);
@@ -486,9 +485,9 @@ export class FloorHologramSystem extends BaseHologramSystem {
     if (this.currentHologram) {
       // Store dimensions correctly for floor furniture
       this.currentHologram.size = {
-        width: width,   // X dimension
-        height: depth,  // Z dimension becomes height
-        depth: height   // Y dimension becomes depth
+        width: width, // X dimension
+        height: depth, // Z dimension becomes height
+        depth: height, // Y dimension becomes depth
       };
     }
 
@@ -525,7 +524,7 @@ export class FloorHologramSystem extends BaseHologramSystem {
   draw3DHologram(p, position, size, rotation = 0) {
     p.push();
     p.translate(position.x, position.y, position.z);
-    
+
     // Apply rotation to match furniture
     p.rotateY(rotation);
 
@@ -595,7 +594,11 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     // Position the tile slightly above the floor level for visibility
     // relativePosition is relative to the current transform
-    p.translate(relativePosition.x, relativePosition.y + size.height / 2 - 2, relativePosition.z);
+    p.translate(
+      relativePosition.x,
+      relativePosition.y + size.height / 2 - 2,
+      relativePosition.z
+    );
 
     // Rotate to be flat on the floor
     p.rotateX(p.HALF_PI);
