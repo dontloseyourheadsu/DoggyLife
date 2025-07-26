@@ -51,7 +51,17 @@ export class FloorHologramSystem extends BaseHologramSystem {
     return "cube";
   }
 
-  // Override position constraint
+  // Create a new hologram with rotation support
+  createHologram(position = null, size = null, ...args) {
+    const hologram = super.createHologram(position, size, ...args);
+    
+    // Add rotation property for furniture synchronization
+    if (hologram) {
+      hologram.rotation = 0; // Initialize rotation
+    }
+    
+    return hologram;
+  }
   constrainPosition(position) {
     if (!this.roomBounds || !this.currentHologram) return position;
 
@@ -185,6 +195,10 @@ export class FloorHologramSystem extends BaseHologramSystem {
         clickY <= canvasHeight - margin
       ) {
         this.selectedFurniture.rotate(-Math.PI / 12); // -15 degrees
+        // Update hologram rotation to match furniture
+        if (this.currentHologram) {
+          this.currentHologram.rotation = this.selectedFurniture.rotation;
+        }
         e.preventDefault();
         e.stopPropagation();
         return;
@@ -198,6 +212,10 @@ export class FloorHologramSystem extends BaseHologramSystem {
         clickY <= canvasHeight - margin
       ) {
         this.selectedFurniture.rotate(Math.PI / 12); // +15 degrees
+        // Update hologram rotation to match furniture
+        if (this.currentHologram) {
+          this.currentHologram.rotation = this.selectedFurniture.rotation;
+        }
         e.preventDefault();
         e.stopPropagation();
         return;
@@ -318,12 +336,13 @@ export class FloorHologramSystem extends BaseHologramSystem {
     // Create the appropriate furniture object
     this.createFurnitureObject();
 
-    // Update hologram size to match furniture
+    // Update hologram size to match furniture dimensions
     if (this.currentHologram) {
+      // For floor items: sizeX = width, sizeY = depth, sizeZ = height
       this.currentHologram.size = {
         width: sizeX,
-        height: sizeY,
-        depth: sizeZ,
+        height: sizeZ, // sizeZ is the height for floor items
+        depth: sizeY,  // sizeY is the depth for floor items
       };
       this.updateFurniturePosition();
     }
@@ -375,6 +394,10 @@ export class FloorHologramSystem extends BaseHologramSystem {
     }
 
     if (this.selectedFurniture) {
+      // Initialize hologram rotation to match furniture
+      if (this.currentHologram) {
+        this.currentHologram.rotation = this.selectedFurniture.rotation || 0;
+      }
       this.updateFurniturePosition();
     }
   }
@@ -385,6 +408,14 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
     const pos = this.currentHologram.position;
     this.selectedFurniture.setPosition(pos.x, pos.y, pos.z);
+    
+    // Sync hologram rotation with furniture rotation
+    if (this.currentHologram.rotation !== undefined) {
+      this.selectedFurniture.setRotation(this.currentHologram.rotation);
+    } else {
+      // If hologram doesn't have rotation, sync from furniture
+      this.currentHologram.rotation = this.selectedFurniture.rotation || 0;
+    }
   }
 
   // Check if a screen position clicks on a rotation button
@@ -451,6 +482,16 @@ export class FloorHologramSystem extends BaseHologramSystem {
   updateHologramSize(width, height, depth) {
     super.updateHologramSize(width, height, depth);
 
+    // For floor items, ensure proper dimension mapping
+    if (this.currentHologram) {
+      // Store dimensions correctly for floor furniture
+      this.currentHologram.size = {
+        width: width,   // X dimension
+        height: depth,  // Z dimension becomes height
+        depth: height   // Y dimension becomes depth
+      };
+    }
+
     if (this.selectedFurniture) {
       this.selectedFurniture.updateSize(width, height, depth);
     }
@@ -465,9 +506,10 @@ export class FloorHologramSystem extends BaseHologramSystem {
     const p = p5Instance;
     const pos = this.currentHologram.position;
     const size = this.currentHologram.size;
+    const rotation = this.currentHologram.rotation || 0;
 
-    // Always draw a floor tile to show the furniture placement area
-    this.drawFloorTile(p, pos, size);
+    // Draw the 3D hologram outline
+    this.draw3DHologram(p, pos, size, rotation);
 
     // If we have selected furniture, render it
     if (this.selectedFurniture) {
@@ -476,78 +518,99 @@ export class FloorHologramSystem extends BaseHologramSystem {
 
       // Draw simple corner rotation buttons
       this.drawRotationButtons(p5Instance);
-    } else {
-      // Draw the default hologram cube (without top face)
-      p.push();
-      p.translate(pos.x, pos.y, pos.z);
-
-      // Set hologram material properties
-      this.setHologramMaterial(p);
-
-      // Draw cube without the top face
-      // We'll manually draw the faces to exclude the top
-
-      // Bottom face
-      p.push();
-      p.translate(0, size.height / 2, 0);
-      p.rotateX(p.HALF_PI);
-      p.plane(size.width, size.depth);
-      p.pop();
-
-      // Front face
-      p.push();
-      p.translate(0, 0, size.depth / 2);
-      p.plane(size.width, size.height);
-      p.pop();
-
-      // Back face
-      p.push();
-      p.translate(0, 0, -size.depth / 2);
-      p.plane(size.width, size.height);
-      p.pop();
-
-      // Left face
-      p.push();
-      p.translate(-size.width / 2, 0, 0);
-      p.rotateY(p.HALF_PI);
-      p.plane(size.depth, size.height);
-      p.pop();
-
-      // Right face
-      p.push();
-      p.translate(size.width / 2, 0, 0);
-      p.rotateY(p.HALF_PI);
-      p.plane(size.depth, size.height);
-      p.pop();
-
-      // Draw wireframe for better visibility using base class method
-      this.drawWireframeBox(p, size);
-
-      p.pop();
     }
   }
 
+  // Draw a 3D hologram outline
+  draw3DHologram(p, position, size, rotation = 0) {
+    p.push();
+    p.translate(position.x, position.y, position.z);
+    
+    // Apply rotation to match furniture
+    p.rotateY(rotation);
+
+    // Set hologram material properties
+    this.setHologramMaterial(p);
+
+    // Draw the full 3D wireframe box
+    this.drawWireframeBox(p, size);
+
+    // Draw semi-transparent faces for better visibility
+    p.fill(
+      this.hologramColor[0],
+      this.hologramColor[1],
+      this.hologramColor[2],
+      80 // Lower alpha for subtle face visibility
+    );
+
+    // Bottom face (floor contact)
+    p.push();
+    p.translate(0, size.height / 2, 0);
+    p.rotateX(p.HALF_PI);
+    p.plane(size.width, size.depth);
+    p.pop();
+
+    // Front face
+    p.push();
+    p.translate(0, 0, size.depth / 2);
+    p.plane(size.width, size.height);
+    p.pop();
+
+    // Back face
+    p.push();
+    p.translate(0, 0, -size.depth / 2);
+    p.plane(size.width, size.height);
+    p.pop();
+
+    // Left face
+    p.push();
+    p.translate(-size.width / 2, 0, 0);
+    p.rotateY(p.HALF_PI);
+    p.plane(size.depth, size.height);
+    p.pop();
+
+    // Right face
+    p.push();
+    p.translate(size.width / 2, 0, 0);
+    p.rotateY(p.HALF_PI);
+    p.plane(size.depth, size.height);
+    p.pop();
+
+    // Top face (optional, for complete outline)
+    p.push();
+    p.translate(0, -size.height / 2, 0);
+    p.rotateX(p.HALF_PI);
+    p.plane(size.width, size.depth);
+    p.pop();
+
+    // Draw floor tile beneath for placement reference
+    this.drawFloorTile(p, { x: 0, y: 0, z: 0 }, size);
+
+    p.pop();
+  }
+
   // Helper method to draw a floor tile beneath the furniture/hologram
-  drawFloorTile(p, position, size) {
+  drawFloorTile(p, relativePosition, size) {
     p.push();
 
     // Position the tile slightly above the floor level for visibility
-    p.translate(position.x, position.y + size.height / 2 - 2, position.z);
+    // relativePosition is relative to the current transform
+    p.translate(relativePosition.x, relativePosition.y + size.height / 2 - 2, relativePosition.z);
 
     // Rotate to be flat on the floor
     p.rotateX(p.HALF_PI);
 
     // Set tile appearance - bright green with some transparency
-    p.fill(0, 255, 0, 120);
-    p.stroke(0, 255, 0, 200);
-    p.strokeWeight(2);
+    p.fill(0, 255, 0, 60); // Lower alpha to not interfere with 3D hologram
+    p.stroke(0, 255, 0, 150);
+    p.strokeWeight(1);
 
     // Draw a rectangular tile matching the furniture footprint
     p.plane(size.width, size.depth);
 
     // Add grid lines for better visibility
-    p.stroke(0, 255, 0, 150);
-    p.strokeWeight(1);
+    p.stroke(0, 255, 0, 100);
+    p.strokeWeight(0.5);
 
     // Draw grid lines
     const gridSpacing = 20;
