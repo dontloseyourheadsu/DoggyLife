@@ -214,9 +214,16 @@ export function createRoomCanvas(
           hologramSize.depth
         );
 
-        // Set the selected furniture item for wall hologram (if wall furniture is implemented)
+        // Set the selected furniture item for wall hologram
         if (itemType === "window" || itemType === "painting") {
-          // wallHologramSystem.setSelectedItem(itemId, itemName, itemType, sizeX, sizeY, sizeZ);
+          wallHologramSystem.setSelectedItem(
+            itemId,
+            itemName,
+            itemType,
+            sizeX,
+            sizeY,
+            sizeZ
+          );
         }
       }
     };
@@ -253,7 +260,7 @@ export function createRoomCanvas(
 
       // Clear selected items from hologram systems
       floorHologramSystem.clearSelectedItem();
-      // wallHologramSystem.clearSelectedItem(); // When wall furniture is implemented
+      wallHologramSystem.clearSelectedItem();
     };
 
     p5Instance.getSelectedHologramItem = () => {

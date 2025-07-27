@@ -45,6 +45,10 @@ export class WallHologramSystem extends BaseHologramSystem {
         fixedAxis: "x", // X is fixed to wall position
       },
     };
+
+    // Furniture selection properties (similar to floor hologram)
+    this.selectedFurniture = null;
+    this.selectedItemData = null;
   }
 
   // Implement abstract method
@@ -111,9 +115,22 @@ export class WallHologramSystem extends BaseHologramSystem {
       visible: true,
       type: "wall-cube",
       wall: wall,
+      rotation: this.getWallRotation(wall), // Add rotation for the wall
     };
 
     return this.currentHologram;
+  }
+
+    // Get the rotation needed for furniture to face into the room from the wall
+  getWallRotation(wallName) {
+    switch (wallName) {
+      case "back":
+        return 0; // Back wall faces positive Z, no rotation needed
+      case "left":
+        return Math.PI / 2; // Left wall faces positive X, rotate 90 degrees
+      default:
+        return 0;
+    }
   }
 
   // Constrain position to a specific wall
@@ -184,6 +201,15 @@ export class WallHologramSystem extends BaseHologramSystem {
       mappedPosition,
       newWall
     );
+    
+    // Update rotation for the new wall
+    this.currentHologram.rotation = this.getWallRotation(newWall);
+    
+    // Update furniture rotation if it exists
+    if (this.selectedFurniture) {
+      this.selectedFurniture.setRotation(this.currentHologram.rotation);
+    }
+    
     return true;
   }
 
@@ -342,9 +368,13 @@ export class WallHologramSystem extends BaseHologramSystem {
             this.transitionToWall(targetWall, intendedPos);
           } else {
             this.currentHologram.position = constrainedPos;
+            // Update furniture position when hologram moves
+            this.updateFurniturePosition();
           }
         } else {
           this.currentHologram.position = constrainedPos;
+          // Update furniture position when hologram moves
+          this.updateFurniturePosition();
         }
       }
     }
@@ -430,25 +460,20 @@ export class WallHologramSystem extends BaseHologramSystem {
     const p = p5Instance;
     const pos = this.currentHologram.position;
     const size = this.currentHologram.size;
-    const wall = this.walls[this.currentWall];
+    const rotation = this.currentHologram.rotation || this.getWallRotation(this.currentWall);
 
     p.push();
     p.translate(pos.x, pos.y, pos.z);
 
+    // Apply rotation to match wall orientation
+    p.rotateY(rotation);
+
     // Set hologram material properties
     this.setHologramMaterial(p);
 
-    // Draw cube that's flush with the wall
-    // Adjust the cube so it appears to be "on" the wall surface
-    const offset = size.depth / 2;
-
-    if (this.currentWall === "back") {
-      // For back wall, move cube forward so it's flush with the wall
-      p.translate(0, 0, offset);
-    } else if (this.currentWall === "left") {
-      // For left wall, move cube right so it's flush with the wall
-      p.translate(offset, 0, 0);
-    }
+    // Position cube to project into the room from the wall surface
+    // Move it forward along the local Z-axis (which points into the room after rotation)
+    p.translate(0, 0, size.depth / 2);
 
     // Draw the cube
     p.box(size.width, size.height, size.depth);
@@ -457,5 +482,97 @@ export class WallHologramSystem extends BaseHologramSystem {
     this.drawWireframeBox(p, size);
 
     p.pop();
+
+    // If we have selected furniture, render it
+    if (this.selectedFurniture) {
+      // Draw the furniture object
+      this.selectedFurniture.draw(p5Instance);
+    }
+  }
+
+  // Set selected furniture item
+  setSelectedItem(itemId, itemName, itemType, sizeX, sizeY, sizeZ) {
+    this.selectedItemData = {
+      itemId,
+      itemName,
+      itemType,
+      sizeX,
+      sizeY,
+      sizeZ,
+    };
+
+    // Create furniture object and sync position and rotation
+    this.createFurnitureObject();
+    this.updateFurniturePosition();
+    
+    console.log(`Wall hologram selected item: ${itemName} (${itemType})`);
+  }
+
+  // Clear selected furniture item
+  clearSelectedItem() {
+    this.selectedItemData = null;
+    this.selectedFurniture = null;
+    console.log("Wall hologram item selection cleared");
+  }
+
+  // Create furniture object based on selected item
+  createFurnitureObject() {
+    if (!this.selectedItemData) return;
+
+    const { itemType, sizeX, sizeY, sizeZ } = this.selectedItemData;
+
+    // Import and create furniture based on type (wall items only)
+    switch (itemType.toLowerCase()) {
+      case "window":
+        import("./furniture/window-furniture.js").then(({ WindowFurniture }) => {
+          this.selectedFurniture = new WindowFurniture(sizeX, sizeY, sizeZ);
+          this.updateFurniturePosition();
+          // Ensure hologram has rotation set
+          if (this.currentHologram && !this.currentHologram.rotation) {
+            this.currentHologram.rotation = this.getWallRotation(this.currentWall);
+          }
+        }).catch(err => console.error("Failed to load WindowFurniture:", err));
+        break;
+      case "painting":
+        import("./furniture/painting-furniture.js").then(({ PaintingFurniture }) => {
+          this.selectedFurniture = new PaintingFurniture(sizeX, sizeY, sizeZ);
+          this.updateFurniturePosition();
+          // Ensure hologram has rotation set
+          if (this.currentHologram && !this.currentHologram.rotation) {
+            this.currentHologram.rotation = this.getWallRotation(this.currentWall);
+          }
+        }).catch(err => console.error("Failed to load PaintingFurniture:", err));
+        break;
+      default:
+        console.warn(`Unknown wall furniture type: ${itemType}`);
+        break;
+    }
+  }
+
+  // Update furniture position to match hologram position
+  updateFurniturePosition() {
+    if (!this.selectedFurniture || !this.currentHologram) return;
+
+    const pos = this.currentHologram.position;
+    this.selectedFurniture.setPosition(pos.x, pos.y, pos.z);
+    
+    // Update rotation to match wall orientation
+    const rotation = this.currentHologram.rotation || this.getWallRotation(this.currentWall);
+    this.selectedFurniture.setRotation(rotation);
+  }
+
+  // Override updateHologramPosition to also update furniture
+  updateHologramPosition(position, wall) {
+    super.updateHologramPosition(position, wall);
+    this.updateFurniturePosition();
+  }
+
+  // Override updateHologramSize to also update furniture
+  updateHologramSize(width, height, depth) {
+    const result = super.updateHologramSize(width, height, depth);
+    if (this.selectedFurniture) {
+      this.selectedFurniture.updateSize(width, height, depth);
+    }
+    return result;
   }
 }
