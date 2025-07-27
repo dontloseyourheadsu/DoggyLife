@@ -17,19 +17,19 @@ export class BedFurniture extends BaseFurniture {
       woodDark: "#654321",
       woodVeryDark: "#3E2723",
 
-      // Bed colors
-      mattress: "#F5F5DC",
-      mattressLight: "#FFFACD",
-      mattressDark: "#E6E6FA",
+      // Improved bed colors based on the example
+      mattress: "#E6E6FA", // White/cream mattress base
+      mattressLight: "#F0F0FF", // Lighter cream for highlights
+      mattressDark: "#D8BFD8", // Darker cream for shadows and quilting
       sheet: "#87CEEB",
       sheetLight: "#B0E0E6",
       sheetDark: "#4682B4",
       pillow: "#FFE4E1",
       pillowLight: "#FFF0F5",
-      pillowDark: "#F0E68C",
-      blanket: "#DDA0DD",
-      blanketLight: "#E6E6FA",
-      blanketDark: "#9370DB",
+      pillowDark: "#FFC0CB", // Pink tint for texture
+      blanket: "#4682B4", // Blue blanket base
+      blanketLight: "#87CEEB", // Light blue for pattern
+      blanketDark: "#2F4F4F", // Dark blue for quilting pattern
     };
   }
 
@@ -63,339 +63,274 @@ export class BedFurniture extends BaseFurniture {
     // Apply scaling
     p.scale(this.scaleX, this.scaleY, this.scaleZ);
 
-    // Adjust position to center the bed properly
-    p.translate(0, -20, 0);
-
-    this.drawBedFrame(p);
-    this.drawMattress(p);
-    this.drawSheets(p);
-    this.drawPillows(p);
-    this.drawBlanket(p);
+    // Draw the bed
+    this.drawBed(p);
 
     p.pop();
   }
 
-  drawBedFrame(p) {
-    p.push();
+  drawBed(p) {
+    // Use the base dimensions - scaling is handled by the draw() method
+    const width = 170; // Base width
+    const height = 100; // Base height
+    const depth = 240; // Base depth
 
-    const woodColor = this.parseColor(this.colors.wood);
-    const woodLightColor = this.parseColor(this.colors.woodLight);
-    const woodDarkColor = this.parseColor(this.colors.woodDark);
-    const mattressLightColor = this.parseColor(this.colors.mattressLight);
-
-    // Bed legs
-    p.fill(woodDarkColor[0], woodDarkColor[1], woodDarkColor[2]);
+    // Bed frame base
     p.push();
-    p.translate(-80, 20, 120);
-    p.box(15, 40, 15);
-    p.pop();
-    p.push();
-    p.translate(80, 20, 120);
-    p.box(15, 40, 15);
-    p.pop();
-    p.push();
-    p.translate(-80, 20, -120);
-    p.box(15, 40, 15);
-    p.pop();
-    p.push();
-    p.translate(80, 20, -120);
-    p.box(15, 40, 15);
+    const bedFrameColor = this.parseColor(this.colors.wood);
+    p.fill(bedFrameColor[0], bedFrameColor[1], bedFrameColor[2]);
+    p.translate(0, height * 0.2, 0);
+    p.box(width * 0.7, height * 0.2, depth * 0.83);
     p.pop();
 
-    // Frame
-    this.drawPixelCube(
-      p,
-      -80,
-      0,
-      0,
-      15,
-      25,
-      240,
-      woodColor,
-      woodLightColor,
-      woodDarkColor
-    );
-    this.drawPixelCube(
-      p,
-      80,
-      0,
-      0,
-      15,
-      25,
-      240,
-      woodColor,
-      woodLightColor,
-      woodDarkColor
-    );
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      120,
-      160,
-      25,
-      15,
-      woodColor,
-      woodLightColor,
-      woodDarkColor
-    );
+    // Bed frame legs (chunky pixel style)
+    const legPositions = [
+      [-width * 0.29, height * 0.4, -depth * 0.35],
+      [width * 0.29, height * 0.4, -depth * 0.35],
+      [-width * 0.29, height * 0.4, depth * 0.35],
+      [width * 0.29, height * 0.4, depth * 0.35],
+    ];
 
-    this.drawBedHeadboard(p);
+    const bedFrameDarkColor = this.parseColor(this.colors.woodDark);
+    legPositions.forEach((pos) => {
+      p.push();
+      p.fill(bedFrameDarkColor[0], bedFrameDarkColor[1], bedFrameDarkColor[2]);
+      p.translate(pos[0], pos[1], pos[2]);
+      p.box(width * 0.09, height * 0.4, width * 0.09);
+      p.pop();
+    });
+
+    // Headboard (low-poly, chunky)
+    p.push();
+    p.fill(bedFrameColor[0], bedFrameColor[1], bedFrameColor[2]);
+    p.translate(0, -height * 0.2, -depth * 0.35);
+    p.box(width * 0.7, height * 0.8, width * 0.09);
     p.pop();
+
+    // Quilted white mattress
+    this.drawQuiltedMattress(p);
+
+    // Pillows with texture
+    this.drawTexturedPillows(p);
+
+    // Blanket with quilted pattern
+    this.drawQuiltedBlanket(p);
   }
 
-  drawBedHeadboard(p) {
-    p.push();
-    p.translate(0, -40, -120);
-
-    const woodColor = this.parseColor(this.colors.wood);
-    const woodLightColor = this.parseColor(this.colors.woodLight);
-    const woodDarkColor = this.parseColor(this.colors.woodDark);
-    const mattressLightColor = this.parseColor(this.colors.mattressLight);
-
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      170,
-      80,
-      20,
-      woodColor,
-      woodLightColor,
-      woodDarkColor
-    );
-
-    p.push();
-    p.translate(0, -45, 0);
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      160,
-      10,
-      15,
-      woodLightColor,
-      mattressLightColor,
-      woodColor
-    );
-    p.pop();
-
-    p.push();
-    p.translate(-70, -10, 0);
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      30,
-      60,
-      18,
-      woodDarkColor,
-      woodColor,
-      woodDarkColor
-    );
-    p.pop();
-
-    p.push();
-    p.translate(70, -10, 0);
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      30,
-      60,
-      18,
-      woodDarkColor,
-      woodColor,
-      woodDarkColor
-    );
-    p.pop();
-
-    p.pop();
-  }
-
-  drawMattress(p) {
-    p.push();
-    p.translate(0, -15, 0);
+  drawQuiltedMattress(p) {
+    // Use base dimensions
+    const width = 170;
+    const height = 100;
+    const depth = 240;
 
     const mattressColor = this.parseColor(this.colors.mattress);
-    const mattressLightColor = this.parseColor(this.colors.mattressLight);
     const mattressDarkColor = this.parseColor(this.colors.mattressDark);
+    const mattressLightColor = this.parseColor(this.colors.mattressLight);
 
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      160,
-      20,
-      220,
-      mattressColor,
-      mattressLightColor,
-      mattressDarkColor
-    );
-
-    p.fill(mattressDarkColor[0], mattressDarkColor[1], mattressDarkColor[2]);
+    // Main mattress base - position ABOVE the bed frame
     p.push();
-    p.translate(0, -12, 0);
-    p.box(150, 2, 210);
+    p.fill(mattressColor[0], mattressColor[1], mattressColor[2]);
+    p.translate(0, height * 0.1, 0); // Position above the bed frame
+    p.box(width * 0.58, height * 0.15, depth * 0.75);
     p.pop();
 
-    for (let i = -60; i <= 60; i += 40) {
-      for (let j = -80; j <= 80; j += 40) {
+    // Quilted diamond pattern using small boxes
+    const diamondSize = width * 0.12;
+    const rows = Math.max(4, Math.floor(depth * 0.033));
+    const cols = Math.max(2, Math.floor(width * 0.023));
+
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        let x = (i - cols / 2 + 0.5) * diamondSize;
+        let z =
+          (j - rows / 2 + 0.5) * diamondSize + (i % 2) * (diamondSize / 2);
+
+        // Alternate colors for quilted pattern
+        let colorChoice;
+        if ((i + j) % 2 === 0) {
+          colorChoice = mattressDarkColor;
+        } else {
+          colorChoice = mattressLightColor;
+        }
+
         p.push();
-        p.translate(i, -12, j);
-        p.box(8, 2, 8);
+        p.fill(colorChoice[0], colorChoice[1], colorChoice[2]);
+        p.translate(x, height * 0.06, z); // Position above mattress base
+        p.box(width * 0.07, height * 0.03, width * 0.07);
         p.pop();
+
+        // Add small indent in center for tufted look
+        if ((i + j) % 3 === 0) {
+          p.push();
+          p.fill(
+            mattressDarkColor[0],
+            mattressDarkColor[1],
+            mattressDarkColor[2]
+          );
+          p.translate(x, height * 0.04, z); // Position above quilted pattern
+          p.box(width * 0.023, height * 0.01, width * 0.023);
+          p.pop();
+        }
       }
     }
 
+    // Mattress edge piping - position above mattress
+    p.push();
+    p.fill(mattressDarkColor[0], mattressDarkColor[1], mattressDarkColor[2]);
+    p.translate(0, height * 0.18, 0); // Position above mattress
+    p.box(width * 0.6, height * 0.02, depth * 0.76);
     p.pop();
+
+    // Side texture lines for fabric look
+    const sideLines = [
+      {
+        x: -width * 0.28,
+        y: height * 0.14, // Adjust Y position
+        z: 0,
+        w: width * 0.023,
+        h: height * 0.08,
+        d: depth * 0.75,
+      },
+      {
+        x: width * 0.28,
+        y: height * 0.14, // Adjust Y position
+        z: 0,
+        w: width * 0.023,
+        h: height * 0.08,
+        d: depth * 0.75,
+      },
+      {
+        x: 0,
+        y: height * 0.14, // Adjust Y position
+        z: -depth * 0.37,
+        w: width * 0.58,
+        h: height * 0.08,
+        d: width * 0.023,
+      },
+      {
+        x: 0,
+        y: height * 0.14, // Adjust Y position
+        z: depth * 0.37,
+        w: width * 0.58,
+        h: height * 0.08,
+        d: width * 0.023,
+      },
+    ];
+
+    sideLines.forEach((line) => {
+      p.push();
+      p.fill(mattressDarkColor[0], mattressDarkColor[1], mattressDarkColor[2]);
+      p.translate(line.x, line.y, line.z);
+      p.box(line.w, line.h, line.d);
+      p.pop();
+    });
   }
 
-  drawSheets(p) {
-    p.push();
-    p.translate(0, -25, 0);
+  drawTexturedPillows(p) {
+    // Use base dimensions
+    const width = 170;
+    const height = 100;
+    const depth = 240;
 
-    const sheetColor = this.parseColor(this.colors.sheet);
-    const sheetLightColor = this.parseColor(this.colors.sheetLight);
-    const sheetDarkColor = this.parseColor(this.colors.sheetDark);
-
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      155,
-      8,
-      215,
-      sheetColor,
-      sheetLightColor,
-      sheetDarkColor
-    );
-
-    p.fill(sheetDarkColor[0], sheetDarkColor[1], sheetDarkColor[2]);
-    p.push();
-    p.translate(20, -6, 40);
-    p.box(120, 2, 3);
-    p.pop();
-    p.push();
-    p.translate(-30, -6, -20);
-    p.box(100, 2, 3);
-    p.pop();
-    p.push();
-    p.translate(10, -6, -60);
-    p.box(80, 2, 3);
-    p.pop();
-
-    p.pop();
-  }
-
-  drawPillows(p) {
     const pillowColor = this.parseColor(this.colors.pillow);
-    const pillowLightColor = this.parseColor(this.colors.pillowLight);
     const pillowDarkColor = this.parseColor(this.colors.pillowDark);
 
-    for (let side of [-40, 40]) {
-      p.push();
-      p.translate(side, -40, -80);
-      this.drawPixelCube(
-        p,
-        0,
-        0,
-        0,
-        60,
-        15,
-        40,
-        pillowColor,
-        pillowLightColor,
-        pillowDarkColor
-      );
+    // Left pillow - solid with subtle texture overlay
+    p.push();
+    p.fill(pillowColor[0], pillowColor[1], pillowColor[2]);
+    p.translate(-width * 0.175, height * 0.08, -depth * 0.27); // Position above mattress
+    p.box(width * 0.146, height * 0.08, depth * 0.083);
+    p.pop();
 
-      p.fill(pillowDarkColor[0], pillowDarkColor[1], pillowDarkColor[2]);
-      p.push();
-      p.translate(0, -9, 0);
-      p.box(50, 2, 30);
-      p.pop();
+    // Left pillow texture detail (small accent)
+    p.push();
+    p.fill(pillowDarkColor[0], pillowDarkColor[1], pillowDarkColor[2]);
+    p.translate(-width * 0.175, height * 0.04, -depth * 0.27); // Position above pillow
+    p.box(width * 0.117, height * 0.01, depth * 0.063);
+    p.pop();
 
-      p.push();
-      p.translate(25, -5, 15);
-      p.box(4, 8, 4);
-      p.pop();
-      p.push();
-      p.translate(-25, -5, -15);
-      p.box(4, 8, 4);
-      p.pop();
+    // Right pillow - solid with subtle texture overlay
+    p.push();
+    p.fill(pillowDarkColor[0], pillowDarkColor[1], pillowDarkColor[2]);
+    p.translate(width * 0.175, height * 0.08, -depth * 0.27); // Position above mattress
+    p.box(width * 0.146, height * 0.08, depth * 0.083);
+    p.pop();
 
-      p.pop();
-    }
+    // Right pillow texture detail
+    p.push();
+    p.fill(pillowColor[0], pillowColor[1], pillowColor[2]);
+    p.translate(width * 0.175, height * 0.04, -depth * 0.27); // Position above pillow
+    p.box(width * 0.117, height * 0.01, depth * 0.063);
+    p.pop();
   }
 
-  drawBlanket(p) {
-    p.push();
-    p.translate(0, -35, 20);
+  drawQuiltedBlanket(p) {
+    // Use base dimensions
+    const width = 170;
+    const height = 100;
+    const depth = 240;
 
     const blanketColor = this.parseColor(this.colors.blanket);
-    const blanketLightColor = this.parseColor(this.colors.blanketLight);
     const blanketDarkColor = this.parseColor(this.colors.blanketDark);
+    const blanketLightColor = this.parseColor(this.colors.blanketLight);
 
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      140,
-      12,
-      160,
-      blanketColor,
-      blanketLightColor,
-      blanketDarkColor
-    );
-
+    // Main blanket base - position above mattress
     p.push();
-    p.translate(0, -8, 70);
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      130,
-      8,
-      20,
-      blanketDarkColor,
-      blanketColor,
-      blanketDarkColor
-    );
+    p.fill(blanketColor[0], blanketColor[1], blanketColor[2]);
+    p.translate(0, height * 0.12, depth * 0.083); // Position above mattress
+    p.box(width * 0.467, height * 0.04, depth * 0.5);
     p.pop();
 
-    p.fill(blanketDarkColor[0], blanketDarkColor[1], blanketDarkColor[2]);
-    for (let i = -50; i <= 50; i += 25) {
-      p.push();
-      p.translate(i, -8, 0);
-      p.box(2, 2, 140);
-      p.pop();
+    // Quilted diamond pattern for blanket
+    const diamondSize = width * 0.088;
+    const rows = Math.max(3, Math.floor(depth * 0.029));
+    const cols = Math.max(2, Math.floor(width * 0.023));
+
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        let x = (i - cols / 2 + 0.5) * diamondSize;
+        let z =
+          (j - rows / 2 + 0.5) * diamondSize + (i % 2) * (diamondSize / 2);
+
+        // Create quilted diamond pattern with 3 colors
+        let colorChoice;
+        let pattern = (i + j) % 3;
+        if (pattern === 0) {
+          colorChoice = blanketColor;
+        } else if (pattern === 1) {
+          colorChoice = blanketDarkColor;
+        } else {
+          colorChoice = blanketLightColor;
+        }
+
+        p.push();
+        p.fill(colorChoice[0], colorChoice[1], colorChoice[2]);
+        p.translate(x, height * 0.15, depth * 0.083 + z); // Position above blanket base
+        p.box(width * 0.058, height * 0.01, width * 0.058);
+        p.pop();
+
+        // Add stitching lines
+        if ((i + j) % 2 === 0) {
+          p.push();
+          p.fill(blanketDarkColor[0], blanketDarkColor[1], blanketDarkColor[2]);
+          p.translate(x, height * 0.155, depth * 0.083 + z); // Position above quilted pattern
+          p.box(width * 0.07, height * 0.005, width * 0.0058);
+          p.pop();
+
+          p.push();
+          p.fill(blanketDarkColor[0], blanketDarkColor[1], blanketDarkColor[2]);
+          p.translate(x, height * 0.155, depth * 0.083 + z); // Position above quilted pattern
+          p.box(width * 0.0058, height * 0.005, width * 0.07);
+          p.pop();
+        }
+      }
     }
 
+    // Blanket border/hem - position above blanket
     p.push();
-    p.translate(50, -8, -60);
-    p.rotateZ(p.PI / 6);
-    this.drawPixelCube(
-      p,
-      0,
-      0,
-      0,
-      30,
-      6,
-      25,
-      blanketLightColor,
-      blanketColor,
-      blanketDarkColor
-    );
-    p.pop();
-
+    p.fill(blanketDarkColor[0], blanketDarkColor[1], blanketDarkColor[2]);
+    p.translate(0, height * 0.155, depth * 0.083); // Position above blanket
+    p.box(width * 0.479, height * 0.005, depth * 0.508);
     p.pop();
   }
 }
