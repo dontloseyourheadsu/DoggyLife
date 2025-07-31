@@ -121,7 +121,7 @@ export class WallHologramSystem extends BaseHologramSystem {
     return this.currentHologram;
   }
 
-    // Get the rotation needed for furniture to face into the room from the wall
+  // Get the rotation needed for furniture to face into the room from the wall
   getWallRotation(wallName) {
     switch (wallName) {
       case "back":
@@ -201,15 +201,15 @@ export class WallHologramSystem extends BaseHologramSystem {
       mappedPosition,
       newWall
     );
-    
+
     // Update rotation for the new wall
     this.currentHologram.rotation = this.getWallRotation(newWall);
-    
+
     // Update furniture rotation if it exists
     if (this.selectedFurniture) {
       this.selectedFurniture.setRotation(this.currentHologram.rotation);
     }
-    
+
     return true;
   }
 
@@ -460,7 +460,8 @@ export class WallHologramSystem extends BaseHologramSystem {
     const p = p5Instance;
     const pos = this.currentHologram.position;
     const size = this.currentHologram.size;
-    const rotation = this.currentHologram.rotation || this.getWallRotation(this.currentWall);
+    const rotation =
+      this.currentHologram.rotation || this.getWallRotation(this.currentWall);
 
     p.push();
     p.translate(pos.x, pos.y, pos.z);
@@ -504,7 +505,7 @@ export class WallHologramSystem extends BaseHologramSystem {
     // Create furniture object and sync position and rotation
     this.createFurnitureObject();
     this.updateFurniturePosition();
-    
+
     console.log(`Wall hologram selected item: ${itemName} (${itemType})`);
   }
 
@@ -524,24 +525,36 @@ export class WallHologramSystem extends BaseHologramSystem {
     // Import and create furniture based on type (wall items only)
     switch (itemType.toLowerCase()) {
       case "window":
-        import("./furniture/window-furniture.js").then(({ WindowFurniture }) => {
-          this.selectedFurniture = new WindowFurniture(sizeX, sizeY, sizeZ);
-          this.updateFurniturePosition();
-          // Ensure hologram has rotation set
-          if (this.currentHologram && !this.currentHologram.rotation) {
-            this.currentHologram.rotation = this.getWallRotation(this.currentWall);
-          }
-        }).catch(err => console.error("Failed to load WindowFurniture:", err));
+        import("./furniture/window-furniture.js")
+          .then(({ WindowFurniture }) => {
+            this.selectedFurniture = new WindowFurniture(sizeX, sizeY, sizeZ);
+            this.updateFurniturePosition();
+            // Ensure hologram has rotation set
+            if (this.currentHologram && !this.currentHologram.rotation) {
+              this.currentHologram.rotation = this.getWallRotation(
+                this.currentWall
+              );
+            }
+          })
+          .catch((err) =>
+            console.error("Failed to load WindowFurniture:", err)
+          );
         break;
       case "painting":
-        import("./furniture/painting-furniture.js").then(({ PaintingFurniture }) => {
-          this.selectedFurniture = new PaintingFurniture(sizeX, sizeY, sizeZ);
-          this.updateFurniturePosition();
-          // Ensure hologram has rotation set
-          if (this.currentHologram && !this.currentHologram.rotation) {
-            this.currentHologram.rotation = this.getWallRotation(this.currentWall);
-          }
-        }).catch(err => console.error("Failed to load PaintingFurniture:", err));
+        import("./furniture/painting-furniture.js")
+          .then(({ PaintingFurniture }) => {
+            this.selectedFurniture = new PaintingFurniture(sizeX, sizeY, sizeZ);
+            this.updateFurniturePosition();
+            // Ensure hologram has rotation set
+            if (this.currentHologram && !this.currentHologram.rotation) {
+              this.currentHologram.rotation = this.getWallRotation(
+                this.currentWall
+              );
+            }
+          })
+          .catch((err) =>
+            console.error("Failed to load PaintingFurniture:", err)
+          );
         break;
       default:
         console.warn(`Unknown wall furniture type: ${itemType}`);
@@ -555,9 +568,10 @@ export class WallHologramSystem extends BaseHologramSystem {
 
     const pos = this.currentHologram.position;
     this.selectedFurniture.setPosition(pos.x, pos.y, pos.z);
-    
+
     // Update rotation to match wall orientation
-    const rotation = this.currentHologram.rotation || this.getWallRotation(this.currentWall);
+    const rotation =
+      this.currentHologram.rotation || this.getWallRotation(this.currentWall);
     this.selectedFurniture.setRotation(rotation);
   }
 
