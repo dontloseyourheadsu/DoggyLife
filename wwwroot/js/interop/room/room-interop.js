@@ -119,3 +119,81 @@ window.clearHologramItemSelection = function () {
     currentP5Instance.clearSelectedHologramItem();
   }
 };
+
+/**
+ * Global function to get current hologram item data (called from C#)
+ * Returns null if no item is selected or no hologram is active
+ */
+window.getCurrentHologramItemData = function () {
+  const currentP5Instance = window.getCurrentP5Instance
+    ? window.getCurrentP5Instance()
+    : null;
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for hologram item data");
+    return null;
+  }
+
+  // Get the selected hologram item
+  const selectedItem = currentP5Instance.getSelectedHologramItem
+    ? currentP5Instance.getSelectedHologramItem()
+    : null;
+
+  if (!selectedItem) {
+    console.warn("No hologram item currently selected");
+    return null;
+  }
+
+  // Get the active hologram system to determine placement type and get position/rotation
+  const floorHologram = currentP5Instance.getFloorHologramSystem();
+  const wallHologram = currentP5Instance.getWallHologramSystem();
+
+  let hologramData = null;
+
+  if (floorHologram && floorHologram.enabled && floorHologram.currentHologram) {
+    hologramData = {
+      placementType: "floor",
+      position: { ...floorHologram.currentHologram.position },
+      rotation: floorHologram.currentHologram.rotation || 0,
+      size: { ...floorHologram.currentHologram.size },
+      wall: null,
+    };
+  } else if (
+    wallHologram &&
+    wallHologram.enabled &&
+    wallHologram.currentHologram
+  ) {
+    hologramData = {
+      placementType: "wall",
+      position: { ...wallHologram.currentHologram.position },
+      rotation: wallHologram.getWallRotation
+        ? wallHologram.getWallRotation(wallHologram.currentWall)
+        : 0,
+      size: { ...wallHologram.currentHologram.size },
+      wall: wallHologram.currentWall,
+    };
+  }
+
+  if (!hologramData) {
+    console.warn("No active hologram system found");
+    return null;
+  }
+
+  // Combine item data with hologram data
+  const result = {
+    itemId: selectedItem.itemId,
+    itemName: selectedItem.itemName,
+    itemType: selectedItem.itemType,
+    sizeX: selectedItem.sizeX,
+    sizeY: selectedItem.sizeY,
+    sizeZ: selectedItem.sizeZ,
+    positionX: hologramData.position.x,
+    positionY: hologramData.position.y,
+    positionZ: hologramData.position.z,
+    rotation: hologramData.rotation,
+    placementType: hologramData.placementType,
+    wall: hologramData.wall,
+  };
+
+  console.log("Current hologram item data:", result);
+  return result;
+};

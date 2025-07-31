@@ -60,7 +60,7 @@ export class WindowFurniture extends BaseFurniture {
 
     // Apply rotation for wall orientation
     p.rotateY(this.rotation);
-    
+
     // Apply scaling
     p.scale(this.scaleX, this.scaleY, this.scaleZ);
 
@@ -81,11 +81,11 @@ export class WindowFurniture extends BaseFurniture {
     const depth = 20; // Base depth
 
     // Draw layers from back to front for proper visibility
-    
+
     // 1. Wooden frame (back layer)
     this.drawWoodenFrame(p);
 
-    // 2. Blue glass area (middle layer) 
+    // 2. Blue glass area (middle layer)
     this.drawGlassArea(p);
 
     // 3. Wooden cross sticks (front layer)

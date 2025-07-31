@@ -27,7 +27,7 @@ export class PaintingFurniture extends BaseFurniture {
       paintSecondary: "#228B22", // Forest green
       paintAccent: "#DC143C", // Crimson
       paintHighlight: "#FFD700", // Gold
-      
+
       // Signature area
       signature: "#2F2F2F", // Dark gray for signature
       signatureLight: "#696969",
@@ -60,7 +60,7 @@ export class PaintingFurniture extends BaseFurniture {
 
     // Apply rotation for wall orientation
     p.rotateY(this.rotation);
-    
+
     // Apply scaling
     p.scale(this.scaleX, this.scaleY, this.scaleZ);
 
@@ -81,7 +81,7 @@ export class PaintingFurniture extends BaseFurniture {
     const depth = 15; // Base depth
 
     // Draw layers from back to front for proper visibility
-    
+
     // 1. Wooden frame border (back layer)
     this.drawWoodenFrame(p);
 
@@ -144,7 +144,7 @@ export class PaintingFurniture extends BaseFurniture {
     p.push();
     p.fill(mountainColor[0], mountainColor[1], mountainColor[2]);
     p.translate(-width * 0.2, height * 0.1, depth * 0.2); // Front layer
-    
+
     // Create triangle by scaling a cone
     p.scale(1, 2, 0.2); // Make it flat and tall
     p.cone(width * 0.15, height * 0.3, 8); // 8 sides for better triangle look
@@ -154,7 +154,7 @@ export class PaintingFurniture extends BaseFurniture {
     p.push();
     p.fill(mountainColor[0], mountainColor[1], mountainColor[2]);
     p.translate(width * 0.15, height * 0.05, depth * 0.2); // Front layer
-    
+
     // Create triangle by scaling a cone
     p.scale(1, 2.5, 0.2); // Make it flat and taller
     p.cone(width * 0.18, height * 0.35, 8); // 8 sides for better triangle look
