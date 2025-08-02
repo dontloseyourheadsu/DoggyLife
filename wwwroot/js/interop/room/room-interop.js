@@ -88,15 +88,30 @@ window.selectHologramItem = function (
   );
 
   // Set the selected item with size information
+  console.log("currentP5Instance:", currentP5Instance);
+  console.log("currentP5Instance._canvasId:", currentP5Instance?._canvasId);
+  console.log(
+    "setSelectedHologramItem function exists:",
+    !!currentP5Instance?.setSelectedHologramItem
+  );
+
   if (currentP5Instance.setSelectedHologramItem) {
-    currentP5Instance.setSelectedHologramItem(
-      itemId,
-      itemName,
-      itemType,
-      sizeX,
-      sizeY,
-      sizeZ
-    );
+    console.log("Calling setSelectedHologramItem...");
+    try {
+      currentP5Instance.setSelectedHologramItem(
+        itemId,
+        itemName,
+        itemType,
+        sizeX,
+        sizeY,
+        sizeZ
+      );
+      console.log("setSelectedHologramItem completed successfully");
+    } catch (error) {
+      console.error("Error calling setSelectedHologramItem:", error);
+    }
+  } else {
+    console.error("setSelectedHologramItem function not found on p5Instance!");
   }
 };
 
@@ -118,6 +133,8 @@ window.clearHologramItemSelection = function () {
   if (currentP5Instance.clearSelectedHologramItem) {
     currentP5Instance.clearSelectedHologramItem();
   }
+
+  // DON'T disable all holograms - we want to keep hologram mode active for placing more items
 };
 
 /**
@@ -137,6 +154,11 @@ window.getCurrentHologramItemData = function () {
   const selectedItem = currentP5Instance.getSelectedHologramItem
     ? currentP5Instance.getSelectedHologramItem()
     : null;
+
+  console.log(
+    "getCurrentHologramItemData - selectedItem from p5Instance:",
+    selectedItem
+  );
 
   if (!selectedItem) {
     console.warn("No hologram item currently selected");
@@ -180,9 +202,9 @@ window.getCurrentHologramItemData = function () {
 
   // Combine item data with hologram data
   const result = {
-    itemId: selectedItem.itemId,
-    itemName: selectedItem.itemName,
-    itemType: selectedItem.itemType,
+    itemId: selectedItem.itemId || selectedItem.id, // Handle both property names
+    itemName: selectedItem.itemName || selectedItem.name, // Handle both property names
+    itemType: selectedItem.itemType || selectedItem.type, // Handle both property names
     sizeX: selectedItem.sizeX,
     sizeY: selectedItem.sizeY,
     sizeZ: selectedItem.sizeZ,
@@ -196,4 +218,114 @@ window.getCurrentHologramItemData = function () {
 
   console.log("Current hologram item data:", result);
   return result;
+};
+
+/**
+ * Global function to load placed items from C# and render them in the room
+ * @param {Array} placedItems - Array of placed item objects from the database
+ */
+window.loadPlacedItems = function (placedItems) {
+  const currentP5Instance = window.getCurrentP5Instance
+    ? window.getCurrentP5Instance()
+    : null;
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for loading placed items");
+    return;
+  }
+
+  if (currentP5Instance.loadPlacedItems) {
+    currentP5Instance.loadPlacedItems(placedItems);
+    console.log(`Loaded ${placedItems.length} placed items into the room`);
+  }
+};
+
+/**
+ * Global function to add a newly placed item to the room (called after saving to database)
+ * @param {Object} placedItem - The placed item object from the database
+ */
+window.addPlacedItemToRoom = function (placedItem) {
+  const currentP5Instance = window.getCurrentP5Instance
+    ? window.getCurrentP5Instance()
+    : null;
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for adding placed item");
+    return;
+  }
+
+  if (currentP5Instance.addPlacedItem) {
+    currentP5Instance.addPlacedItem(placedItem);
+    console.log(`Added placed item to room: ${placedItem.itemName}`);
+  }
+};
+
+/**
+ * Global function to remove a placed item from the room (called when deleting from database)
+ * @param {number} itemId - The ID of the placed item to remove
+ */
+window.removePlacedItemFromRoom = function (itemId) {
+  const currentP5Instance = window.getCurrentP5Instance
+    ? window.getCurrentP5Instance()
+    : null;
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for removing placed item");
+    return;
+  }
+
+  if (currentP5Instance.removePlacedItem) {
+    const removed = currentP5Instance.removePlacedItem(itemId);
+    if (removed) {
+      console.log(`Removed placed item from room: ID ${itemId}`);
+    } else {
+      console.warn(`Failed to remove placed item from room: ID ${itemId}`);
+    }
+  }
+};
+
+/**
+ * Global function to clear all placed items from the room
+ */
+window.clearAllPlacedItemsFromRoom = function () {
+  const currentP5Instance = window.getCurrentP5Instance
+    ? window.getCurrentP5Instance()
+    : null;
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for clearing placed items");
+    return;
+  }
+
+  if (currentP5Instance.clearAllPlacedItems) {
+    currentP5Instance.clearAllPlacedItems();
+    console.log("Cleared all placed items from room");
+  }
+};
+
+/**
+ * Global function to check if an item is already placed and get its data
+ * @param {string} itemId - The ID of the item to check
+ * @param {string} itemType - The type of the item to check
+ * @returns {Object|null} The placed item data if found, null otherwise
+ */
+window.getExistingPlacedItem = function (itemId, itemType) {
+  const currentP5Instance = window.getCurrentP5Instance
+    ? window.getCurrentP5Instance()
+    : null;
+  if (!currentP5Instance) {
+    console.error("No p5 instance available for checking placed items");
+    return null;
+  }
+
+  if (currentP5Instance.getPlacedItems) {
+    const placedItems = currentP5Instance.getPlacedItems();
+    // Find existing item by itemId and itemType
+    const existingItem = placedItems.find(
+      (item) => item.itemId === itemId && item.itemType === itemType
+    );
+
+    if (existingItem) {
+      console.log(`Found existing placed item: ${existingItem.itemName}`);
+      return existingItem;
+    }
+  }
+
+  return null;
 };
