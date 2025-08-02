@@ -1,4 +1,4 @@
-﻿<button @onclick="OnClick" class="pixel-button">
+﻿<button @onclick="OnClick" class="@GetCssClasses()">
     @ChildContent
 </button>
 
@@ -8,4 +8,17 @@
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    private string GetCssClasses()
+    {
+        var classes = "pixel-button";
+        if (!string.IsNullOrEmpty(@class))
+        {
+            classes += " " + @class;
+        }
+        return classes;
+    }
 }

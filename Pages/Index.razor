@@ -12,6 +12,7 @@
 @using SqliteWasmHelper
 @inject MusicService _musicService
 @inject RoomService _roomService
+@inject PlacedItemService _placedItemService
 
 <div class="screens-container" style="overflow-y: scroll;">
     @if (_environment == GameEnvironment.None)
@@ -35,7 +36,10 @@
 
         <div style="display:flex; gap: 2em; flex-wrap: wrap;">
             <RoomCanvas />
-            <HologramItemSelector CurrentRoomMode="_currentRoomMode" />
+            <div style="display: flex; flex-direction: column; gap: 1em;">
+                <HologramItemSelector CurrentRoomMode="_currentRoomMode" />
+                <PlacedItemsDisplay />
+            </div>
         </div>
     }
     else if (_environment == GameEnvironment.Settings)
@@ -66,6 +70,8 @@
 
         await _roomService.InitializeAsync();
         await _musicService.InitializeAsync();
+        await _placedItemService.InitializeAsync();
+        Console.WriteLine("Game initialized");
 
         await _musicService.PlayTrack(MusicTrack.MatchaGreenTea);
 

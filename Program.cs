@@ -10,12 +10,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+builder.Services.AddSqliteWasmDbContextFactory<AppDbContext>(
+  opts => opts.UseSqlite("Data Source=things.sqlite3"));
+
 builder.Services.AddSingleton<MusicService>();
 builder.Services.AddSingleton<RoomService>();
 builder.Services.AddSingleton<HologramItemService>();
-
-builder.Services.AddSqliteWasmDbContextFactory<AppDbContext>(
-  opts => opts.UseSqlite("Data Source=things.sqlite3"));
+builder.Services.AddSingleton<PlacedItemService>();
 
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

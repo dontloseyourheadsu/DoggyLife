@@ -4,7 +4,23 @@ import { createRoomCanvas } from "../../../canvas/room-canvas.js";
 var currentP5Instance = null;
 
 // Make currentP5Instance globally accessible for room-interop.js
-window.getCurrentP5Instance = () => currentP5Instance;
+window.getCurrentP5Instance = () => {
+  // Prioritize window.currentRoomP5Instance which gets set when the room canvas is created
+  const instance = window.currentRoomP5Instance || currentP5Instance;
+  console.log(
+    "getCurrentP5Instance - using window.currentRoomP5Instance:",
+    !!window.currentRoomP5Instance
+  );
+  console.log(
+    "getCurrentP5Instance - fallback currentP5Instance:",
+    !!currentP5Instance
+  );
+  console.log(
+    "getCurrentP5Instance - returning instance with _canvasId:",
+    instance?._canvasId
+  );
+  return instance;
+};
 
 /**
  * Initializes the p5.js canvas based on the provided canvas data.
@@ -19,11 +35,14 @@ export function initializeP5Canvas(canvasData) {
       canvasData.canvasContainerId,
       canvasData.additionalData
     );
+
+    // Set the global window reference so room-interop.js can access the correct instance
+    window.currentRoomP5Instance = currentP5Instance;
+    console.log(
+      "✅ Set window.currentRoomP5Instance to new room canvas instance"
+    );
   }
 }
-
-// Import room-interop after setting up the helper function
-import "../../room/room-interop.js";
 
 // Export the currentP5Instance so other modules can access it
 export { currentP5Instance };
