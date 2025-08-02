@@ -28,3 +28,19 @@
     text-align: center;
     padding: 10px;
 }
+
+.place-item-section {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.place-item-button {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.place-item-button:hover {
+    background-color: #45a049;
+}

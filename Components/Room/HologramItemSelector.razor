@@ -1,8 +1,10 @@
 @using DoggyLife.Models.Room
 @using DoggyLife.Models.Modes
+@using DoggyLife.Models.Storage.Room
 @using DoggyLife.Services
 @using Microsoft.JSInterop
 @inject HologramItemService HologramItemService
+@inject PlacedItemService PlacedItemService
 @inject IJSRuntime JSRuntime
 
 <div class="hologram-selector">
@@ -20,6 +22,15 @@
                 </PixelButton>
             }
         </div>
+
+        @if (_selectedItem != null)
+        {
+            <div class="place-item-section">
+                <PixelButton OnClick="PlaceItem" class="place-item-button">
+                    Place @_selectedItem.DisplayName
+                </PixelButton>
+            </div>
+        }
     }
 </div>
 
@@ -65,10 +76,48 @@
 
         try
         {
+            // Check if this item is already placed and get its data
+            var existingPlacedItem = await JSRuntime.InvokeAsync<object?>("getExistingPlacedItem", item.Id, item.Type.ToString().ToLower());
+            
             // Call JavaScript function to handle item selection with size information
             await JSRuntime.InvokeVoidAsync("selectHologramItem",
             item.Id, item.Name, item.Type.ToString().ToLower(),
             item.SizeX, item.SizeY, item.SizeZ);
+            
+            // If there's an existing placed item, restore its position
+            if (existingPlacedItem != null)
+            {
+                var jsonElement = (System.Text.Json.JsonElement)existingPlacedItem;
+                
+                var position = new
+                {
+                    x = jsonElement.GetProperty("positionX").GetSingle(),
+                    y = jsonElement.GetProperty("positionY").GetSingle(),
+                    z = jsonElement.GetProperty("positionZ").GetSingle()
+                };
+                
+                var rotation = jsonElement.GetProperty("rotation").GetSingle();
+                var placementType = jsonElement.GetProperty("placementType").GetString();
+                var wall = jsonElement.TryGetProperty("wall", out var wallProp) && wallProp.ValueKind != System.Text.Json.JsonValueKind.Null 
+                    ? wallProp.GetString() 
+                    : null;
+                
+                // Enable hologram at the stored position
+                if (placementType == "floor")
+                {
+                    await JSRuntime.InvokeVoidAsync("enableHologramMode", 
+                        position.x, position.y, position.z, 
+                        item.SizeX, item.SizeY, item.SizeZ, "floor");
+                }
+                else if (placementType == "wall" && !string.IsNullOrEmpty(wall))
+                {
+                    await JSRuntime.InvokeVoidAsync("enableHologramMode", 
+                        position.x, position.y, position.z, 
+                        item.SizeX, item.SizeY, item.SizeZ, "wall");
+                }
+                
+                Console.WriteLine($"Restored item position: {item.Name} at ({position.x:F1}, {position.y:F1}, {position.z:F1})");
+            }
         }
         catch (Exception ex)
         {
@@ -110,5 +159,71 @@
     public async Task ClearSelectionAsync()
     {
         await ClearSelection();
+    }
+
+    /// <summary>
+    /// Places the currently selected item at the current hologram position
+    /// </summary>
+    private async Task PlaceItem()
+    {
+        if (_selectedItem == null)
+        {
+            Console.WriteLine("No item selected for placement");
+            return;
+        }
+
+        try
+        {
+            // Get current hologram item data from JavaScript
+            var hologramData = await JSRuntime.InvokeAsync<object>("getCurrentHologramItemData");
+            
+            if (hologramData == null)
+            {
+                Console.WriteLine("No hologram data available for item placement");
+                return;
+            }
+
+            // Convert the JavaScript object to our data structure
+            var jsonElement = (System.Text.Json.JsonElement)hologramData;
+            
+            var placedItem = new PlacedItem
+            {
+                ItemId = jsonElement.GetProperty("itemId").GetString() ?? string.Empty,
+                ItemName = jsonElement.GetProperty("itemName").GetString() ?? string.Empty,
+                ItemType = jsonElement.GetProperty("itemType").GetString() ?? string.Empty,
+                PositionX = jsonElement.GetProperty("positionX").GetSingle(),
+                PositionY = jsonElement.GetProperty("positionY").GetSingle(),
+                PositionZ = jsonElement.GetProperty("positionZ").GetSingle(),
+                Rotation = jsonElement.GetProperty("rotation").GetSingle(),
+                SizeX = jsonElement.GetProperty("sizeX").GetSingle(),
+                SizeY = jsonElement.GetProperty("sizeY").GetSingle(),
+                SizeZ = jsonElement.GetProperty("sizeZ").GetSingle(),
+                PlacementType = jsonElement.GetProperty("placementType").GetString() ?? string.Empty,
+                Wall = jsonElement.TryGetProperty("wall", out var wallProp) && wallProp.ValueKind != System.Text.Json.JsonValueKind.Null 
+                    ? wallProp.GetString() 
+                    : null
+            };
+
+            // Save the placed item to the database
+            Console.WriteLine($"About to save placed item: {placedItem.ItemName}");
+            await PlacedItemService.SavePlacedItemAsync(placedItem);
+            Console.WriteLine($"Database save completed for: {placedItem.ItemName}");
+            
+            // Add the placed item to the JavaScript room canvas
+            Console.WriteLine($"About to call JavaScript addPlacedItemToRoom for: {placedItem.ItemName}");
+            await JSRuntime.InvokeVoidAsync("addPlacedItemToRoom", placedItem);
+            Console.WriteLine($"JavaScript call completed for: {placedItem.ItemName}");
+            
+            Console.WriteLine($"Successfully placed item: {placedItem.ItemName} at ({placedItem.PositionX:F1}, {placedItem.PositionY:F1}, {placedItem.PositionZ:F1})");
+            
+            // Clear the selection after placing
+            await ClearSelection();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error placing item: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            Console.WriteLine($"Exception type: {ex.GetType().Name}");
+        }
     }
 }
