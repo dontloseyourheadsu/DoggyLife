@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=7 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Texture2D" uid="uid://5kdtf2dbj8j" path="res://room/MCBlocksBlackOutline.png" id="1_ppkfq"]
+[ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://room/dogs/white-dog.tscn" id="2_j33j0"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0e48y"]
 texture = ExtResource("1_ppkfq")
@@ -754,3 +755,6 @@ y_sort_enabled = true
 texture_filter = 1
 tile_map_data = PackedByteArray("AAD7//b/AAANAAMAAAD7//X/AAANAAMAAAD8//T/AAANAAMAAAD8//P/AAANAAMAAAD9//L/AAANAAMAAAD9//H/AAANAAMAAAD+//D/AAANAAMAAAD+/+//AAANAAMAAAD//+7/AAANAAMAAAD//+3/AAANAAMAAAAAAO7/AAANAAMAAAAAAO//AAANAAMAAAABAPD/AAANAAMAAAABAPH/AAANAAMAAAACAPL/AAANAAMAAAACAPP/AAANAAMAAAADAPT/AAANAAMAAAADAPX/AAANAAMAAAAEAPb/AAANAAMAAAA=")
 tile_set = SubResource("TileSet_fsy70")
+
+[node name="White-dog" parent="." instance=ExtResource("2_j33j0")]
+position = Vector2(-51, -16)
