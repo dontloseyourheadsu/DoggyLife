@@ -1,7 +1,9 @@
-[gd_scene load_steps=7 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=9 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Texture2D" uid="uid://5kdtf2dbj8j" path="res://room/MCBlocksBlackOutline.png" id="1_ppkfq"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://room/dogs/white-dog.tscn" id="2_j33j0"]
+[ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://room/floor_layer.gd" id="2_tku2a"]
+[ext_resource type="Texture2D" path="./stripes-resize.png" id="3_fsy70"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0e48y"]
 texture = ExtResource("1_ppkfq")
@@ -723,6 +725,7 @@ y_sort_enabled = true
 texture_filter = 1
 tile_map_data = PackedByteArray("AAD/////AQAAAAcAAAD///7/AQAAAAcAAAD+////AQAAAAcAAAD//wAAAQAAAAcAAAD//wEAAQAAAAcAAAAAAAAAAQAAAAcAAAAAAP//AQAAAAcAAAAAAP7/AQAAAAcAAAD///3/AQAAAAcAAAD+//7/AQAAAAcAAAD+//3/AQAAAAcAAAD+//z/AQAAAAcAAAD+//v/AQAAAAcAAAD///r/AQAAAAcAAAD///v/AQAAAAcAAAAAAPr/AQAAAAcAAAD///z/AQAAAAcAAAAAAPv/AQAAAAcAAAAAAPz/AQAAAAcAAAAAAP3/AQAAAAcAAAABAP7/AQAAAAcAAAABAAAAAQAAAAcAAAABAP//AQAAAAcAAAAAAAEAAQAAAAcAAAAAAAIAAQAAAAcAAAD//wIAAQAAAAcAAAD//wMAAQAAAAcAAAD+/wEAAQAAAAcAAAD+/wAAAQAAAAcAAAD9////AQAAAAcAAAD9//3/AQAAAAcAAAD9//7/AQAAAAcAAAD8////AQAAAAcAAAD9/wAAAQAAAAcAAAD9/wEAAQAAAAcAAAD+/wIAAQAAAAcAAAD+/wMAAQAAAAcAAAD//wQAAQAAAAcAAAD//wUAAQAAAAcAAAAAAAQAAQAAAAcAAAAAAAMAAQAAAAcAAAABAAIAAQAAAAcAAAABAAEAAQAAAAcAAAACAAAAAQAAAAcAAAACAP7/AQAAAAcAAAABAP3/AQAAAAcAAAABAPz/AQAAAAcAAAD///n/AQAAAAcAAAACAP//AQAAAAcAAAADAP7/AQAAAAcAAAACAP3/AQAAAAcAAAACAPz/AQAAAAcAAAABAPv/AQAAAAcAAAABAPr/AQAAAAcAAAAAAPn/AQAAAAcAAAAAAPj/AQAAAAcAAAD///f/AQAAAAcAAAD///j/AQAAAAcAAAD+//n/AQAAAAcAAAD+//r/AQAAAAcAAAD9//v/AQAAAAcAAAD9//z/AQAAAAcAAAD8//3/AQAAAAcAAAD8//7/AQAAAAcAAAD7////AQAAAAcAAAD8/wAAAQAAAAcAAAD+/wQAAQAAAAcAAAD9/wIAAQAAAAcAAAD8/wEAAQAAAAcAAAD9/wMAAQAAAAcAAAD//wYAAQAAAAcAAAD//wcAAQAAAAcAAAAAAAYAAQAAAAcAAAD+/wUAAQAAAAcAAAABAAMAAQAAAAcAAAACAAIAAQAAAAcAAAABAAQAAQAAAAcAAAAAAAUAAQAAAAcAAAACAAEAAQAAAAcAAAADAAAAAQAAAAcAAAADAP//AQAAAAcAAAA=")
 tile_set = SubResource("TileSet_epypp")
+script = ExtResource("2_tku2a")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(0, -30)
@@ -758,3 +761,13 @@ tile_set = SubResource("TileSet_fsy70")
 
 [node name="White-dog" parent="." instance=ExtResource("2_j33j0")]
 position = Vector2(-51, -16)
+
+[node name="TextureRect" type="TextureRect" parent="."]
+z_index = -1
+texture_repeat = 2
+offset_left = -187.0
+offset_top = -223.0
+offset_right = 183.0
+offset_bottom = 147.0
+texture = ExtResource("3_fsy70")
+stretch_mode = 1
