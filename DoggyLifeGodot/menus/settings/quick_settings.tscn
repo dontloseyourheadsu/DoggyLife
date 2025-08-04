@@ -1,4 +1,8 @@
-[gd_scene format=3 uid="uid://2ffuhh1f5i6k"]
+[gd_scene load_steps=4 format=3 uid="uid://2ffuhh1f5i6k"]
+
+[ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://menus/settings/quick_settings.gd" id="1_kxsdx"]
+[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
+[ext_resource type="Texture2D" uid="uid://ck5ndxq6xu5oy" path="res://room/stripes-resize.png" id="3_vnlla"]
 
 [node name="QuickSettings" type="Control"]
 layout_mode = 3
@@ -7,3 +11,53 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_kxsdx")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="SoundLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Volume"
+
+[node name="Volume" type="HSlider" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+min_value = -30.0
+max_value = 6.0
+step = 0.5
+
+[node name="MuteLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Mute"
+
+[node name="Mute" type="CheckBox" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Back"
+
+[node name="Background" type="TextureRect" parent="MarginContainer"]
+z_index = -1
+texture_repeat = 2
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("3_vnlla")
+stretch_mode = 1
+
+[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_lafk5")
+autoplay = true
+parameters/looping = true
+
+[connection signal="value_changed" from="MarginContainer/VBoxContainer/Volume" to="." method="_on_volume_value_changed"]
+[connection signal="toggled" from="MarginContainer/VBoxContainer/Mute" to="." method="_on_check_box_toggled"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/BackButton" to="." method="_on_button_pressed"]
