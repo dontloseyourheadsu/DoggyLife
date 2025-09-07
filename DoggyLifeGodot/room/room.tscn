@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=11 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Texture2D" uid="uid://5kdtf2dbj8j" path="res://room/MCBlocksBlackOutline.png" id="1_ppkfq"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://room/dogs/white-dog.tscn" id="2_j33j0"]
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://room/floor_layer.gd" id="2_tku2a"]
 [ext_resource type="Texture2D" uid="uid://ck5ndxq6xu5oy" path="res://room/stripes-resize.png" id="3_fsy70"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
+[ext_resource type="PackedScene" uid="uid://d1ig36km6s3ve" path="res://room/room_gui.tscn" id="6_fntg6"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0e48y"]
 texture = ExtResource("1_ppkfq")
@@ -721,16 +722,32 @@ sources/0 = SubResource("TileSetAtlasSource_j33j0")
 
 [node name="Room" type="Node2D"]
 
+[node name="Camera2D" type="Camera2D" parent="."]
+offset = Vector2(0, -30)
+zoom = Vector2(3.25, 3.25)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="Background" type="TextureRect" parent="CanvasLayer"]
+z_index = -1
+texture_repeat = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(3, 3)
+mouse_filter = 2
+texture = ExtResource("3_fsy70")
+stretch_mode = 1
+
 [node name="FloorLayer" type="TileMapLayer" parent="."]
 y_sort_enabled = true
 texture_filter = 1
 tile_map_data = PackedByteArray("AAD/////AQAAAAcAAAD///7/AQAAAAcAAAD+////AQAAAAcAAAD//wAAAQAAAAcAAAD//wEAAQAAAAcAAAAAAAAAAQAAAAcAAAAAAP//AQAAAAcAAAAAAP7/AQAAAAcAAAD///3/AQAAAAcAAAD+//7/AQAAAAcAAAD+//3/AQAAAAcAAAD+//z/AQAAAAcAAAD+//v/AQAAAAcAAAD///r/AQAAAAcAAAD///v/AQAAAAcAAAAAAPr/AQAAAAcAAAD///z/AQAAAAcAAAAAAPv/AQAAAAcAAAAAAPz/AQAAAAcAAAAAAP3/AQAAAAcAAAABAP7/AQAAAAcAAAABAAAAAQAAAAcAAAABAP//AQAAAAcAAAAAAAEAAQAAAAcAAAAAAAIAAQAAAAcAAAD//wIAAQAAAAcAAAD//wMAAQAAAAcAAAD+/wEAAQAAAAcAAAD+/wAAAQAAAAcAAAD9////AQAAAAcAAAD9//3/AQAAAAcAAAD9//7/AQAAAAcAAAD8////AQAAAAcAAAD9/wAAAQAAAAcAAAD9/wEAAQAAAAcAAAD+/wIAAQAAAAcAAAD+/wMAAQAAAAcAAAD//wQAAQAAAAcAAAD//wUAAQAAAAcAAAAAAAQAAQAAAAcAAAAAAAMAAQAAAAcAAAABAAIAAQAAAAcAAAABAAEAAQAAAAcAAAACAAAAAQAAAAcAAAACAP7/AQAAAAcAAAABAP3/AQAAAAcAAAABAPz/AQAAAAcAAAD///n/AQAAAAcAAAACAP//AQAAAAcAAAADAP7/AQAAAAcAAAACAP3/AQAAAAcAAAACAPz/AQAAAAcAAAABAPv/AQAAAAcAAAABAPr/AQAAAAcAAAAAAPn/AQAAAAcAAAAAAPj/AQAAAAcAAAD///f/AQAAAAcAAAD///j/AQAAAAcAAAD+//n/AQAAAAcAAAD+//r/AQAAAAcAAAD9//v/AQAAAAcAAAD9//z/AQAAAAcAAAD8//3/AQAAAAcAAAD8//7/AQAAAAcAAAD7////AQAAAAcAAAD8/wAAAQAAAAcAAAD+/wQAAQAAAAcAAAD9/wIAAQAAAAcAAAD8/wEAAQAAAAcAAAD9/wMAAQAAAAcAAAD//wYAAQAAAAcAAAD//wcAAQAAAAcAAAAAAAYAAQAAAAcAAAD+/wUAAQAAAAcAAAABAAMAAQAAAAcAAAACAAIAAQAAAAcAAAABAAQAAQAAAAcAAAAAAAUAAQAAAAcAAAACAAEAAQAAAAcAAAADAAAAAQAAAAcAAAADAP//AQAAAAcAAAA=")
 tile_set = SubResource("TileSet_epypp")
 script = ExtResource("2_tku2a")
-
-[node name="Camera2D" type="Camera2D" parent="."]
-offset = Vector2(0, -30)
-zoom = Vector2(3.25, 3.25)
 
 [node name="WallLayer1" type="TileMapLayer" parent="."]
 z_index = 1
@@ -768,13 +785,10 @@ stream = ExtResource("5_qx3y5")
 autoplay = true
 parameters/looping = true
 
-[node name="Background" type="TextureRect" parent="."]
-z_index = -1
-texture_repeat = 2
-offset_left = -191.0
-offset_top = -137.0
-offset_right = 185.0
-offset_bottom = 77.0
-mouse_filter = 2
-texture = ExtResource("3_fsy70")
-stretch_mode = 1
+[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="RoomGui" parent="CanvasLayer2" instance=ExtResource("6_fntg6")]
+metadata/_edit_use_anchors_ = true
+
+[connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
