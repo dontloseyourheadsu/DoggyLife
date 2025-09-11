@@ -1,22 +1,13 @@
 [gd_resource type="Theme" load_steps=4 format=3 uid="uid://cnld8djuw1qpf"]
 
 [ext_resource type="FontFile" uid="uid://ktpqor7f6673" path="res://fonts/PressStart2P-Regular.ttf" id="1_rjgu6"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nnbta"]
-bg_color = Color(0.572549, 0.486275, 0.690196, 1)
-border_width_top = 8
-border_color = Color(0.729412, 0.65098, 0.827451, 1)
-expand_margin_left = 44.0
-expand_margin_top = 16.0
-expand_margin_right = 44.0
-expand_margin_bottom = 16.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rjgu6"]
-bg_color = Color(0.572549, 0.486275, 0.690196, 1)
+[ext_resource type="StyleBox" uid="uid://bi2bywn2y6sl5" path="res://themes/button-style.tres" id="2_vu6l5"]
+[ext_resource type="StyleBox" uid="uid://boclywt2foib2" path="res://themes/button-style-pressed.tres" id="3_ydht1"]
 
 [resource]
 Button/colors/font_color = Color(1, 1, 1, 1)
 Button/font_sizes/font_size = 25
 Button/fonts/font = ExtResource("1_rjgu6")
-Button/styles/normal = SubResource("StyleBoxFlat_nnbta")
-Button/styles/pressed = SubResource("StyleBoxFlat_rjgu6")
+Button/styles/hover = ExtResource("2_vu6l5")
+Button/styles/normal = ExtResource("2_vu6l5")
+Button/styles/pressed = ExtResource("3_ydht1")
