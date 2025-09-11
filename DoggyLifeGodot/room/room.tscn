@@ -1,11 +1,12 @@
-[gd_scene load_steps=11 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=12 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Texture2D" uid="uid://5kdtf2dbj8j" path="res://room/MCBlocksBlackOutline.png" id="1_ppkfq"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://room/dogs/white-dog.tscn" id="2_j33j0"]
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://room/floor_layer.gd" id="2_tku2a"]
-[ext_resource type="Texture2D" uid="uid://ck5ndxq6xu5oy" path="res://room/stripes-resize.png" id="3_fsy70"]
+[ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="5_fntg6"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
-[ext_resource type="PackedScene" uid="uid://d1ig36km6s3ve" path="res://room/room_gui.tscn" id="6_fntg6"]
+[ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://room/stripes.png" id="6_et4wo"]
+[ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0e48y"]
 texture = ExtResource("1_ppkfq")
@@ -726,69 +727,81 @@ sources/0 = SubResource("TileSetAtlasSource_j33j0")
 offset = Vector2(0, -30)
 zoom = Vector2(3.25, 3.25)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-layer = -2
-
-[node name="Background" type="TextureRect" parent="CanvasLayer"]
+[node name="TextureRect" type="TextureRect" parent="Camera2D"]
 z_index = -1
-texture_repeat = 2
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -209.0
+offset_top = -146.0
+offset_right = 3087.0
+offset_bottom = 1702.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(3, 3)
-mouse_filter = 2
-texture = ExtResource("3_fsy70")
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("6_et4wo")
 stretch_mode = 1
 
-[node name="FloorLayer" type="TileMapLayer" parent="."]
+[node name="FloorLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
 texture_filter = 1
-tile_map_data = PackedByteArray("AAD/////AQAAAAcAAAD///7/AQAAAAcAAAD+////AQAAAAcAAAD//wAAAQAAAAcAAAD//wEAAQAAAAcAAAAAAAAAAQAAAAcAAAAAAP//AQAAAAcAAAAAAP7/AQAAAAcAAAD///3/AQAAAAcAAAD+//7/AQAAAAcAAAD+//3/AQAAAAcAAAD+//z/AQAAAAcAAAD+//v/AQAAAAcAAAD///r/AQAAAAcAAAD///v/AQAAAAcAAAAAAPr/AQAAAAcAAAD///z/AQAAAAcAAAAAAPv/AQAAAAcAAAAAAPz/AQAAAAcAAAAAAP3/AQAAAAcAAAABAP7/AQAAAAcAAAABAAAAAQAAAAcAAAABAP//AQAAAAcAAAAAAAEAAQAAAAcAAAAAAAIAAQAAAAcAAAD//wIAAQAAAAcAAAD//wMAAQAAAAcAAAD+/wEAAQAAAAcAAAD+/wAAAQAAAAcAAAD9////AQAAAAcAAAD9//3/AQAAAAcAAAD9//7/AQAAAAcAAAD8////AQAAAAcAAAD9/wAAAQAAAAcAAAD9/wEAAQAAAAcAAAD+/wIAAQAAAAcAAAD+/wMAAQAAAAcAAAD//wQAAQAAAAcAAAD//wUAAQAAAAcAAAAAAAQAAQAAAAcAAAAAAAMAAQAAAAcAAAABAAIAAQAAAAcAAAABAAEAAQAAAAcAAAACAAAAAQAAAAcAAAACAP7/AQAAAAcAAAABAP3/AQAAAAcAAAABAPz/AQAAAAcAAAD///n/AQAAAAcAAAACAP//AQAAAAcAAAADAP7/AQAAAAcAAAACAP3/AQAAAAcAAAACAPz/AQAAAAcAAAABAPv/AQAAAAcAAAABAPr/AQAAAAcAAAAAAPn/AQAAAAcAAAAAAPj/AQAAAAcAAAD///f/AQAAAAcAAAD///j/AQAAAAcAAAD+//n/AQAAAAcAAAD+//r/AQAAAAcAAAD9//v/AQAAAAcAAAD9//z/AQAAAAcAAAD8//3/AQAAAAcAAAD8//7/AQAAAAcAAAD7////AQAAAAcAAAD8/wAAAQAAAAcAAAD+/wQAAQAAAAcAAAD9/wIAAQAAAAcAAAD8/wEAAQAAAAcAAAD9/wMAAQAAAAcAAAD//wYAAQAAAAcAAAD//wcAAQAAAAcAAAAAAAYAAQAAAAcAAAD+/wUAAQAAAAcAAAABAAMAAQAAAAcAAAACAAIAAQAAAAcAAAABAAQAAQAAAAcAAAAAAAUAAQAAAAcAAAACAAEAAQAAAAcAAAADAAAAAQAAAAcAAAADAP//AQAAAAcAAAA=")
+tile_map_data = PackedByteArray("AAD/////AQAAAAcAAAD///7/AQAAAAcAAAD+////AQAAAAcAAAD//wAAAQAAAAcAAAD//wEAAQAAAAcAAAAAAAAAAQAAAAcAAAAAAP//AQAAAAcAAAAAAP7/AQAAAAcAAAD///3/AQAAAAcAAAD+//7/AQAAAAcAAAD+//3/AQAAAAcAAAD///v/AQAAAAcAAAD///z/AQAAAAcAAAAAAPz/AQAAAAcAAAAAAP3/AQAAAAcAAAABAP7/AQAAAAcAAAABAAAAAQAAAAcAAAABAP//AQAAAAcAAAAAAAEAAQAAAAcAAAAAAAIAAQAAAAcAAAD//wIAAQAAAAcAAAD//wMAAQAAAAcAAAD+/wEAAQAAAAcAAAD+/wAAAQAAAAcAAAD9////AQAAAAcAAAD9/wAAAQAAAAcAAAD9/wEAAQAAAAcAAAD+/wIAAQAAAAcAAAD+/wMAAQAAAAcAAAD//wQAAQAAAAcAAAD//wUAAQAAAAcAAAAAAAQAAQAAAAcAAAAAAAMAAQAAAAcAAAABAAIAAQAAAAcAAAABAAEAAQAAAAcAAAACAAAAAQAAAAcAAAA=")
 tile_set = SubResource("TileSet_epypp")
 script = ExtResource("2_tku2a")
 
-[node name="WallLayer1" type="TileMapLayer" parent="."]
+[node name="White-dog" parent="Camera2D/FloorLayer" instance=ExtResource("2_j33j0")]
+position = Vector2(-6, -4)
+
+[node name="WallLayer1" type="TileMapLayer" parent="Camera2D"]
 z_index = 1
 y_sort_enabled = true
 texture_filter = 1
-tile_map_data = PackedByteArray("AAD7//z/AAANAAMAAAD7//v/AAANAAMAAAD8//r/AAANAAMAAAD8//n/AAANAAMAAAD9//j/AAANAAMAAAD9//f/AAANAAMAAAD+//b/AAANAAMAAAD+//X/AAANAAMAAAD///T/AAANAAMAAAD///P/AAANAAMAAAAAAPT/AAANAAMAAAAAAPX/AAANAAMAAAABAPb/AAANAAMAAAABAPf/AAANAAMAAAACAPj/AAANAAMAAAACAPn/AAANAAMAAAADAPr/AAANAAMAAAADAPv/AAANAAMAAAAEAPz/AAANAAMAAAA=")
+tile_map_data = PackedByteArray("AAD9//z/AAANAAMAAAD8//3/AAANAAMAAAD9//v/AAANAAMAAAD+//r/AAANAAMAAAD///j/AAANAAMAAAD+//n/AAANAAMAAAD///f/AAANAAMAAAAAAPj/AAANAAMAAAAAAPn/AAANAAMAAAABAPr/AAANAAMAAAABAPv/AAANAAMAAAACAPz/AAANAAMAAAACAP3/AAANAAMAAAA=")
 tile_set = SubResource("TileSet_fsy70")
 
-[node name="WallLayer2" type="TileMapLayer" parent="."]
+[node name="WallLayer2" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
 texture_filter = 1
-tile_map_data = PackedByteArray("AAD7//r/AAANAAMAAAD7//n/AAANAAMAAAD8//j/AAANAAMAAAD8//f/AAANAAMAAAD9//b/AAANAAMAAAD9//X/AAANAAMAAAD+//T/AAANAAMAAAD+//P/AAANAAMAAAD///L/AAANAAMAAAD///H/AAANAAMAAAAAAPL/AAANAAMAAAAAAPP/AAANAAMAAAABAPT/AAANAAMAAAABAPX/AAANAAMAAAACAPb/AAANAAMAAAACAPf/AAANAAMAAAADAPj/AAANAAMAAAADAPn/AAANAAMAAAAEAPr/AAANAAMAAAA=")
+tile_map_data = PackedByteArray("AAD8//v/AAANAAMAAAD9//r/AAANAAMAAAD9//n/AAANAAMAAAD+//j/AAANAAMAAAD+//f/AAANAAMAAAD///b/AAANAAMAAAD///X/AAANAAMAAAAAAPb/AAANAAMAAAAAAPf/AAANAAMAAAABAPj/AAANAAMAAAABAPn/AAANAAMAAAACAPr/AAANAAMAAAACAPv/AAANAAMAAAA=")
 tile_set = SubResource("TileSet_fsy70")
 
-[node name="WallLayer3" type="TileMapLayer" parent="."]
+[node name="WallLayer3" type="TileMapLayer" parent="Camera2D"]
 z_index = 3
 y_sort_enabled = true
 texture_filter = 1
-tile_map_data = PackedByteArray("AAD7//j/AAANAAMAAAD7//f/AAANAAMAAAD8//b/AAANAAMAAAD8//X/AAANAAMAAAD9//T/AAANAAMAAAD9//P/AAANAAMAAAD+//L/AAANAAMAAAD+//H/AAANAAMAAAD///D/AAANAAMAAAD//+//AAANAAMAAAAAAPD/AAANAAMAAAAAAPH/AAANAAMAAAABAPL/AAANAAMAAAABAPP/AAANAAMAAAACAPT/AAANAAMAAAACAPX/AAANAAMAAAADAPb/AAANAAMAAAADAPf/AAANAAMAAAAEAPj/AAANAAMAAAA=")
+tile_map_data = PackedByteArray("AAD8//n/AAANAAMAAAD9//j/AAANAAMAAAD9//f/AAANAAMAAAD+//b/AAANAAMAAAD+//X/AAANAAMAAAD///T/AAANAAMAAAD///P/AAANAAMAAAAAAPT/AAANAAMAAAAAAPX/AAANAAMAAAABAPb/AAANAAMAAAABAPf/AAANAAMAAAACAPj/AAANAAMAAAACAPn/AAANAAMAAAA=")
 tile_set = SubResource("TileSet_fsy70")
 
-[node name="WallLayer4" type="TileMapLayer" parent="."]
+[node name="WallLayer4" type="TileMapLayer" parent="Camera2D"]
 z_index = 4
 y_sort_enabled = true
 texture_filter = 1
-tile_map_data = PackedByteArray("AAD7//b/AAANAAMAAAD7//X/AAANAAMAAAD8//T/AAANAAMAAAD8//P/AAANAAMAAAD9//L/AAANAAMAAAD9//H/AAANAAMAAAD+//D/AAANAAMAAAD+/+//AAANAAMAAAD//+7/AAANAAMAAAD//+3/AAANAAMAAAAAAO7/AAANAAMAAAAAAO//AAANAAMAAAABAPD/AAANAAMAAAABAPH/AAANAAMAAAACAPL/AAANAAMAAAACAPP/AAANAAMAAAADAPT/AAANAAMAAAADAPX/AAANAAMAAAAEAPb/AAANAAMAAAA=")
+tile_map_data = PackedByteArray("AAD8//f/AAANAAMAAAD9//X/AAANAAMAAAD+//T/AAANAAMAAAD9//b/AAANAAMAAAD+//P/AAANAAMAAAD///L/AAANAAMAAAD///H/AAANAAMAAAAAAPL/AAANAAMAAAAAAPP/AAANAAMAAAABAPX/AAANAAMAAAACAPb/AAANAAMAAAACAPf/AAANAAMAAAABAPT/AAANAAMAAAA=")
 tile_set = SubResource("TileSet_fsy70")
 
-[node name="White-dog" parent="." instance=ExtResource("2_j33j0")]
-position = Vector2(-51, -16)
-
-[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
+[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="Camera2D"]
 stream = ExtResource("5_qx3y5")
 autoplay = true
 parameters/looping = true
 
-[node name="CanvasLayer2" type="CanvasLayer" parent="."]
-layer = 10
+[node name="EditButton" type="Button" parent="Camera2D"]
+offset_left = 113.0
+offset_top = -132.0
+offset_right = 301.0
+offset_bottom = -67.0
+scale = Vector2(0.25, 0.25)
+theme = ExtResource("5_fntg6")
+text = "EDIT"
 
-[node name="RoomGui" parent="CanvasLayer2" instance=ExtResource("6_fntg6")]
-metadata/_edit_use_anchors_ = true
+[node name="PauseButton" type="Button" parent="Camera2D"]
+offset_left = 165.0
+offset_top = -132.0
+offset_right = 317.0
+offset_bottom = -28.0
+scale = Vector2(0.157, 0.157)
+theme = ExtResource("5_fntg6")
+icon = ExtResource("7_et4wo")
+icon_alignment = 1
 
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
