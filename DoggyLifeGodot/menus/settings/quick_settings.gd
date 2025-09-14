@@ -1,7 +1,7 @@
 extends Control
 
 @onready var volume_slider := $MarginContainer/VBoxContainer/Volume as HSlider
-@onready var mute_checkbox := $MarginContainer/VBoxContainer/Mute as CheckBox  # Add this line
+@onready var mute_checkbox := $MarginContainer/VBoxContainer/HBoxContainer/Mute as CheckBox  # Add this line
 
 var global_settings := GlobalSettings.load_settings()
 

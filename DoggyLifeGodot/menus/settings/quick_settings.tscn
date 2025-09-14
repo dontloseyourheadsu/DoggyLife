@@ -1,8 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://2ffuhh1f5i6k"]
+[gd_scene load_steps=6 format=3 uid="uid://2ffuhh1f5i6k"]
 
 [ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://menus/settings/quick_settings.gd" id="1_kxsdx"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
 [ext_resource type="Texture2D" uid="uid://ck5ndxq6xu5oy" path="res://room/stripes-resize.png" id="3_vnlla"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2naqa"]
 
 [node name="QuickSettings" type="Control"]
 layout_mode = 3
@@ -13,6 +17,17 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_kxsdx")
 
+[node name="Background" type="TextureRect" parent="."]
+z_index = -1
+texture_repeat = 2
+layout_mode = 2
+offset_right = 365.71
+offset_bottom = 205.71
+scale = Vector2(3.5, 3.5)
+mouse_filter = 2
+texture = ExtResource("3_vnlla")
+stretch_mode = 1
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -21,8 +36,34 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer"]
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+size_flags_stretch_ratio = 0.0
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/CenterContainer"]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 2
+color = Color(0.333333, 0.243137, 0.423529, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+z_index = 5
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "SETTINGS"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_vnlla")
 
 [node name="SoundLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -34,24 +75,29 @@ min_value = -30.0
 max_value = 6.0
 step = 0.5
 
-[node name="MuteLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MuteLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Mute"
 
-[node name="Mute" type="CheckBox" parent="MarginContainer/VBoxContainer"]
+[node name="Mute" type="CheckBox" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_2naqa")
 
 [node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Back"
-
-[node name="Background" type="TextureRect" parent="MarginContainer"]
-z_index = -1
-texture_repeat = 2
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("3_vnlla")
-stretch_mode = 1
+size_flags_horizontal = 4
+size_flags_vertical = 4
+size_flags_stretch_ratio = 0.38
+text = "BACK"
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_lafk5")
@@ -59,5 +105,5 @@ autoplay = true
 parameters/looping = true
 
 [connection signal="value_changed" from="MarginContainer/VBoxContainer/Volume" to="." method="_on_volume_value_changed"]
-[connection signal="toggled" from="MarginContainer/VBoxContainer/Mute" to="." method="_on_check_box_toggled"]
+[connection signal="toggled" from="MarginContainer/VBoxContainer/HBoxContainer/Mute" to="." method="_on_check_box_toggled"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/BackButton" to="." method="_on_button_pressed"]
