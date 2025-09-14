@@ -1,8 +1,10 @@
-[gd_resource type="Theme" load_steps=4 format=3 uid="uid://cnld8djuw1qpf"]
+[gd_resource type="Theme" load_steps=5 format=3 uid="uid://cnld8djuw1qpf"]
 
 [ext_resource type="FontFile" uid="uid://ktpqor7f6673" path="res://fonts/PressStart2P-Regular.ttf" id="1_rjgu6"]
 [ext_resource type="StyleBox" uid="uid://bi2bywn2y6sl5" path="res://themes/button-style.tres" id="2_vu6l5"]
 [ext_resource type="StyleBox" uid="uid://boclywt2foib2" path="res://themes/button-style-pressed.tres" id="3_ydht1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ydht1"]
 
 [resource]
 Button/colors/font_color = Color(1, 1, 1, 1)
@@ -11,3 +13,4 @@ Button/fonts/font = ExtResource("1_rjgu6")
 Button/styles/hover = ExtResource("2_vu6l5")
 Button/styles/normal = ExtResource("2_vu6l5")
 Button/styles/pressed = ExtResource("3_ydht1")
+CheckBox/styles/normal = SubResource("StyleBoxEmpty_ydht1")
