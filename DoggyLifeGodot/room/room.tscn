@@ -1,5 +1,6 @@
-[gd_scene load_steps=12 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=13 format=4 uid="uid://dwlfn2l5as1kx"]
 
+[ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://room/room.gd" id="1_cy34l"]
 [ext_resource type="Texture2D" uid="uid://5kdtf2dbj8j" path="res://room/MCBlocksBlackOutline.png" id="1_ppkfq"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://room/dogs/white-dog.tscn" id="2_j33j0"]
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://room/floor_layer.gd" id="2_tku2a"]
@@ -722,6 +723,7 @@ tile_size = Vector2i(23, 12)
 sources/0 = SubResource("TileSetAtlasSource_j33j0")
 
 [node name="Room" type="Node2D"]
+script = ExtResource("1_cy34l")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(0, -30)
@@ -805,3 +807,4 @@ icon = ExtResource("7_et4wo")
 icon_alignment = 1
 
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
+[connection signal="pressed" from="Camera2D/PauseButton" to="." method="_on_pause_button_pressed"]
