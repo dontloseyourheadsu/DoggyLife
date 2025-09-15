@@ -1,11 +1,14 @@
 extends Node2D
 
 @onready var pause_button := $Camera2D/PauseButton as Button
+const AudioUtils = preload("res://shared/scripts/audio_utils.gd")
 
 func _ready():
 	# Connect the pause button signal
 	if pause_button:
 		pause_button.pressed.connect(_on_pause_button_pressed)
+	# Apply saved audio settings on scene load
+	AudioUtils.load_and_apply()
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
