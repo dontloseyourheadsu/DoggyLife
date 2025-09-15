@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://2ffuhh1f5i6k"]
+[gd_scene load_steps=7 format=3 uid="uid://2ffuhh1f5i6k"]
 
 [ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://menus/settings/quick_settings.gd" id="1_kxsdx"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_vnlla"]
+[ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_2naqa"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
 
@@ -35,17 +36,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="CenterContainer" type="CenterContainer" parent="MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.0
-
-[node name="ColorRect" type="ColorRect" parent="MarginContainer/CenterContainer"]
-custom_minimum_size = Vector2(500, 500)
-layout_mode = 2
-color = Color(0.3297, 0.2394, 0.42, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 z_index = 5
@@ -98,6 +88,12 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 size_flags_stretch_ratio = 0.38
 text = "BACK"
+
+[node name="Container" parent="MarginContainer" instance=ExtResource("3_2naqa")]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_lafk5")
