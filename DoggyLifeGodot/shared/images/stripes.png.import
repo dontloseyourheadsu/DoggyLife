@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ck5ndxq6xu5oy"
-path="res://.godot/imported/stripes-resize.png-71c725effe3743553d390fa837a75a9a.ctex"
+uid="uid://2j1lixeg62or"
+path="res://.godot/imported/stripes.png-971de9e3b41cbb345f2b34a7980f9e68.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://room/stripes-resize.png"
-dest_files=["res://.godot/imported/stripes-resize.png-71c725effe3743553d390fa837a75a9a.ctex"]
+source_file="res://shared/images/stripes.png"
+dest_files=["res://.godot/imported/stripes.png-971de9e3b41cbb345f2b34a7980f9e68.ctex"]
 
 [params]
 

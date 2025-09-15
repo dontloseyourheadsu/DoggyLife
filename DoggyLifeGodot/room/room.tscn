@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://room/floor_layer.gd" id="2_tku2a"]
 [ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="5_fntg6"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
-[ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://room/stripes.png" id="6_et4wo"]
+[ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="6_et4wo"]
 [ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0e48y"]

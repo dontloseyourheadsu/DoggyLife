@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://menus/settings/quick_settings.gd" id="1_kxsdx"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
-[ext_resource type="Texture2D" uid="uid://ck5ndxq6xu5oy" path="res://room/stripes-resize.png" id="3_vnlla"]
+[ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_vnlla"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
 
@@ -21,11 +21,11 @@ script = ExtResource("1_kxsdx")
 z_index = -1
 texture_repeat = 2
 layout_mode = 2
-offset_right = 365.71
-offset_bottom = 205.71
-scale = Vector2(3.5, 3.5)
+offset_right = 2560.0
+offset_bottom = 1440.0
+scale = Vector2(0.5, 0.5)
 mouse_filter = 2
-texture = ExtResource("3_vnlla")
+texture = ExtResource("2_vnlla")
 stretch_mode = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
