@@ -2,6 +2,7 @@ extends Control
 
 @onready var volume_slider := $MarginContainer/VBoxContainer/Volume as HSlider
 @onready var mute_checkbox := $MarginContainer/VBoxContainer/HBoxContainer/Mute as CheckBox  # Add this line
+const AudioUtils = preload("res://shared/scripts/audio_utils.gd")
 
 var global_settings := GlobalSettings.load_settings()
 
@@ -54,12 +55,7 @@ func _on_button_pressed() -> void:
 	get_tree().current_scene = room_scene
 	
 func update_audio_settings() -> void:
-	# Convert linear 0-1 value to decibels
-	var volume_db = linear_to_db(global_settings.music_volume)
-	
-	# Apply settings
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), volume_db)
-	AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), global_settings.music_mute)
+	AudioUtils.apply_from_settings(global_settings)
 
 func save_settings() -> void:
 	# Correct saving method
