@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paleta Completa para Sprites - 156 Colores</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        font-size: 1.2em;
+      }
+
+      .color-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .section-title {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+      }
+
+      .color-group {
+        margin-bottom: 30px;
+      }
+
+      .color-name {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+        color: #34495e;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .tones-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .tone-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+      }
+
+      .tone-title {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #495057;
+        text-align: center;
+        font-size: 1.1em;
+      }
+
+      .swatch-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 5px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .swatch-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+      }
+
+      .color-swatch {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        margin-right: 12px;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+
+      .color-swatch:hover {
+        transform: scale(1.1);
+      }
+
+      .swatch-info {
+        flex: 1;
+      }
+
+      .swatch-label {
+        font-size: 0.9em;
+        color: #6c757d;
+        margin-bottom: 2px;
+      }
+
+      .swatch-hex {
+        font-family: "Courier New", monospace;
+        font-size: 0.95em;
+        font-weight: 600;
+        color: #495057;
+        background: #e9ecef;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+
+      .copy-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateX(300px);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+
+      .copy-notification.show {
+        transform: translateX(0);
+      }
+
+      .usage-guide {
+        background: #e8f4fd;
+        border-left: 4px solid #3498db;
+        padding: 20px;
+        margin-top: 30px;
+        border-radius: 0 10px 10px 0;
+      }
+
+      .usage-guide h3 {
+        color: #2980b9;
+        margin-top: 0;
+      }
+
+      .usage-guide ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+
+      .usage-guide li {
+        margin-bottom: 5px;
+        color: #34495e;
+      }
+
+      @media (max-width: 768px) {
+        .tones-container {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 2em;
+        }
+
+        .color-section {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎨 Paleta Completa para Sprites</h1>
+      <div class="subtitle">
+        156 Colores Organizados • Haz clic en cualquier color para copiarlo
+      </div>
+
+      <div id="palette-container"></div>
+
+      <div class="usage-guide">
+        <h3>📝 Guía de Uso para Sprites</h3>
+        <ul>
+          <li><strong>Contorno:</strong> Para bordes y definir formas</li>
+          <li><strong>Sombra 1:</strong> Sombras más profundas</li>
+          <li><strong>Sombra 2:</strong> Sombras medias y transiciones</li>
+          <li><strong>Principal:</strong> Color base del objeto</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="copy-notification" class="copy-notification">
+      Color copiado al portapapeles! 📋
+    </div>
+
+    <script>
+      // Paleta completa de 156 colores para sprites
+      const colorPalette = {
+        "Colores Primarios": {
+          "🔴 Rojo": {
+            "Rojo Claro": {
+              Contorno: "#8B0000",
+              "Sombra 1": "#CC5555",
+              "Sombra 2": "#E67777",
+              Principal: "#FF9999",
+            },
+            "Rojo Normal": {
+              Contorno: "#8B0000",
+              "Sombra 1": "#B71C1C",
+              "Sombra 2": "#D32F2F",
+              Principal: "#E57373",
+            },
+            "Rojo Oscuro": {
+              Contorno: "#4A0E0E",
+              "Sombra 1": "#7B1F1F",
+              "Sombra 2": "#A52A2A",
+              Principal: "#C62828",
+            },
+          },
+          "🔵 Azul": {
+            "Azul Claro": {
+              Contorno: "#1A237E",
+              "Sombra 1": "#5C6BC0",
+              "Sombra 2": "#7986CB",
+              Principal: "#90CAF9",
+            },
+            "Azul Normal": {
+              Contorno: "#0D47A1",
+              "Sombra 1": "#1976D2",
+              "Sombra 2": "#2196F3",
+              Principal: "#42A5F5",
+            },
+            "Azul Oscuro": {
+              Contorno: "#0A1E4A",
+              "Sombra 1": "#0F3B7A",
+              "Sombra 2": "#1455A0",
+              Principal: "#1565C0",
+            },
+          },
+          "🟡 Amarillo": {
+            "Amarillo Claro": {
+              Contorno: "#E65100",
+              "Sombra 1": "#FFC107",
+              "Sombra 2": "#FFEB3B",
+              Principal: "#FFF59D",
+            },
+            "Amarillo Normal": {
+              Contorno: "#E65100",
+              "Sombra 1": "#F9A825",
+              "Sombra 2": "#FBC02D",
+              Principal: "#FFEB3B",
+            },
+            "Amarillo Oscuro": {
+              Contorno: "#BF360C",
+              "Sombra 1": "#E65100",
+              "Sombra 2": "#F57C00",
+              Principal: "#F57F17",
+            },
+          },
+        },
+        "Colores Secundarios": {
+          "🟢 Verde": {
+            "Verde Claro": {
+              Contorno: "#1B5E20",
+              "Sombra 1": "#4CAF50",
+              "Sombra 2": "#81C784",
+              Principal: "#C8E6C9",
+            },
+            "Verde Normal": {
+              Contorno: "#0D3B10",
+              "Sombra 1": "#1B5E20",
+              "Sombra 2": "#388E3C",
+              Principal: "#66BB6A",
+            },
+            "Verde Oscuro": {
+              Contorno: "#0A1F0C",
+              "Sombra 1": "#1B4A1E",
+              "Sombra 2": "#2A5C2D",
+              Principal: "#2E7D32",
+            },
+          },
+          "🟠 Naranja": {
+            "Naranja Claro": {
+              Contorno: "#BF360C",
+              "Sombra 1": "#FF5722",
+              "Sombra 2": "#FF8A65",
+              Principal: "#FFCC80",
+            },
+            "Naranja Normal": {
+              Contorno: "#8D2600",
+              "Sombra 1": "#D84315",
+              "Sombra 2": "#FF5722",
+              Principal: "#FF8A65",
+            },
+            "Naranja Oscuro": {
+              Contorno: "#4A1200",
+              "Sombra 1": "#8D2600",
+              "Sombra 2": "#BF360C",
+              Principal: "#E65100",
+            },
+          },
+          "🟣 Violeta": {
+            "Violeta Claro": {
+              Contorno: "#4A148C",
+              "Sombra 1": "#7B1FA2",
+              "Sombra 2": "#9C27B0",
+              Principal: "#D1C4E9",
+            },
+            "Violeta Normal": {
+              Contorno: "#311B92",
+              "Sombra 1": "#512DA8",
+              "Sombra 2": "#673AB7",
+              Principal: "#9575CD",
+            },
+            "Violeta Oscuro": {
+              Contorno: "#1A0A33",
+              "Sombra 1": "#311B92",
+              "Sombra 2": "#4527A0",
+              Principal: "#512DA8",
+            },
+          },
+        },
+        "Colores Terciarios": {
+          "🔶 Rojo-Naranja": {
+            "Rojo-Naranja Claro": {
+              Contorno: "#8D2600",
+              "Sombra 1": "#D84315",
+              "Sombra 2": "#FF5722",
+              Principal: "#FFCDD2",
+            },
+            "Rojo-Naranja Normal": {
+              Contorno: "#6A1B00",
+              "Sombra 1": "#BF360C",
+              "Sombra 2": "#D84315",
+              Principal: "#FF7043",
+            },
+            "Rojo-Naranja Oscuro": {
+              Contorno: "#3D0F00",
+              "Sombra 1": "#6A1B00",
+              "Sombra 2": "#8D2600",
+              Principal: "#D84315",
+            },
+          },
+          "🟨 Amarillo-Naranja": {
+            "Amarillo-Naranja Claro": {
+              Contorno: "#E65100",
+              "Sombra 1": "#F57C00",
+              "Sombra 2": "#FF9800",
+              Principal: "#FFE0B2",
+            },
+            "Amarillo-Naranja Normal": {
+              Contorno: "#BF360C",
+              "Sombra 1": "#E65100",
+              "Sombra 2": "#F57C00",
+              Principal: "#FFB74D",
+            },
+            "Amarillo-Naranja Oscuro": {
+              Contorno: "#663D00",
+              "Sombra 1": "#BF360C",
+              "Sombra 2": "#E65100",
+              Principal: "#FF8F00",
+            },
+          },
+          "🟢 Amarillo-Verde": {
+            "Amarillo-Verde Claro": {
+              Contorno: "#33691E",
+              "Sombra 1": "#558B2F",
+              "Sombra 2": "#689F38",
+              Principal: "#F0F4C3",
+            },
+            "Amarillo-Verde Normal": {
+              Contorno: "#1B5E20",
+              "Sombra 1": "#33691E",
+              "Sombra 2": "#558B2F",
+              Principal: "#AED581",
+            },
+            "Amarillo-Verde Oscuro": {
+              Contorno: "#0F2B11",
+              "Sombra 1": "#1B5E20",
+              "Sombra 2": "#33691E",
+              Principal: "#689F38",
+            },
+          },
+          "🩵 Azul-Verde": {
+            "Azul-Verde Claro": {
+              Contorno: "#00695C",
+              "Sombra 1": "#00796B",
+              "Sombra 2": "#00897B",
+              Principal: "#B2DFDB",
+            },
+            "Azul-Verde Normal": {
+              Contorno: "#003D35",
+              "Sombra 1": "#00695C",
+              "Sombra 2": "#00796B",
+              Principal: "#4DB6AC",
+            },
+            "Azul-Verde Oscuro": {
+              Contorno: "#001F1A",
+              "Sombra 1": "#003D35",
+              "Sombra 2": "#00695C",
+              Principal: "#00695C",
+            },
+          },
+          "💙 Azul-Violeta": {
+            "Azul-Violeta Claro": {
+              Contorno: "#1A237E",
+              "Sombra 1": "#303F9F",
+              "Sombra 2": "#3F51B5",
+              Principal: "#C5CAE9",
+            },
+            "Azul-Violeta Normal": {
+              Contorno: "#0F1648",
+              "Sombra 1": "#1A237E",
+              "Sombra 2": "#303F9F",
+              Principal: "#7986CB",
+            },
+            "Azul-Violeta Oscuro": {
+              Contorno: "#070B26",
+              "Sombra 1": "#0F1648",
+              "Sombra 2": "#1A237E",
+              Principal: "#303F9F",
+            },
+          },
+          "💗 Rojo-Violeta": {
+            "Rojo-Violeta Claro": {
+              Contorno: "#AD1457",
+              "Sombra 1": "#C2185B",
+              "Sombra 2": "#E91E63",
+              Principal: "#F8BBD9",
+            },
+            "Rojo-Violeta Normal": {
+              Contorno: "#880E4F",
+              "Sombra 1": "#AD1457",
+              "Sombra 2": "#C2185B",
+              Principal: "#F06292",
+            },
+            "Rojo-Violeta Oscuro": {
+              Contorno: "#4A0726",
+              "Sombra 1": "#880E4F",
+              "Sombra 2": "#AD1457",
+              Principal: "#C2185B",
+            },
+          },
+        },
+        "Grises y Neutros": {
+          "⚪ Neutros": {
+            "Blanco Grisáceo": {
+              Contorno: "#BDBDBD",
+              "Sombra 1": "#E0E0E0",
+              "Sombra 2": "#EEEEEE",
+              Principal: "#F5F5F5",
+            },
+            "Gris Medio": {
+              Contorno: "#424242",
+              "Sombra 1": "#616161",
+              "Sombra 2": "#757575",
+              Principal: "#9E9E9E",
+            },
+            "Negro Grisáceo": {
+              Contorno: "#212121",
+              "Sombra 1": "#303030",
+              "Sombra 2": "#383838",
+              Principal: "#424242",
+            },
+          },
+        },
+      };
+
+      // Función para copiar al portapapeles
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          showCopyNotification();
+        } catch (err) {
+          // Fallback para navegadores que no soportan la API del portapapeles
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+          showCopyNotification();
+        }
+      }
+
+      // Mostrar notificación de copia
+      function showCopyNotification() {
+        const notification = document.getElementById("copy-notification");
+        notification.classList.add("show");
+        setTimeout(() => {
+          notification.classList.remove("show");
+        }, 2000);
+      }
+
+      // Generar la paleta de colores
+      function generatePalette() {
+        const container = document.getElementById("palette-container");
+
+        Object.entries(colorPalette).forEach(([sectionName, section]) => {
+          const sectionDiv = document.createElement("div");
+          sectionDiv.className = "color-section";
+
+          const sectionTitle = document.createElement("h2");
+          sectionTitle.className = "section-title";
+          sectionTitle.textContent = sectionName;
+          sectionDiv.appendChild(sectionTitle);
+
+          Object.entries(section).forEach(([colorName, colorGroup]) => {
+            const groupDiv = document.createElement("div");
+            groupDiv.className = "color-group";
+
+            const colorNameDiv = document.createElement("div");
+            colorNameDiv.className = "color-name";
+            colorNameDiv.textContent = colorName;
+            groupDiv.appendChild(colorNameDiv);
+
+            const tonesContainer = document.createElement("div");
+            tonesContainer.className = "tones-container";
+
+            Object.entries(colorGroup).forEach(([toneName, toneColors]) => {
+              const toneCard = document.createElement("div");
+              toneCard.className = "tone-card";
+
+              const toneTitle = document.createElement("div");
+              toneTitle.className = "tone-title";
+              toneTitle.textContent = toneName;
+              toneCard.appendChild(toneTitle);
+
+              Object.entries(toneColors).forEach(([shadeName, colorHex]) => {
+                const swatchItem = document.createElement("div");
+                swatchItem.className = "swatch-item";
+                swatchItem.onclick = () => copyToClipboard(colorHex);
+
+                const colorSwatch = document.createElement("div");
+                colorSwatch.className = "color-swatch";
+                colorSwatch.style.backgroundColor = colorHex;
+
+                const swatchInfo = document.createElement("div");
+                swatchInfo.className = "swatch-info";
+
+                const swatchLabel = document.createElement("div");
+                swatchLabel.className = "swatch-label";
+                swatchLabel.textContent = shadeName;
+
+                const swatchHex = document.createElement("div");
+                swatchHex.className = "swatch-hex";
+                swatchHex.textContent = colorHex;
+
+                swatchInfo.appendChild(swatchLabel);
+                swatchInfo.appendChild(swatchHex);
+                swatchItem.appendChild(colorSwatch);
+                swatchItem.appendChild(swatchInfo);
+                toneCard.appendChild(swatchItem);
+              });
+
+              tonesContainer.appendChild(toneCard);
+            });
+
+            groupDiv.appendChild(tonesContainer);
+            sectionDiv.appendChild(groupDiv);
+          });
+
+          container.appendChild(sectionDiv);
+        });
+      }
+
+      // Inicializar la página
+      document.addEventListener("DOMContentLoaded", generatePalette);
+    </script>
+  </body>
+</html>
