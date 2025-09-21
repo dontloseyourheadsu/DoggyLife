@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var pause_button := $Camera2D/PauseButton as Button
+@onready var edit_button := $Camera2D/EditButton as Button
 const AudioUtils = preload("res://shared/scripts/audio_utils.gd")
 
 func _ready():
@@ -16,3 +17,11 @@ func _on_pause_button_pressed() -> void:
 	get_tree().root.add_child(settings_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = settings_scene
+
+
+func _on_edit_button_pressed() -> void:
+	# Load edit scene
+	var edit_scene = load("res://room/popups/edit_popup.tscn").instantiate()
+	get_tree().root.add_child(edit_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = edit_scene
