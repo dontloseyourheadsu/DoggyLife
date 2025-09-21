@@ -807,4 +807,5 @@ icon = ExtResource("7_et4wo")
 icon_alignment = 1
 
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
+[connection signal="pressed" from="Camera2D/EditButton" to="." method="_on_edit_button_pressed"]
 [connection signal="pressed" from="Camera2D/PauseButton" to="." method="_on_pause_button_pressed"]
