@@ -29,7 +29,23 @@ mouse_filter = 2
 texture = ExtResource("2_vnlla")
 stretch_mode = 1
 
+[node name="Container" parent="." instance=ExtResource("3_2naqa")]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 2
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 390.0
+offset_top = 110.0
+offset_right = 890.0
+offset_bottom = 610.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
+z_index = 15
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -88,12 +104,6 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 size_flags_stretch_ratio = 0.38
 text = "BACK"
-
-[node name="Container" parent="MarginContainer" instance=ExtResource("3_2naqa")]
-custom_minimum_size = Vector2(500, 500)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_lafk5")
