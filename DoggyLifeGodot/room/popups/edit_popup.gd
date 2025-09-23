@@ -1,47 +1,29 @@
 extends Control
-@onready var floor_tiles_list := $MarginContainer/VBoxContainer/FloorItemList as ItemList
+
+@onready var scroll_container := $MarginContainer/VBoxContainer/ScrollContainer as ScrollContainer
+@onready var grid_container := $MarginContainer/VBoxContainer/ScrollContainer/GridContainer as GridContainer
 @onready var floor_tile_display := $MarginContainer/VBoxContainer/FloorTileTexture as TextureRect
+@onready var back_button := $BackButton as Button
 
 const TILE_SIZE = 32
 const TILES_PATH = "res://room/tiles/floor-tiles.png"
+var current_selected_tile: int = -1
+var tile_buttons: Array[TextureButton] = []
 
 func _ready():
-	setup_item_list()
-	load_tiles_to_list()
+	setup_containers()
+	load_tiles_to_grid()
 	
-	# Test without custom input handling first
-	# floor_tiles_list.gui_input.connect(_handle_itemlist_input)
+	# Connect back button
+	if back_button:
+		back_button.pressed.connect(_on_back_button_pressed)
 
-# Handle scrolling directly on the ItemList
-func _on_itemlist_gui_input(event):
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_scroll_list(-1)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_scroll_list(1)
-	elif event is InputEventPanGesture:
-		_scroll_list(event.delta.y * 3)
-
-func _scroll_list(direction: float):
-	var scroll_bar = floor_tiles_list.get_v_scroll_bar()
-	var scroll_speed = 50.0  # Adjust as needed
-	scroll_bar.value += direction * scroll_speed
-	scroll_bar.value = clamp(scroll_bar.value, scroll_bar.min_value, scroll_bar.max_value)
-
-func setup_item_list():
-	# Configure the ItemList - keep it simple
-	floor_tiles_list.icon_mode = ItemList.ICON_MODE_TOP
-	floor_tiles_list.fixed_icon_size = Vector2i(32, 32)
-	
-	# Basic selection settings
-	floor_tiles_list.select_mode = ItemList.SELECT_SINGLE
-	floor_tiles_list.allow_reselect = true
-	
+func setup_containers():	
 	# Setup the texture display
 	floor_tile_display.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	floor_tile_display.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
-func load_tiles_to_list():
+func load_tiles_to_grid():
 	# Load the main texture
 	var main_texture = load(TILES_PATH) as Texture2D
 	if not main_texture:
@@ -56,10 +38,10 @@ func load_tiles_to_list():
 	# Calculate number of tiles (assuming 32x32 tiles in a horizontal strip)
 	var tile_count = image_width / TILE_SIZE
 	
-	# Clear the list first
-	floor_tiles_list.clear()
+	# Clear existing buttons
+	clear_tile_buttons()
 	
-	# Extract each tile and add to ItemList
+	# Extract each tile and add to GridContainer
 	for i in range(tile_count):
 		# Calculate tile position
 		var tile_x = i * TILE_SIZE
@@ -74,31 +56,68 @@ func load_tiles_to_list():
 		# Create texture from the tile image
 		var tile_texture = ImageTexture.new()
 		tile_texture.set_image(tile_image)
+		tile_texture.set_size_override(Vector2(32,32))
 		
-		# Add to ItemList with empty text and the tile texture
-		floor_tiles_list.add_item("", tile_texture)
+		# Create TextureButton for this tile
+		var tile_button = TextureButton.new()
+		tile_button.texture_normal = tile_texture
+		tile_button.custom_minimum_size = Vector2(TILE_SIZE, TILE_SIZE)
+		# Make sure the button can receive input
+		tile_button.mouse_filter = Control.MOUSE_FILTER_PASS
+		tile_button.focus_mode = Control.FOCUS_ALL
+		
+		# Connect the button signal
+		tile_button.pressed.connect(_on_tile_button_pressed.bind(i))
+		
+		# Add to grid and store reference
+		grid_container.add_child(tile_button)
+		tile_buttons.append(tile_button)
 
-# This is the signal connected in the editor
-func _on_item_list_item_selected(index):
-	print("Selected tile: ", index)
+func clear_tile_buttons():
+	# Remove all existing tile buttons
+	for button in tile_buttons:
+		if is_instance_valid(button):
+			button.queue_free()
+	tile_buttons.clear()
 	
-	# Get the selected tile texture
-	var selected_texture = floor_tiles_list.get_item_icon(index)
+	# Clear grid container children
+	for child in grid_container.get_children():
+		child.queue_free()
+
+func _on_tile_button_pressed(tile_index: int):
+	print("Selected tile: ", tile_index)
 	
-	# Display it in the TextureRect
+	# Update visual selection (optional - add highlight)
+	update_selection_visual(tile_index)
+	
+	# Get the selected tile texture and display it
+	var selected_texture = tile_buttons[tile_index].texture_normal
 	floor_tile_display.texture = selected_texture
 	
-	# Optional: You can also handle the selection logic here
-	handle_tile_selection(index, selected_texture)
+	# Store current selection
+	current_selected_tile = tile_index
 
-func handle_tile_selection(tile_index: int, tile_texture: Texture2D):
-	# This is where you handle what happens when a tile is selected
-	# For example:
-	# - Store the selected tile index for later use
-	# - Update other UI elements
-	# - Set it as the current brush
-	# - etc.
-	
-	# Example: Store the current selection
-	# current_selected_tile = tile_index
-	pass
+func update_selection_visual(selected_index: int):
+	# Reset all buttons to normal appearance
+	for i in range(tile_buttons.size()):
+		var button = tile_buttons[i]
+		if i == selected_index:
+			# Highlight selected button (you can customize this)
+			button.modulate = Color(1.2, 1.2, 1.2)  # Slightly brighter
+		else:
+			button.modulate = Color.WHITE  # Normal color
+
+func get_selected_tile_index() -> int:
+	return current_selected_tile
+
+func get_selected_tile_texture() -> Texture2D:
+	if current_selected_tile >= 0 and current_selected_tile < tile_buttons.size():
+		return tile_buttons[current_selected_tile].texture_normal
+	return null
+
+func _on_back_button_pressed() -> void:
+	# Load room scene
+	var room_scene = load("res://room/room.tscn").instantiate()
+	get_tree().root.add_child(room_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = room_scene

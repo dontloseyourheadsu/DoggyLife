@@ -29,7 +29,23 @@ mouse_filter = 2
 texture = ExtResource("1_qs1y4")
 stretch_mode = 1
 
+[node name="Container" parent="." instance=ExtResource("2_1e46y")]
+custom_minimum_size = Vector2(500, 600)
+layout_mode = 2
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 390.0
+offset_top = 60.0
+offset_right = 890.0
+offset_bottom = 660.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
+z_index = 15
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,7 +54,6 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
-z_index = 5
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -48,20 +63,28 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 theme_override_font_sizes/font_size = 30
-text = "EDIT ROOM"
+text = "EDIT"
 
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_0jbip")
 
-[node name="FloorItemList" type="ItemList" parent="MarginContainer/VBoxContainer"]
-z_index = 15
-custom_minimum_size = Vector2(0, 100)
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 6
 
 [node name="FloorTileTexture" type="TextureRect" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(50, 50)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 
 [node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
@@ -76,15 +99,7 @@ size_flags_vertical = 4
 size_flags_stretch_ratio = 0.38
 text = "BACK"
 
-[node name="Container" parent="MarginContainer" instance=ExtResource("2_1e46y")]
-custom_minimum_size = Vector2(500, 600)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("3_54fjg")
 autoplay = true
 parameters/looping = true
-
-[connection signal="item_selected" from="MarginContainer/VBoxContainer/FloorItemList" to="." method="_on_item_list_item_selected"]
