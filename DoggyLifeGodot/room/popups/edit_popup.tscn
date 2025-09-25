@@ -70,13 +70,13 @@ custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_0jbip")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+[node name="FloorScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 follow_focus = true
 horizontal_scroll_mode = 0
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+[node name="FloorGridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/FloorScrollContainer"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/h_separation = 4
@@ -85,6 +85,24 @@ columns = 6
 
 [node name="FloorTileTexture" type="TextureRect" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+
+[node name="WallScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="WallGridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/WallScrollContainer"]
+custom_minimum_size = Vector2(32, 64)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 6
+
+[node name="WallTileTexture" type="TextureRect" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(32, 64)
 layout_mode = 2
 
 [node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
@@ -103,3 +121,5 @@ text = "BACK"
 stream = ExtResource("3_54fjg")
 autoplay = true
 parameters/looping = true
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
