@@ -1,7 +1,7 @@
 extends TileMapLayer
 
-const TEXTURE_SOURCE_ID = 1
-const TEXTURE_ATLAS_COORDINATES = Vector2i(17, 53)
+const TEXTURE_SOURCE_ID = 2
+const TEXTURE_ATLAS_COORDINATES = Vector2i(39, 0)
 
 func _ready():
 	var filled_tiles := get_used_cells()

@@ -53,7 +53,7 @@ texture_region_size = Vector2i(32, 32)
 37:0/0 = 0
 38:0/0 = 0
 39:0/0 = 0
-39:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.0876236, -7.71087, -16, 0, 0.788609, 8.5871, 16, 0)
+39:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16.1646, -0.610477, 0, 8, 16.2838, -0.555972, 0, -8, 0, -8)
 
 [sub_resource type="TileSet" id="TileSet_wid0f"]
 tile_shape = 1
@@ -800,6 +800,10 @@ stretch_mode = 1
 y_sort_enabled = true
 tile_map_data = PackedByteArray("AAD+/wAAAgAmAAAAAAD+////AgAmAAAAAAD///7/AgAmAAAAAAD///3/AgAmAAAAAAAAAP7/AgAmAAAAAAAAAP//AgAmAAAAAAABAAAAAgAmAAAAAAAAAAEAAgAmAAAAAAAAAAIAAgAmAAAAAAD//wMAAgAmAAAAAAD//wIAAgAmAAAAAAD+/wEAAgAmAAAAAAD//wAAAgAmAAAAAAD/////AgAmAAAAAAAAAAAAAgAmAAAAAAD//wEAAgAmAAAAAAA=")
 tile_set = SubResource("TileSet_wid0f")
+script = ExtResource("2_tku2a")
+
+[node name="White-dog" parent="Camera2D/AutoFloorLayer" instance=ExtResource("2_j33j0")]
+position = Vector2(-6, -4)
 
 [node name="FloorLayer" type="TileMapLayer" parent="Camera2D"]
 visible = false
@@ -807,10 +811,6 @@ y_sort_enabled = true
 texture_filter = 1
 tile_map_data = PackedByteArray("AAD/////AQAAAAcAAAD///7/AQAAAAcAAAD+////AQAAAAcAAAD//wAAAQAAAAcAAAD//wEAAQAAAAcAAAAAAAAAAQAAAAcAAAAAAP//AQAAAAcAAAAAAP7/AQAAAAcAAAD///3/AQAAAAcAAAD+//7/AQAAAAcAAAD+//3/AQAAAAcAAAD///v/AQAAAAcAAAD///z/AQAAAAcAAAAAAPz/AQAAAAcAAAAAAP3/AQAAAAcAAAABAP7/AQAAAAcAAAABAAAAAQAAAAcAAAABAP//AQAAAAcAAAAAAAEAAQAAAAcAAAAAAAIAAQAAAAcAAAD//wIAAQAAAAcAAAD//wMAAQAAAAcAAAD+/wEAAQAAAAcAAAD+/wAAAQAAAAcAAAD9////AQAAAAcAAAD9/wAAAQAAAAcAAAD9/wEAAQAAAAcAAAD+/wIAAQAAAAcAAAD+/wMAAQAAAAcAAAD//wQAAQAAAAcAAAD//wUAAQAAAAcAAAAAAAQAAQAAAAcAAAAAAAMAAQAAAAcAAAABAAIAAQAAAAcAAAABAAEAAQAAAAcAAAACAAAAAQAAAAcAAAA=")
 tile_set = SubResource("TileSet_epypp")
-script = ExtResource("2_tku2a")
-
-[node name="White-dog" parent="Camera2D/FloorLayer" instance=ExtResource("2_j33j0")]
-position = Vector2(-6, -4)
 
 [node name="WallLayer1" type="TileMapLayer" parent="Camera2D"]
 z_index = 1
