@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4wxa2b4ntjwr"
-path="res://.godot/imported/wall-tiles.png-1f9c44c0d542aca626e8013aaaa887f3.ctex"
+uid="uid://fhwsqqgw1t27"
+path="res://.godot/imported/floor-tiles.png-87754ee9fa81c618e3e84fe41b5c4bf5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://room/tiles/wall-tiles.png"
-dest_files=["res://.godot/imported/wall-tiles.png-1f9c44c0d542aca626e8013aaaa887f3.ctex"]
+source_file="res://room/tiles/floor-tiles.png"
+dest_files=["res://.godot/imported/floor-tiles.png-87754ee9fa81c618e3e84fe41b5c4bf5.ctex"]
 
 [params]
 
