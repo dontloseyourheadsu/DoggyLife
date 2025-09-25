@@ -1,13 +1,65 @@
-[gd_scene load_steps=13 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=16 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://room/room.gd" id="1_cy34l"]
 [ext_resource type="Texture2D" uid="uid://5kdtf2dbj8j" path="res://room/MCBlocksBlackOutline.png" id="1_ppkfq"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://room/dogs/white-dog.tscn" id="2_j33j0"]
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://room/floor_layer.gd" id="2_tku2a"]
+[ext_resource type="Texture2D" uid="uid://fhwsqqgw1t27" path="res://room/tiles/floor-tiles.png" id="3_lbx1e"]
 [ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="5_fntg6"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="6_et4wo"]
 [ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
+texture = ExtResource("3_lbx1e")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+8:0/0 = 0
+9:0/0 = 0
+10:0/0 = 0
+11:0/0 = 0
+12:0/0 = 0
+13:0/0 = 0
+14:0/0 = 0
+15:0/0 = 0
+16:0/0 = 0
+17:0/0 = 0
+18:0/0 = 0
+19:0/0 = 0
+20:0/0 = 0
+21:0/0 = 0
+22:0/0 = 0
+23:0/0 = 0
+24:0/0 = 0
+25:0/0 = 0
+26:0/0 = 0
+27:0/0 = 0
+28:0/0 = 0
+29:0/0 = 0
+30:0/0 = 0
+31:0/0 = 0
+32:0/0 = 0
+33:0/0 = 0
+34:0/0 = 0
+35:0/0 = 0
+36:0/0 = 0
+37:0/0 = 0
+38:0/0 = 0
+39:0/0 = 0
+39:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.0876236, -7.71087, -16, 0, 0.788609, 8.5871, 16, 0)
+
+[sub_resource type="TileSet" id="TileSet_wid0f"]
+tile_shape = 1
+tile_size = Vector2i(35, 16)
+physics_layer_0/collision_layer = 1
+sources/2 = SubResource("TileSetAtlasSource_0i02g")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0e48y"]
 texture = ExtResource("1_ppkfq")
@@ -744,7 +796,13 @@ scale = Vector2(0.125, 0.125)
 texture = ExtResource("6_et4wo")
 stretch_mode = 1
 
+[node name="AutoFloorLayer" type="TileMapLayer" parent="Camera2D"]
+y_sort_enabled = true
+tile_map_data = PackedByteArray("AAD+/wAAAgAmAAAAAAD+////AgAmAAAAAAD///7/AgAmAAAAAAD///3/AgAmAAAAAAAAAP7/AgAmAAAAAAAAAP//AgAmAAAAAAABAAAAAgAmAAAAAAAAAAEAAgAmAAAAAAAAAAIAAgAmAAAAAAD//wMAAgAmAAAAAAD//wIAAgAmAAAAAAD+/wEAAgAmAAAAAAD//wAAAgAmAAAAAAD/////AgAmAAAAAAAAAAAAAgAmAAAAAAD//wEAAgAmAAAAAAA=")
+tile_set = SubResource("TileSet_wid0f")
+
 [node name="FloorLayer" type="TileMapLayer" parent="Camera2D"]
+visible = false
 y_sort_enabled = true
 texture_filter = 1
 tile_map_data = PackedByteArray("AAD/////AQAAAAcAAAD///7/AQAAAAcAAAD+////AQAAAAcAAAD//wAAAQAAAAcAAAD//wEAAQAAAAcAAAAAAAAAAQAAAAcAAAAAAP//AQAAAAcAAAAAAP7/AQAAAAcAAAD///3/AQAAAAcAAAD+//7/AQAAAAcAAAD+//3/AQAAAAcAAAD///v/AQAAAAcAAAD///z/AQAAAAcAAAAAAPz/AQAAAAcAAAAAAP3/AQAAAAcAAAABAP7/AQAAAAcAAAABAAAAAQAAAAcAAAABAP//AQAAAAcAAAAAAAEAAQAAAAcAAAAAAAIAAQAAAAcAAAD//wIAAQAAAAcAAAD//wMAAQAAAAcAAAD+/wEAAQAAAAcAAAD+/wAAAQAAAAcAAAD9////AQAAAAcAAAD9/wAAAQAAAAcAAAD9/wEAAQAAAAcAAAD+/wIAAQAAAAcAAAD+/wMAAQAAAAcAAAD//wQAAQAAAAcAAAD//wUAAQAAAAcAAAAAAAQAAQAAAAcAAAAAAAMAAQAAAAcAAAABAAIAAQAAAAcAAAABAAEAAQAAAAcAAAACAAAAAQAAAAcAAAA=")
