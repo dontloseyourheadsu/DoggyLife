@@ -47,11 +47,13 @@ func load_floor_tiles_to_grid():
 	
 	# Calculate number of tiles (assuming 32x32 tiles in a horizontal strip)
 	var tile_count = image_width / TILE_SIZE
+	# The last tile in the spritesheet is an intentionally empty tile; ignore it.
+	var usable_tile_count = max(tile_count - 1, 0)
 	
 	clear_floor_tile_buttons()
 	
 	# Extract each tile and add to GridContainer
-	for i in range(tile_count):
+	for i in range(usable_tile_count):
 		# Calculate tile position
 		var tile_x = i * TILE_SIZE
 		var tile_y = 0  # Since it's a horizontal strip
@@ -98,8 +100,10 @@ func load_wall_tiles_to_grid():
 	var image = main_texture.get_image()
 	var image_width = image.get_width()
 	var tile_count = image_width / TILE_SIZE
+	# Ignore last empty tile
+	var usable_tile_count = max(tile_count - 1, 0)
 	clear_wall_tile_buttons()
-	for i in range(tile_count):
+	for i in range(usable_tile_count):
 		var tile_x = i * TILE_SIZE
 		var tile_image = Image.create(TILE_SIZE, WALL_TILE_HEIGHT, false, Image.FORMAT_RGBA8)
 		tile_image.blit_rect(image, Rect2i(tile_x, 0, TILE_SIZE, WALL_TILE_HEIGHT), Vector2i(0, 0))
@@ -124,6 +128,9 @@ func clear_wall_tile_buttons():
 		child.queue_free()
 
 func _on_tile_button_pressed(tile_index: int):
+	# Guard in case an invalid index is somehow passed (e.g., previously saved selection referencing now-ignored empty tile)
+	if tile_index < 0 or tile_index >= floor_tile_buttons.size():
+		return
 	print("Selected floor tile: ", tile_index)
 	update_floor_selection_visual(tile_index)
 	var selected_texture = floor_tile_buttons[tile_index].texture_normal
@@ -131,6 +138,8 @@ func _on_tile_button_pressed(tile_index: int):
 	current_selected_floor_tile = tile_index
 
 func _on_wall_tile_button_pressed(tile_index: int):
+	if tile_index < 0 or tile_index >= wall_tile_buttons.size():
+		return
 	print("Selected wall tile: ", tile_index)
 	update_wall_selection_visual(tile_index)
 	var selected_texture = wall_tile_buttons[tile_index].texture_normal
