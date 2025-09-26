@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ky2oubsqmpyf"
-path="res://.godot/imported/many-furniture-1.png-bb9b7538ee661c6738dcfc384494dad3.ctex"
+uid="uid://fhwsqqgw1t27"
+path="res://.godot/imported/floor-tiles.png-9924f42c520bfa821860f6f85b3ed89e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://room/decoration/images/many-furniture-1.png"
-dest_files=["res://.godot/imported/many-furniture-1.png-bb9b7538ee661c6738dcfc384494dad3.ctex"]
+source_file="res://scenes/room/tiles/floor-tiles.png"
+dest_files=["res://.godot/imported/floor-tiles.png-9924f42c520bfa821860f6f85b3ed89e.ctex"]
 
 [params]
 

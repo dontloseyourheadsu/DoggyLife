@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4wxa2b4ntjwr"
-path="res://.godot/imported/wall-tiles.png-1f9c44c0d542aca626e8013aaaa887f3.ctex"
+uid="uid://5kdtf2dbj8j"
+path="res://.godot/imported/MCBlocksBlackOutline.png-4f3f7028df77d9a3f99648ea45da1b9e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://room/tiles/wall-tiles.png"
-dest_files=["res://.godot/imported/wall-tiles.png-1f9c44c0d542aca626e8013aaaa887f3.ctex"]
+source_file="res://scenes/room/MCBlocksBlackOutline.png"
+dest_files=["res://.godot/imported/MCBlocksBlackOutline.png-4f3f7028df77d9a3f99648ea45da1b9e.ctex"]
 
 [params]
 
