@@ -24,9 +24,12 @@ func _ready():
 	load_wall_tiles_to_grid()
 	
 	# Restore previous selection if any
-	var saved_idx := TileSelectionStore.get_selected_floor_tile_index(-1)
-	if saved_idx >= 0:
-		_on_tile_button_pressed(saved_idx)
+	var saved_floor_idx := TileSelectionStore.get_selected_floor_tile_index(-1)
+	if saved_floor_idx >= 0:
+		_on_tile_button_pressed(saved_floor_idx)
+	var saved_wall_idx := TileSelectionStore.get_selected_wall_tile_index(-1)
+	if saved_wall_idx >= 0:
+		_on_wall_tile_button_pressed(saved_wall_idx)
 
 	# Connect back button
 	if back_button:
@@ -153,6 +156,8 @@ func _on_wall_tile_button_pressed(tile_index: int):
 	var selected_texture = wall_tile_buttons[tile_index].texture_normal
 	_set_display_texture(wall_tile_display, selected_texture, "Wall")
 	current_selected_wall_tile = tile_index
+	# Persist selection
+	TileSelectionStore.set_selected_wall_tile_index(tile_index)
 
 func update_floor_selection_visual(selected_index: int):
 	for i in range(floor_tile_buttons.size()):
@@ -184,6 +189,8 @@ func _on_back_button_pressed() -> void:
 	# Ensure selection is saved before going back
 	if current_selected_floor_tile >= 0:
 		TileSelectionStore.set_selected_floor_tile_index(current_selected_floor_tile)
+	if current_selected_wall_tile >= 0:
+		TileSelectionStore.set_selected_wall_tile_index(current_selected_wall_tile)
 	# Load room scene
 	var room_scene = load("res://scenes/room/room.tscn").instantiate()
 	get_tree().root.add_child(room_scene)
