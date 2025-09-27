@@ -3,9 +3,12 @@ extends TileMapLayer
 const FLOOR_TEXTURE_SOURCE_ID := 2
 const BASE_FLOOR_ATLAS_COORDINATES := Vector2i(38, 0)
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
+const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
 
 func _ready():
-	replace_tiles(BASE_FLOOR_ATLAS_COORDINATES, Vector2i(37, 0))
+	var selected_atlas := TileSelectionStore.get_selected_floor_atlas_coords(Vector2i(37, 0))
+	# If no selection saved yet, fall back to 37,0 to preserve previous behavior.
+	replace_tiles(BASE_FLOOR_ATLAS_COORDINATES, selected_atlas)
 	fill_with_delimiter_tiles()
 
 func replace_tiles(old_atlas: Vector2i, new_atlas: Vector2i):

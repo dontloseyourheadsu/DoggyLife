@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5kdtf2dbj8j"
-path="res://.godot/imported/MCBlocksBlackOutline.png-0d01752e2a1677783beede72c3d68388.ctex"
+uid="uid://kphgsnb8pwhm"
+path="res://.godot/imported/makeshift-furniture-1.png-b103dcd0ec9704b1891e214ecd87bde3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://room/MCBlocksBlackOutline.png"
-dest_files=["res://.godot/imported/MCBlocksBlackOutline.png-0d01752e2a1677783beede72c3d68388.ctex"]
+source_file="res://scenes/room/decoration/images/makeshift-furniture-1.png"
+dest_files=["res://.godot/imported/makeshift-furniture-1.png-b103dcd0ec9704b1891e214ecd87bde3.ctex"]
 
 [params]
 

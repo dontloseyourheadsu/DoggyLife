@@ -1,7 +1,7 @@
 [gd_scene load_steps=33 format=3 uid="uid://ch4ywalnwhk3v"]
 
-[ext_resource type="Script" uid="uid://dpu3kr86qcaku" path="res://room/dogs/white_dog.gd" id="1_rl776"]
-[ext_resource type="Texture2D" uid="uid://b2kjuuarmwif" path="res://room/dogs/white-dog.png" id="2_lmsln"]
+[ext_resource type="Script" uid="uid://dpu3kr86qcaku" path="res://scenes/room/dogs/white_dog.gd" id="1_rl776"]
+[ext_resource type="Texture2D" uid="uid://b2kjuuarmwif" path="res://scenes/room/dogs/white-dog.png" id="2_lmsln"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6x52x"]
 

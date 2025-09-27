@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://h4vhbuw8woxr"
-path="res://.godot/imported/pet-furniture-1.png-d72e6bb5a0199553799030ecfa95ed82.ctex"
+uid="uid://ymk813aachm3"
+path="res://.godot/imported/DoorsAndWindows-furniture-1.png-9bd78b4f9d7ffa781e5f046709bb386b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://room/decoration/images/pet-furniture-1.png"
-dest_files=["res://.godot/imported/pet-furniture-1.png-d72e6bb5a0199553799030ecfa95ed82.ctex"]
+source_file="res://scenes/room/decoration/images/DoorsAndWindows-furniture-1.png"
+dest_files=["res://.godot/imported/DoorsAndWindows-furniture-1.png-9bd78b4f9d7ffa781e5f046709bb386b.ctex"]
 
 [params]
 
