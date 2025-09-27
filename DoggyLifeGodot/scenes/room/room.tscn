@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=15 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/dogs/white-dog.tscn" id="2_j33j0"]
@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="6_et4wo"]
 [ext_resource type="Texture2D" uid="uid://4wxa2b4ntjwr" path="res://scenes/room/tiles/wall-tiles.png" id="6_lbx1e"]
+[ext_resource type="Script" uid="uid://bv46cnrqklwkm" path="res://scenes/room/tiles/wall_layer.gd" id="7_68b7a"]
 [ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
@@ -186,6 +187,7 @@ position = Vector2(-6, -4)
 y_sort_enabled = true
 tile_map_data = PackedByteArray("AAABAP//AAAAAAAAAAABAP7/AAAAAAAAAAAAAP3/AAAAAAAAAAAAAPz/AAAAAAAAAAD///v/AAAAAAAAAAD///z/AAAAAAAAAAD+//3/AAAAAAAAAAD+//7/AAAAAAAAAAD9////AAAAAAAAAAA=")
 tile_set = SubResource("TileSet_cy34l")
+script = ExtResource("7_68b7a")
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="Camera2D"]
 stream = ExtResource("5_qx3y5")
