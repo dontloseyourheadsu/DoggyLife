@@ -21,7 +21,7 @@ func _on_pause_button_pressed() -> void:
 
 func _on_edit_button_pressed() -> void:
 	# Load edit scene
-	var edit_scene = load("res://room/popups/edit_popup.tscn").instantiate()
+	var edit_scene = load("res://scenes/room/popups/edit_popup.tscn").instantiate()
 	get_tree().root.add_child(edit_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = edit_scene
