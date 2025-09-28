@@ -58,7 +58,7 @@ texture_region_size = Vector2i(32, 32)
 
 [sub_resource type="TileSet" id="TileSet_wid0f"]
 tile_shape = 1
-tile_size = Vector2i(30, 16)
+tile_size = Vector2i(32, 16)
 physics_layer_0/collision_layer = 1
 sources/2 = SubResource("TileSetAtlasSource_0i02g")
 
@@ -148,7 +148,7 @@ texture_region_size = Vector2i(32, 64)
 
 [sub_resource type="TileSet" id="TileSet_cy34l"]
 tile_shape = 1
-tile_size = Vector2i(30, 16)
+tile_size = Vector2i(32, 16)
 sources/0 = SubResource("TileSetAtlasSource_wid0f")
 
 [node name="Room" type="Node2D"]
