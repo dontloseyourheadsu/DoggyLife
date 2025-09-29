@@ -1,7 +1,7 @@
 extends TileMapLayer
 
 const WALL_TEXTURE_SOURCE_ID := 0
-const BASE_WALL_ATLAS_COORDINATES := Vector2i(0, 0)
+const BASE_WALL_ATLAS_COORDINATES := Vector2i(2, 0)
 const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
 
 func _ready():

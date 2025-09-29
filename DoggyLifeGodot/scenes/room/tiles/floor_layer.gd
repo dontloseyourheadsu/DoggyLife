@@ -1,7 +1,7 @@
 extends TileMapLayer
 
 const FLOOR_TEXTURE_SOURCE_ID := 2
-const BASE_FLOOR_ATLAS_COORDINATES := Vector2i(38, 0)
+const BASE_FLOOR_ATLAS_COORDINATES := Vector2i(2, 0)
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
 

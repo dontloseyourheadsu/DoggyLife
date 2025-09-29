@@ -149,6 +149,7 @@ texture_region_size = Vector2i(32, 64)
 
 [sub_resource type="TileSet" id="TileSet_cy34l"]
 tile_shape = 1
+tile_layout = 5
 tile_size = Vector2i(32, 16)
 sources/0 = SubResource("TileSetAtlasSource_wid0f")
 
@@ -186,7 +187,7 @@ position = Vector2(-6, -4)
 
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAABAP//AAACAAAAAAABAP7/AAACAAAAAAAAAP3/AAACAAAAAAAAAPz/AAACAAAAAAD///v/AAACAAAAAAD///z/AAACAAAAAAD+//3/AAACAAAAAAD+//7/AAACAAAAAAD9////AAACAAAAAAA=")
+tile_map_data = PackedByteArray("AAD9/wIAAAACAAAAAAD9/wEAAAACAAAAAAD9/wAAAAACAAAAAAD9////AAACAAAAAAD9//7/AAACAAAAAAD+//7/AAACAAAAAAD///7/AAACAAAAAAAAAP7/AAACAAAAAAABAP7/AAACAAAAAAA=")
 tile_set = SubResource("TileSet_cy34l")
 script = ExtResource("7_68b7a")
 
