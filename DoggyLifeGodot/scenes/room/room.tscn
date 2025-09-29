@@ -58,6 +58,7 @@ texture_region_size = Vector2i(32, 32)
 
 [sub_resource type="TileSet" id="TileSet_wid0f"]
 tile_shape = 1
+tile_layout = 5
 tile_size = Vector2i(32, 16)
 physics_layer_0/collision_layer = 1
 sources/2 = SubResource("TileSetAtlasSource_0i02g")
@@ -148,6 +149,7 @@ texture_region_size = Vector2i(32, 64)
 
 [sub_resource type="TileSet" id="TileSet_cy34l"]
 tile_shape = 1
+tile_layout = 5
 tile_size = Vector2i(32, 16)
 sources/0 = SubResource("TileSetAtlasSource_wid0f")
 
@@ -176,7 +178,7 @@ stretch_mode = 1
 [node name="FloorLayer" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAD+/wAAAgAmAAAAAAD+////AgAmAAAAAAD///7/AgAmAAAAAAD///3/AgAmAAAAAAAAAP7/AgAmAAAAAAD/////AgAmAAAAAAAAAAAAAgAmAAAAAAD//wEAAgAmAAAAAAD//wIAAgAmAAAAAAD+/wEAAgAmAAAAAAD//wAAAgAmAAAAAAAAAP//AgAmAAAAAAABAAAAAgAmAAAAAAAAAAEAAgAmAAAAAAAAAAIAAgAmAAAAAAD//wMAAgAmAAAAAAA=")
+tile_map_data = PackedByteArray("AAD+/wAAAgACAAAAAAD+////AgACAAAAAAD/////AgACAAAAAAAAAAAAAgACAAAAAAD//wEAAgACAAAAAAD//wIAAgACAAAAAAD+/wEAAgACAAAAAAD//wAAAgACAAAAAAAAAAEAAgACAAAAAAAAAAIAAgACAAAAAAAAAP//AgACAAAAAAABAP//AgACAAAAAAABAAAAAgACAAAAAAABAAEAAgACAAAAAAABAAIAAgACAAAAAAD+/wIAAgACAAAAAAA=")
 tile_set = SubResource("TileSet_wid0f")
 script = ExtResource("2_tku2a")
 
@@ -185,7 +187,7 @@ position = Vector2(-6, -4)
 
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAABAP//AAAAAAAAAAABAP7/AAAAAAAAAAAAAP3/AAAAAAAAAAAAAPz/AAAAAAAAAAD///v/AAAAAAAAAAD///z/AAAAAAAAAAD+//3/AAAAAAAAAAD+//7/AAAAAAAAAAD9////AAAAAAAAAAA=")
+tile_map_data = PackedByteArray("AAD9/wIAAAACAAAAAAD9/wEAAAACAAAAAAD9/wAAAAACAAAAAAD9////AAACAAAAAAD9//7/AAACAAAAAAD+//7/AAACAAAAAAD///7/AAACAAAAAAAAAP7/AAACAAAAAAABAP7/AAACAAAAAAA=")
 tile_set = SubResource("TileSet_cy34l")
 script = ExtResource("7_68b7a")
 
