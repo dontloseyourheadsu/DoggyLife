@@ -58,6 +58,7 @@ texture_region_size = Vector2i(32, 32)
 
 [sub_resource type="TileSet" id="TileSet_wid0f"]
 tile_shape = 1
+tile_layout = 5
 tile_size = Vector2i(32, 16)
 physics_layer_0/collision_layer = 1
 sources/2 = SubResource("TileSetAtlasSource_0i02g")
@@ -176,7 +177,7 @@ stretch_mode = 1
 [node name="FloorLayer" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAD+/wAAAgAmAAAAAAD+////AgAmAAAAAAD///7/AgAmAAAAAAD///3/AgAmAAAAAAAAAP7/AgAmAAAAAAD/////AgAmAAAAAAAAAAAAAgAmAAAAAAD//wEAAgAmAAAAAAD//wIAAgAmAAAAAAD+/wEAAgAmAAAAAAD//wAAAgAmAAAAAAAAAP//AgAmAAAAAAABAAAAAgAmAAAAAAAAAAEAAgAmAAAAAAAAAAIAAgAmAAAAAAD//wMAAgAmAAAAAAA=")
+tile_map_data = PackedByteArray("AAD+/wAAAgAmAAAAAAD+////AgAmAAAAAAD/////AgAmAAAAAAAAAAAAAgAmAAAAAAD//wEAAgAmAAAAAAD//wIAAgAmAAAAAAD+/wEAAgAmAAAAAAD//wAAAgAmAAAAAAAAAAEAAgAmAAAAAAAAAAIAAgAmAAAAAAAAAP//AgAmAAAAAAABAP//AgAmAAAAAAABAAAAAgAmAAAAAAABAAEAAgAmAAAAAAABAAIAAgAmAAAAAAD+/wIAAgAmAAAAAAA=")
 tile_set = SubResource("TileSet_wid0f")
 script = ExtResource("2_tku2a")
 
