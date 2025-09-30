@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ymk813aachm3"
-path="res://.godot/imported/DoorsAndWindows-furniture-1.png-9bd78b4f9d7ffa781e5f046709bb386b.ctex"
+uid="uid://ds5eyief57i5c"
+path="res://.godot/imported/shelf-sprite.png-4ebb89e47744c49738a392273bab1d6f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/images/DoorsAndWindows-furniture-1.png"
-dest_files=["res://.godot/imported/DoorsAndWindows-furniture-1.png-9bd78b4f9d7ffa781e5f046709bb386b.ctex"]
+source_file="res://scenes/room/decoration/shelf-sprite.png"
+dest_files=["res://.godot/imported/shelf-sprite.png-4ebb89e47744c49738a392273bab1d6f.ctex"]
 
 [params]
 

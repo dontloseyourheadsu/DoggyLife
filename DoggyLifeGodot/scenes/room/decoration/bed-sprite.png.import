@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kphgsnb8pwhm"
-path="res://.godot/imported/makeshift-furniture-1.png-b103dcd0ec9704b1891e214ecd87bde3.ctex"
+uid="uid://d2sk5m2xrltbw"
+path="res://.godot/imported/bed-sprite.png-6378655242714ff11de50035038af01c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/images/makeshift-furniture-1.png"
-dest_files=["res://.godot/imported/makeshift-furniture-1.png-b103dcd0ec9704b1891e214ecd87bde3.ctex"]
+source_file="res://scenes/room/decoration/bed-sprite.png"
+dest_files=["res://.godot/imported/bed-sprite.png-6378655242714ff11de50035038af01c.ctex"]
 
 [params]
 
