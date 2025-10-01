@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s2l3wxkihxti"
-path="res://.godot/imported/painting-sprite.png-c920c847f93ee8f864a9081e565ab2d4.ctex"
+uid="uid://wa34dgh3c3ak"
+path="res://.godot/imported/painting-sprite.png-c1e68e3984e8a9fc167e7ad9a11b653e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/painting-sprite.png"
-dest_files=["res://.godot/imported/painting-sprite.png-c920c847f93ee8f864a9081e565ab2d4.ctex"]
+source_file="res://scenes/room/decoration/wall/painting-sprite.png"
+dest_files=["res://.godot/imported/painting-sprite.png-c1e68e3984e8a9fc167e7ad9a11b653e.ctex"]
 
 [params]
 

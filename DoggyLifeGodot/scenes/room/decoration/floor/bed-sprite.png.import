@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fr30nfu43ua5"
-path="res://.godot/imported/bookshelf-sprite.png-ea2b86955461073ee38737158d8c09ea.ctex"
+uid="uid://chuin4k7cqv8l"
+path="res://.godot/imported/bed-sprite.png-79c8f2d97e64367c276a33238fad8a85.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/bookshelf-sprite.png"
-dest_files=["res://.godot/imported/bookshelf-sprite.png-ea2b86955461073ee38737158d8c09ea.ctex"]
+source_file="res://scenes/room/decoration/floor/bed-sprite.png"
+dest_files=["res://.godot/imported/bed-sprite.png-79c8f2d97e64367c276a33238fad8a85.ctex"]
 
 [params]
 

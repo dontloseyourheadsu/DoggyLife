@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dypu6rjobghiq"
-path="res://.godot/imported/lamp-sprite.png-de6d9142afb7a1b6dfb7f33850dccf5a.ctex"
+uid="uid://dk8lfl5cvb5o4"
+path="res://.godot/imported/window-sprite.png-d2299d0aae4ae0affd6ed920756799cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/lamp-sprite.png"
-dest_files=["res://.godot/imported/lamp-sprite.png-de6d9142afb7a1b6dfb7f33850dccf5a.ctex"]
+source_file="res://scenes/room/decoration/wall/window-sprite.png"
+dest_files=["res://.godot/imported/window-sprite.png-d2299d0aae4ae0affd6ed920756799cc.ctex"]
 
 [params]
 

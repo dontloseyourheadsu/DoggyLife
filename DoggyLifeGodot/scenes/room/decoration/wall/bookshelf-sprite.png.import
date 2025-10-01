@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjypw1s5ypcrq"
-path="res://.godot/imported/window-sprite.png-0c2a3913b5324f07fadc257b6e223d38.ctex"
+uid="uid://bcjn1xrlgmbk3"
+path="res://.godot/imported/bookshelf-sprite.png-24bb8eb6af69bd1b83e483778ff20219.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/window-sprite.png"
-dest_files=["res://.godot/imported/window-sprite.png-0c2a3913b5324f07fadc257b6e223d38.ctex"]
+source_file="res://scenes/room/decoration/wall/bookshelf-sprite.png"
+dest_files=["res://.godot/imported/bookshelf-sprite.png-24bb8eb6af69bd1b83e483778ff20219.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2sk5m2xrltbw"
-path="res://.godot/imported/bed-sprite.png-6378655242714ff11de50035038af01c.ctex"
+uid="uid://cvkslvp15keke"
+path="res://.godot/imported/shelf-sprite.png-f23d2c680478648814d868bb7d91dd56.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/decoration/bed-sprite.png"
-dest_files=["res://.godot/imported/bed-sprite.png-6378655242714ff11de50035038af01c.ctex"]
+source_file="res://scenes/room/decoration/floor/shelf-sprite.png"
+dest_files=["res://.godot/imported/shelf-sprite.png-f23d2c680478648814d868bb7d91dd56.ctex"]
 
 [params]
 
