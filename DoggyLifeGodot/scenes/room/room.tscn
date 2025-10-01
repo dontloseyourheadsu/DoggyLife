@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=16 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/dogs/white-dog.tscn" id="2_j33j0"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://4wxa2b4ntjwr" path="res://scenes/room/tiles/wall-tiles.png" id="6_lbx1e"]
 [ext_resource type="Script" uid="uid://bv46cnrqklwkm" path="res://scenes/room/tiles/wall_layer.gd" id="7_68b7a"]
 [ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
+[ext_resource type="Script" uid="uid://brcsmpvmsspgu" path="res://scenes/room/decoration/drag-drop-decoration.gd" id="9_ip1yl"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -196,25 +197,65 @@ stream = ExtResource("5_qx3y5")
 autoplay = true
 parameters/looping = true
 
-[node name="EditButton" type="Button" parent="Camera2D"]
-offset_left = 113.0
-offset_top = -132.0
-offset_right = 301.0
-offset_bottom = -67.0
+[node name="OptionsContainer" type="Control" parent="Camera2D"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 96.0
+offset_top = -142.0
+offset_right = 198.0
+offset_bottom = -115.0
+script = ExtResource("9_ip1yl")
+
+[node name="EditButton" type="Button" parent="Camera2D/OptionsContainer"]
+offset_left = 17.0
+offset_top = 6.0
+offset_right = 205.0
+offset_bottom = 71.0
 scale = Vector2(0.25, 0.25)
 theme = ExtResource("5_fntg6")
 text = "EDIT"
 
-[node name="PauseButton" type="Button" parent="Camera2D"]
-offset_left = 165.0
-offset_top = -132.0
-offset_right = 317.0
-offset_bottom = -28.0
+[node name="PauseButton" type="Button" parent="Camera2D/OptionsContainer"]
+offset_left = 69.0
+offset_top = 6.0
+offset_right = 221.0
+offset_bottom = 110.0
 scale = Vector2(0.157, 0.157)
 theme = ExtResource("5_fntg6")
 icon = ExtResource("7_et4wo")
 icon_alignment = 1
 
+[node name="DragsContainer" type="Control" parent="Camera2D"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 90.0
+offset_top = -97.0
+offset_right = 190.0
+offset_bottom = 53.0
+
+[node name="FloorItemsContainer" type="ScrollContainer" parent="Camera2D/DragsContainer"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="GridContainer" type="GridContainer" parent="Camera2D/DragsContainer/FloorItemsContainer"]
+layout_mode = 2
+
+[node name="WallItemsContainer" type="ScrollContainer" parent="Camera2D/DragsContainer"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="GridContainer" type="GridContainer" parent="Camera2D/DragsContainer/WallItemsContainer"]
+layout_mode = 2
+
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
-[connection signal="pressed" from="Camera2D/EditButton" to="." method="_on_edit_button_pressed"]
-[connection signal="pressed" from="Camera2D/PauseButton" to="." method="_on_pause_button_pressed"]
+[connection signal="pressed" from="Camera2D/OptionsContainer/EditButton" to="." method="_on_edit_button_pressed"]
+[connection signal="pressed" from="Camera2D/OptionsContainer/PauseButton" to="." method="_on_pause_button_pressed"]
