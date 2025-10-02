@@ -52,7 +52,7 @@ func _wire_drag_tiles() -> void:
 	# With direct binding from decoration script, no wiring needed here.
 	pass
 
-func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: Texture2D) -> void:
+func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: Texture2D, is_floor: bool) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and not event.is_echo():
 			# Begin drag directly from provided texture
@@ -61,7 +61,14 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 			if is_instance_valid(selected_sprite):
 				selected_sprite.texture = _selected_texture
 				selected_sprite.visible = true
-				selected_sprite.position = get_global_mouse_position()
+				# Position with offsets:
+				# - Horizontal: 50% width for floor, 85% width for wall
+				# - Vertical:   25% height for floor, 85% height for wall
+				var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(_selected_texture.get_width())
+				var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(_selected_texture.get_height())
+				var offset_x := display_width * (0.5 if is_floor else 0.85)
+				var offset_y := display_height * (0.25 if is_floor else 0.85)
+				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
 			selected_sprite_path = tile_name
 			print_debug("Selected tile: %s" % tile_name)
 		elif not event.pressed:
@@ -81,9 +88,18 @@ func _process(_delta: float) -> void:
 	if _mouse_press_began_in_drag_area:
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			print_debug("Mouse position: %s" % str(get_global_mouse_position()))
-			# Follow mouse with the selected sprite while pressed
+			# Follow mouse with the selected sprite while pressed; keep last offset behavior
 			if is_instance_valid(selected_sprite) and selected_sprite.visible:
-				selected_sprite.position = get_global_mouse_position()
+				# Infer floor vs wall by selected_sprite_path if available; default to floor offset
+				var is_floor := true
+				if selected_sprite_path != "":
+					# naive check: if path/name contains "wall" then treat as wall
+					is_floor = not selected_sprite_path.contains("wall")
+				var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(selected_sprite.texture.get_width())
+				var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(selected_sprite.texture.get_height())
+				var offset_x := display_width * (0.5 if is_floor else 0.85)
+				var offset_y := display_height * (0.25 if is_floor else 0.85)
+				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
 		else:
 			# If the button is no longer pressed, stop tracking
 			_mouse_press_began_in_drag_area = false
