@@ -273,6 +273,7 @@ layout_mode = 2
 theme_override_constants/v_separation = 15
 
 [node name="SelectedSprite" type="TextureRect" parent="Camera2D"]
+z_index = 5
 offset_right = 40.0
 offset_bottom = 40.0
 
