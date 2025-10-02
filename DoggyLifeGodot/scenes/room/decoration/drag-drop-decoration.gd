@@ -74,6 +74,11 @@ func add_item_to_grid(grid: GridContainer, texture_path: String) -> void:
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	preview.tooltip_text = base
+
+	# Connect the preview click directly to the Room script, binding the tile id and texture
+	var room := get_tree().current_scene
+	if room != null and room.has_method("_on_drag_preview_gui_input"):
+		preview.gui_input.connect(Callable(room, "_on_drag_preview_gui_input").bind(base, atlas))
 	
 	var label := Label.new()
 	label.text = display_name
