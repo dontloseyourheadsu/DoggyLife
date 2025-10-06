@@ -19,44 +19,67 @@ func populate_grid(grid: GridContainer, dir_path: String) -> void:
 	for child in grid.get_children():
 		child.queue_free()
 	
-	var files := []
-	# Use DirAccess static helper to list files in Godot 4.x
-	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(dir_path)):
-		files = DirAccess.get_files_at(dir_path)
-	else:
-		push_warning("Directory does not exist: %s" % dir_path)
+	var is_floor := dir_path.ends_with("/floor")
+	var sheet_name := "floor-sprites.png" if is_floor else "wall-sprites.png"
+	var sheet_path := dir_path.path_join(sheet_name)
+	
+	if not ResourceLoader.exists(sheet_path):
+		push_warning("Spritesheet not found: %s" % sheet_path)
 		return
 	
-	for file in files:
-		if not file.ends_with(".png"):
-			continue
-		var file_path := dir_path.path_join(file)
-		add_item_to_grid(grid, file_path)
+	var sheet := load(sheet_path)
+	if sheet == null or not (sheet is Texture2D):
+		push_warning("Failed to load spritesheet: %s" % sheet_path)
+		return
+	
+	if is_floor:
+		# Floor: 256x96, first version only
+		# Lamp (32x32) at x=0, y=0
+		var lamp := AtlasTexture.new()
+		lamp.atlas = sheet
+		lamp.region = Rect2(0, 0, 32, 32)
+		add_item_entry(grid, "lamp-sprite", lamp, is_floor)
+		
+		# Shelf (32x32) at x=0, y=32
+		var shelf := AtlasTexture.new()
+		shelf.atlas = sheet
+		shelf.region = Rect2(0, 32, 32, 32)
+		add_item_entry(grid, "shelf-sprite", shelf, is_floor)
+		
+		# Bed (48x32) at x=0, y=64
+		var bed := AtlasTexture.new()
+		bed.atlas = sheet
+		bed.region = Rect2(0, 64, 48, 32)
+		add_item_entry(grid, "bed-sprite", bed, is_floor)
+	else:
+		# Wall: 64x96, first version only, all 32x32
+		# Window at x=0, y=0
+		var window := AtlasTexture.new()
+		window.atlas = sheet
+		window.region = Rect2(0, 0, 32, 32)
+		add_item_entry(grid, "window-sprite", window, is_floor)
+		
+		# Bookshelf at x=0, y=32
+		var bookshelf := AtlasTexture.new()
+		bookshelf.atlas = sheet
+		bookshelf.region = Rect2(0, 32, 32, 32)
+		add_item_entry(grid, "bookshelf-sprite", bookshelf, is_floor)
+		
+		# Painting at x=0, y=64
+		var painting := AtlasTexture.new()
+		painting.atlas = sheet
+		painting.region = Rect2(0, 64, 32, 32)
+		add_item_entry(grid, "painting-sprite", painting, is_floor)
 
-func add_item_to_grid(grid: GridContainer, texture_path: String) -> void:
-	var base := texture_path.get_file().get_basename() # e.g., "bed-sprite"
+func add_item_entry(grid: GridContainer, base: String, atlas: AtlasTexture, is_floor: bool) -> void:
 	var display_name := base.replace("-sprite", "").replace("_", " ")
 	display_name = display_name.capitalize()
 	
-	var tex := load(texture_path)
-	if tex == null or not (tex is Texture2D):
-		push_warning("Failed to load texture: %s" % texture_path)
-		return
-	
-	# Build an AtlasTexture to show only the first frame.
-	var frame_width := 48 if ("bed" in base) else 32
-	var frame_height := 32
-	
-	var atlas := AtlasTexture.new()
-	atlas.atlas = tex
-	atlas.region = Rect2(Vector2.ZERO, Vector2(frame_width, frame_height))
-	
 	var display_height := 25
-	# Derive a scale factor from the desired height so width stays proportional
-	var scale_factor := float(display_height) / float(frame_height)
-	var display_width := int(round(float(frame_width) * scale_factor))
+	var atlas_size := atlas.region.size
+	var scale_factor := float(display_height) / atlas_size.y
+	var display_width := int(round(atlas_size.x * scale_factor))
 	
-	# Item container (vertical): preview + label
 	var item := VBoxContainer.new()
 	item.alignment = BoxContainer.ALIGNMENT_CENTER
 	item.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -64,9 +87,7 @@ func add_item_to_grid(grid: GridContainer, texture_path: String) -> void:
 	
 	var preview := TextureRect.new()
 	preview.texture = atlas
-	# Scale the texture to the control's rect so it can be smaller than the source frame
 	preview.stretch_mode = TextureRect.STRETCH_SCALE
-	# Ensure the control can be smaller than the source texture and keep pixel art crisp
 	preview.ignore_texture_size = true
 	preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	preview.custom_minimum_size = Vector2(display_width, display_height)
@@ -74,9 +95,7 @@ func add_item_to_grid(grid: GridContainer, texture_path: String) -> void:
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	preview.tooltip_text = base
-
-	# Connect the preview click directly to the Room script, binding the tile id and texture
-	var is_floor := (grid == floor_grid)
+	
 	var room := get_tree().current_scene
 	if room != null and room.has_method("_on_drag_preview_gui_input"):
 		preview.gui_input.connect(Callable(room, "_on_drag_preview_gui_input").bind(base, atlas, is_floor))
