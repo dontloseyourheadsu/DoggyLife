@@ -1,10 +1,24 @@
-[gd_resource type="Theme" load_steps=5 format=3 uid="uid://cnld8djuw1qpf"]
+[gd_resource type="Theme" load_steps=8 format=3 uid="uid://cnld8djuw1qpf"]
 
 [ext_resource type="FontFile" uid="uid://ktpqor7f6673" path="res://fonts/PressStart2P-Regular.ttf" id="1_rjgu6"]
 [ext_resource type="StyleBox" uid="uid://bi2bywn2y6sl5" path="res://themes/button-style.tres" id="2_vu6l5"]
 [ext_resource type="StyleBox" uid="uid://boclywt2foib2" path="res://themes/button-style-pressed.tres" id="3_ydht1"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ydht1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ydht1"]
+bg_color = Color(0.57254905, 0.4862745, 0.6901961, 1)
+border_color = Color(0.8, 0.40784314, 0.8, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uobgu"]
+bg_color = Color(0.3592222, 0.2561803, 0.4581191, 1)
+expand_margin_left = 6.0
+expand_margin_right = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g21io"]
+bg_color = Color(0.4939527, 0.36782417, 0.6170223, 1)
+expand_margin_left = 6.0
+expand_margin_right = 6.0
 
 [resource]
 Button/colors/font_color = Color(1, 1, 1, 1)
@@ -14,3 +28,6 @@ Button/styles/hover = ExtResource("2_vu6l5")
 Button/styles/normal = ExtResource("2_vu6l5")
 Button/styles/pressed = ExtResource("3_ydht1")
 CheckBox/styles/normal = SubResource("StyleBoxEmpty_ydht1")
+ScrollContainer/styles/panel = SubResource("StyleBoxFlat_ydht1")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_uobgu")
+VScrollBar/styles/scroll = SubResource("StyleBoxFlat_g21io")
