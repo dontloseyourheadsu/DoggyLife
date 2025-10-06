@@ -4,6 +4,7 @@ extends Node2D
 @onready var edit_button := $Camera2D/EditButton as Button
 @onready var floor_items_grid: GridContainer = $Camera2D/DragsContainer/FloorItemsContainer/GridContainer
 @onready var wall_items_grid: GridContainer = $Camera2D/DragsContainer/WallItemsContainer/GridContainer
+@onready var floor_mouse_detector: TileMapLayer = $Camera2D/FloorMouseDetector
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 
 # Tracks whether the current left mouse press started inside either drag/drop container
@@ -13,6 +14,7 @@ var selected_sprite_path: String = ""
 
 @onready var selected_sprite: TextureRect = $Camera2D/SelectedSprite
 var _selected_texture: Texture2D
+var _last_hovered_tile: Vector2i = Vector2i(2147483647, 2147483647)
 
 func _ready():
 	# Connect the pause button signal
@@ -76,6 +78,14 @@ func _clear_selected_sprite() -> void:
 	_selected_texture = null
 
 func _process(_delta: float) -> void:
+	# Track and print the hovered tile under the mouse on the FloorMouseDetector layer
+	if is_instance_valid(floor_mouse_detector):
+		var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
+		var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
+		if tile_coords != _last_hovered_tile:
+			_last_hovered_tile = tile_coords
+			print_debug("Hover tile: %d, %d" % [tile_coords.x, tile_coords.y])
+
 	# While the left button remains pressed and the press began in the drag area,
 	# continuously print the mouse position.
 	if _mouse_press_began_in_drag_area:
