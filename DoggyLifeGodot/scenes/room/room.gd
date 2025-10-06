@@ -20,8 +20,6 @@ func _ready():
 		pause_button.pressed.connect(_on_pause_button_pressed)
 	# Apply saved audio settings on scene load
 	AudioUtilsScript.load_and_apply()
-	# Wire up click handlers for the drag/drop tiles populated by the decoration script
-	_wire_drag_tiles()
 	# Enable per-frame processing for continuous mouse position printing while pressed
 	set_process(true)
 	# Prepare the SelectedSprite so it doesn't block input and stays hidden until used
@@ -39,18 +37,12 @@ func _on_pause_button_pressed() -> void:
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = settings_scene
 
-
 func _on_edit_button_pressed() -> void:
 	# Load edit scene
 	var edit_scene = load("res://scenes/room/popups/edit_popup.tscn").instantiate()
 	get_tree().root.add_child(edit_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = edit_scene
-
-# --- Drag/Drop tile selection wiring (bound from decoration script) ---
-func _wire_drag_tiles() -> void:
-	# With direct binding from decoration script, no wiring needed here.
-	pass
 
 func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: Texture2D, is_floor: bool) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -61,6 +53,7 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 			if is_instance_valid(selected_sprite):
 				selected_sprite.texture = _selected_texture
 				selected_sprite.visible = true
+				selected_sprite.self_modulate.a = 0.6
 				# Position with offsets:
 				# - Horizontal: 50% width for floor, 85% width for wall
 				# - Vertical:   25% height for floor, 85% height for wall
