@@ -5,6 +5,7 @@ extends Node2D
 @onready var floor_items_grid: GridContainer = $Camera2D/DragsContainer/FloorItemsContainer/GridContainer
 @onready var wall_items_grid: GridContainer = $Camera2D/DragsContainer/WallItemsContainer/GridContainer
 @onready var floor_mouse_detector: TileMapLayer = $Camera2D/FloorMouseDetector
+@onready var wall_layer: TileMapLayer = $Camera2D/WallLayer
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 
 # Tracks whether the current left mouse press started inside either drag/drop container
@@ -31,6 +32,12 @@ func _ready():
 		selected_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 		selected_sprite.ignore_texture_size = true
 		selected_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+
+	# Print all placed tile positions (local to the WallLayer map) as "x, y"
+	if is_instance_valid(wall_layer):
+		var used_cells: Array[Vector2i] = wall_layer.get_used_cells()
+		for cell: Vector2i in used_cells:
+			print("%d, %d" % [cell.x, cell.y])
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
