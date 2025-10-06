@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=21 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/dogs/white-dog.tscn" id="2_j33j0"]
@@ -7,6 +7,7 @@
 [ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="5_fntg6"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="6_et4wo"]
+[ext_resource type="Texture2D" uid="uid://c2g43srrg4k70" path="res://scenes/room/decoration/floor/floor-sprites.png" id="6_jp1e5"]
 [ext_resource type="Texture2D" uid="uid://4wxa2b4ntjwr" path="res://scenes/room/tiles/wall-tiles.png" id="6_lbx1e"]
 [ext_resource type="Script" uid="uid://bv46cnrqklwkm" path="res://scenes/room/tiles/wall_layer.gd" id="7_68b7a"]
 [ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
@@ -64,6 +65,32 @@ tile_layout = 5
 tile_size = Vector2i(32, 16)
 physics_layer_0/collision_layer = 1
 sources/2 = SubResource("TileSetAtlasSource_0i02g")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1mlw3"]
+texture = ExtResource("6_jp1e5")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_jp1e5"]
+tile_shape = 1
+tile_layout = 5
+tile_size = Vector2i(32, 16)
+sources/1 = SubResource("TileSetAtlasSource_1mlw3")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wid0f"]
 texture = ExtResource("6_lbx1e")
@@ -191,6 +218,11 @@ script = ExtResource("2_tku2a")
 
 [node name="White-dog" parent="Camera2D/FloorLayer" instance=ExtResource("2_j33j0")]
 position = Vector2(-6, -4)
+
+[node name="FloorItemsLayer" type="TileMapLayer" parent="Camera2D"]
+z_index = 2
+y_sort_enabled = true
+tile_set = SubResource("TileSet_jp1e5")
 
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
