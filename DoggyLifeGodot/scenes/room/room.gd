@@ -6,7 +6,10 @@ extends Node2D
 @onready var wall_items_grid: GridContainer = $Camera2D/DragsContainer/WallItemsContainer/GridContainer
 @onready var floor_mouse_detector: TileMapLayer = $Camera2D/FloorMouseDetector
 @onready var wall_layer: TileMapLayer = $Camera2D/WallLayer
+@onready var floor_layer: TileMapLayer = $Camera2D/FloorLayer
+@onready var floor_hologram_layer: TileMapLayer = $Camera2D/FloorHologramLayer
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
+const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 
 # Tracks whether the current left mouse press started inside either drag/drop container
 var _mouse_press_began_in_drag_area: bool = false
@@ -16,6 +19,11 @@ var selected_sprite_path: String = ""
 @onready var selected_sprite: TextureRect = $Camera2D/SelectedSprite
 var _selected_texture: Texture2D
 var _last_hovered_tile: Vector2i = Vector2i(2147483647, 2147483647)
+# For marking the hovered floor tile
+var _marked_tile_overlay: Polygon2D = null
+var _marked_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
+var _dragging_floor_item: bool = false
+var _debug_floor_tile_overlays: Array[Polygon2D] = []
 
 func _ready():
 	# Connect the pause button signal
@@ -23,7 +31,7 @@ func _ready():
 		pause_button.pressed.connect(_on_pause_button_pressed)
 	# Apply saved audio settings on scene load
 	AudioUtilsScript.load_and_apply()
-	# Enable per-frame processing for continuous mouse position printing while pressed
+	# Enable per-frame processing for drag and hover handling
 	set_process(true)
 	# Prepare the SelectedSprite so it doesn't block input and stays hidden until used
 	if is_instance_valid(selected_sprite):
@@ -33,11 +41,7 @@ func _ready():
 		selected_sprite.ignore_texture_size = true
 		selected_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
-	# Print all placed tile positions (local to the WallLayer map) as "x, y"
-	if is_instance_valid(wall_layer):
-		var used_cells: Array[Vector2i] = wall_layer.get_used_cells()
-		for cell: Vector2i in used_cells:
-			print("%d, %d" % [cell.x, cell.y])
+	# Debug overlays disabled
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
@@ -58,6 +62,7 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 		if event.pressed and not event.is_echo():
 			# Begin drag directly from provided texture
 			_mouse_press_began_in_drag_area = true
+			_dragging_floor_item = is_floor
 			_selected_texture = texture
 			if is_instance_valid(selected_sprite):
 				selected_sprite.texture = _selected_texture
@@ -72,11 +77,12 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 				var offset_y := display_height * (0.25 if is_floor else 0.85)
 				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
 			selected_sprite_path = tile_name
-			print_debug("Selected tile: %s" % tile_name)
 		elif not event.pressed:
 			# Release ends tracking and clears selection
 			_mouse_press_began_in_drag_area = false
+			_dragging_floor_item = false
 			_clear_selected_sprite()
+			_remove_marked_tile_overlay()
 
 func _clear_selected_sprite() -> void:
 	if is_instance_valid(selected_sprite):
@@ -91,20 +97,32 @@ func _process(_delta: float) -> void:
 		var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
 		if tile_coords != _last_hovered_tile:
 			_last_hovered_tile = tile_coords
-			print_debug("Hover tile: %d, %d" % [tile_coords.x, tile_coords.y])
+
+	# Mark hovered floor tile with green overlay if dragging a floor item
+	var dragging_floor := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and _dragging_floor_item
+	if dragging_floor and is_instance_valid(floor_mouse_detector) and is_instance_valid(floor_layer) and is_instance_valid(floor_hologram_layer):
+		var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
+		var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
+		# Check if tile_coords is a used cell in FloorLayer and not a delimiter
+		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
+		if tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES:
+			# Mark this tile
+			if _marked_tile_coords != tile_coords:
+				_remove_marked_tile_overlay()
+				_add_marked_tile_overlay(tile_coords)
+		else:
+			_remove_marked_tile_overlay()
+	else:
+		_remove_marked_tile_overlay()
 
 	# While the left button remains pressed and the press began in the drag area,
 	# continuously print the mouse position.
 	if _mouse_press_began_in_drag_area:
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-			print_debug("Mouse position: %s" % str(get_global_mouse_position()))
 			# Follow mouse with the selected sprite while pressed; keep last offset behavior
 			if is_instance_valid(selected_sprite) and selected_sprite.visible:
 				# Infer floor vs wall by selected_sprite_path if available; default to floor offset
-				var is_floor := true
-				if selected_sprite_path != "":
-					# naive check: if path/name contains "wall" then treat as wall
-					is_floor = not selected_sprite_path.contains("wall")
+				var is_floor := _dragging_floor_item
 				var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(selected_sprite.texture.get_width())
 				var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(selected_sprite.texture.get_height())
 				var offset_x := display_width * (0.5 if is_floor else 0.85)
@@ -114,3 +132,64 @@ func _process(_delta: float) -> void:
 			# If the button is no longer pressed, stop tracking
 			_mouse_press_began_in_drag_area = false
 			_clear_selected_sprite()
+
+## Helper to create a diamond overlay aligned with isometric floor and return it
+func _create_tile_overlay(tile_coords: Vector2i, color: Color) -> Polygon2D:
+	if not (is_instance_valid(floor_layer) and is_instance_valid(floor_hologram_layer)):
+		return null
+	var tile_size: Vector2i = floor_layer.tile_set.tile_size
+	# map_to_local returns the center of the cell in local coordinates for isometric TileMaps
+	var center_local_in_floor := floor_layer.map_to_local(tile_coords)
+	var center_global := floor_layer.to_global(center_local_in_floor)
+	var center_in_items := floor_hologram_layer.to_local(center_global)
+
+	var poly := Polygon2D.new()
+	var points: Array[Vector2] = [
+		Vector2(-tile_size.x * 0.5, 0),
+		Vector2(0, -tile_size.y * 0.5),
+		Vector2(tile_size.x * 0.5, 0),
+		Vector2(0, tile_size.y * 0.5)
+	]
+	poly.polygon = points
+	poly.color = color
+	poly.position = center_in_items
+	poly.z_index = 100
+	floor_hologram_layer.add_child(poly)
+	return poly
+
+## Helper to add green diamond overlay aligned with isometric floor
+func _add_marked_tile_overlay(tile_coords: Vector2i) -> void:
+	var poly := _create_tile_overlay(tile_coords, Color(0, 1, 0, 0.35))
+	if poly == null:
+		return
+	_marked_tile_overlay = poly
+	_marked_tile_coords = tile_coords
+
+# Helper to remove overlay
+func _remove_marked_tile_overlay() -> void:
+	if _marked_tile_overlay and is_instance_valid(_marked_tile_overlay):
+		_marked_tile_overlay.queue_free()
+	_marked_tile_overlay = null
+	_marked_tile_coords = Vector2i(2147483647, 2147483647)
+
+## DEBUG helpers: show/clear red holograms for all valid FloorLayer tiles
+func _debug_show_all_floor_tiles() -> void:
+	if not (is_instance_valid(floor_layer) and is_instance_valid(floor_hologram_layer)):
+		return
+	_debug_clear_all_floor_tiles()
+	var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
+	for coords in used_cells:
+		# Skip delimiters and empty cells
+		if floor_layer.get_cell_source_id(coords) == -1:
+			continue
+		if floor_layer.get_cell_atlas_coords(coords) == DELIMITER_ATLAS_COORDINATES:
+			continue
+		var poly := _create_tile_overlay(coords, Color(1, 0, 0, 0.30))
+		if poly != null:
+			_debug_floor_tile_overlays.append(poly)
+
+func _debug_clear_all_floor_tiles() -> void:
+	for poly in _debug_floor_tile_overlays:
+		if is_instance_valid(poly):
+			poly.queue_free()
+	_debug_floor_tile_overlays.clear()
