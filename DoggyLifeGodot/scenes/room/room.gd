@@ -5,11 +5,12 @@ extends Node2D
 @onready var floor_items_grid: GridContainer = $Camera2D/DragsContainer/FloorItemsContainer/GridContainer
 @onready var wall_items_grid: GridContainer = $Camera2D/DragsContainer/WallItemsContainer/GridContainer
 @onready var floor_mouse_detector: TileMapLayer = $Camera2D/FloorMouseDetector
-@onready var wall_layer: TileMapLayer = $Camera2D/WallLayer
+@onready var wall_layer: ModifiableTileMapLayer = $Camera2D/WallLayer
 @onready var floor_layer: TileMapLayer = $Camera2D/FloorLayer
 @onready var floor_hologram_layer: TileMapLayer = $Camera2D/FloorHologramLayer
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
+const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
 
 # Tracks whether the current left mouse press started inside either drag/drop container
 var _mouse_press_began_in_drag_area: bool = false
@@ -24,6 +25,7 @@ var _marked_tile_overlay: Polygon2D = null
 var _marked_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
 var _dragging_floor_item: bool = false
 var _debug_floor_tile_overlays: Array[Polygon2D] = []
+var _marked_wall_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
 
 func _ready():
 	# Connect the pause button signal
@@ -83,6 +85,7 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 			_dragging_floor_item = false
 			_clear_selected_sprite()
 			_remove_marked_tile_overlay()
+			_clear_marked_wall_tile()
 
 func _clear_selected_sprite() -> void:
 	if is_instance_valid(selected_sprite):
@@ -115,6 +118,21 @@ func _process(_delta: float) -> void:
 	else:
 		_remove_marked_tile_overlay()
 
+	# Mark hovered wall tile with green tint if dragging a wall item
+	var dragging_wall := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not _dragging_floor_item
+	if dragging_wall and is_instance_valid(wall_layer):
+		var wall_local := wall_layer.to_local(get_global_mouse_position())
+		var wall_coords: Vector2i = wall_layer.local_to_map(wall_local)
+		var wall_used: Array[Vector2i] = wall_layer.get_used_cells()
+		if wall_coords in wall_used and wall_coords != HIDDEN_WALL_TILE_COORDINATE:
+			if _marked_wall_tile_coords != wall_coords:
+				_clear_marked_wall_tile()
+				_mark_wall_tile(wall_coords)
+		else:
+			_clear_marked_wall_tile()
+	else:
+		_clear_marked_wall_tile()
+
 	# While the left button remains pressed and the press began in the drag area,
 	# continuously print the mouse position.
 	if _mouse_press_began_in_drag_area:
@@ -132,6 +150,7 @@ func _process(_delta: float) -> void:
 			# If the button is no longer pressed, stop tracking
 			_mouse_press_began_in_drag_area = false
 			_clear_selected_sprite()
+			_clear_marked_wall_tile()
 
 ## Helper to create a diamond overlay aligned with isometric floor and return it
 func _create_tile_overlay(tile_coords: Vector2i, color: Color) -> Polygon2D:
@@ -171,6 +190,17 @@ func _remove_marked_tile_overlay() -> void:
 		_marked_tile_overlay.queue_free()
 	_marked_tile_overlay = null
 	_marked_tile_coords = Vector2i(2147483647, 2147483647)
+
+## Wall highlighting helpers using runtime modulate
+func _mark_wall_tile(coords: Vector2i) -> void:
+	if is_instance_valid(wall_layer):
+		wall_layer.set_tile_modulate(coords, Color(0, 1, 0, 0.55))
+		_marked_wall_tile_coords = coords
+
+func _clear_marked_wall_tile() -> void:
+	if is_instance_valid(wall_layer) and _marked_wall_tile_coords.x != 2147483647:
+		wall_layer.clear_tile_modulate(_marked_wall_tile_coords)
+	_marked_wall_tile_coords = Vector2i(2147483647, 2147483647)
 
 ## DEBUG helpers: show/clear red holograms for all valid FloorLayer tiles
 func _debug_show_all_floor_tiles() -> void:

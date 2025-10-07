@@ -1,8 +1,7 @@
-extends TileMapLayer
+extends ModifiableTileMapLayer
 
 const WALL_TEXTURE_SOURCE_ID := 0
 const BASE_WALL_ATLAS_COORDINATES := Vector2i(2, 0)
-const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
 
 func _ready():
 	var selected_wall_atlas := TileSelectionStore.get_selected_wall_atlas_coords(BASE_WALL_ATLAS_COORDINATES)
