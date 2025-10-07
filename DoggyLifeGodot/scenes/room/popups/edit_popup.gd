@@ -35,7 +35,7 @@ func _ready():
 	if back_button:
 		back_button.pressed.connect(_on_back_button_pressed)
 
-func setup_containers():	
+func setup_containers():
 	# Setup the texture display
 	floor_tile_display.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	floor_tile_display.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -46,7 +46,7 @@ func setup_containers():
 func load_floor_tiles_to_grid():
 	var main_texture = load(FLOOR_TILES_PATH) as Texture2D
 	if not main_texture:
-		print("Failed to load floor texture: ", FLOOR_TILES_PATH)
+		push_warning("Failed to load floor texture: " + FLOOR_TILES_PATH)
 		return
 	
 	# Get the image data
@@ -65,7 +65,7 @@ func load_floor_tiles_to_grid():
 	for i in range(usable_tile_count):
 		# Calculate tile position
 		var tile_x = i * TILE_SIZE
-		var tile_y = 0  # Since it's a horizontal strip
+		var tile_y = 0 # Since it's a horizontal strip
 		
 		# Create a new image for this tile
 		var tile_image = Image.create(TILE_SIZE, TILE_SIZE, false, Image.FORMAT_RGBA8)
@@ -76,7 +76,7 @@ func load_floor_tiles_to_grid():
 		# Create texture from the tile image
 		var tile_texture = ImageTexture.new()
 		tile_texture.set_image(tile_image)
-		tile_texture.set_size_override(Vector2(32,32))
+		tile_texture.set_size_override(Vector2(32, 32))
 		
 		# Create TextureButton for this tile
 		var tile_button = TextureButton.new()
@@ -104,7 +104,7 @@ func clear_floor_tile_buttons():
 func load_wall_tiles_to_grid():
 	var main_texture = load(WALL_TILES_PATH) as Texture2D
 	if not main_texture:
-		print("Failed to load wall texture: ", WALL_TILES_PATH)
+		push_warning("Failed to load wall texture: " + WALL_TILES_PATH)
 		return
 	var image = main_texture.get_image()
 	var image_width = image.get_width()
@@ -140,7 +140,6 @@ func _on_tile_button_pressed(tile_index: int):
 	# Guard in case an invalid index is somehow passed (e.g., previously saved selection referencing now-ignored empty tile)
 	if tile_index < 0 or tile_index >= floor_tile_buttons.size():
 		return
-	print("Selected floor tile: ", tile_index)
 	update_floor_selection_visual(tile_index)
 	var selected_texture = floor_tile_buttons[tile_index].texture_normal
 	_set_display_texture(floor_tile_display, selected_texture, "Floor")
@@ -151,7 +150,6 @@ func _on_tile_button_pressed(tile_index: int):
 func _on_wall_tile_button_pressed(tile_index: int):
 	if tile_index < 0 or tile_index >= wall_tile_buttons.size():
 		return
-	print("Selected wall tile: ", tile_index)
 	update_wall_selection_visual(tile_index)
 	var selected_texture = wall_tile_buttons[tile_index].texture_normal
 	_set_display_texture(wall_tile_display, selected_texture, "Wall")

@@ -219,7 +219,7 @@ script = ExtResource("2_tku2a")
 [node name="White-dog" parent="Camera2D/FloorLayer" instance=ExtResource("2_j33j0")]
 position = Vector2(-6, -4)
 
-[node name="FloorItemsLayer" type="TileMapLayer" parent="Camera2D"]
+[node name="FloorHologramLayer" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
 tile_set = SubResource("TileSet_jp1e5")
