@@ -86,22 +86,6 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 			_dragging_floor_item = false
 			_clear_selected_sprite()
 			_remove_marked_tile_overlay()
-	# Mark hovered floor tile with green overlay if dragging a FLOOR item
-	var dragging_floor := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and _dragging_floor_item
-	if dragging_floor and is_instance_valid(floor_mouse_detector) and is_instance_valid(floor_layer) and is_instance_valid(floor_items_layer):
-		var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
-		var tile_coords_mark: Vector2i = floor_mouse_detector.local_to_map(local_pos)
-		# Check if tile_coords_mark is a used cell in FloorLayer and not a delimiter
-		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
-		var DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
-		if tile_coords_mark in used_cells and floor_layer.get_cell_atlas_coords(tile_coords_mark) != DELIMITER_ATLAS_COORDINATES:
-			if _marked_tile_coords != tile_coords_mark:
-				_remove_marked_tile_overlay()
-				_add_marked_tile_overlay(tile_coords_mark)
-		else:
-			_remove_marked_tile_overlay()
-	else:
-		_remove_marked_tile_overlay()
 
 func _clear_selected_sprite() -> void:
 	if is_instance_valid(selected_sprite):
@@ -119,26 +103,18 @@ func _process(_delta: float) -> void:
 			print_debug("Hover tile: %d, %d" % [tile_coords.x, tile_coords.y])
 
 	# Mark hovered floor tile with green overlay if dragging a floor item
-	var dragging_floor := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
-	var is_floor_item := selected_sprite_path != "" and not selected_sprite_path.contains("wall")
-	if dragging_floor and is_floor_item and is_instance_valid(floor_mouse_detector) and is_instance_valid(floor_items_grid):
+	var dragging_floor := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and _dragging_floor_item
+	if dragging_floor and is_instance_valid(floor_mouse_detector) and is_instance_valid(floor_layer) and is_instance_valid(floor_items_layer):
 		var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
 		var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
 		# Check if tile_coords is a used cell in FloorLayer and not a delimiter
-		if is_instance_valid(wall_layer):
-			var floor_layer = get_node_or_null("Camera2D/FloorLayer")
-			if floor_layer:
-				var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
-				var DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
-				if tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES:
-					# Mark this tile
-					if _marked_tile_coords != tile_coords:
-						_remove_marked_tile_overlay()
-						_add_marked_tile_overlay(tile_coords)
-				else:
-					_remove_marked_tile_overlay()
-			else:
+		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
+		var DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
+		if tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES:
+			# Mark this tile
+			if _marked_tile_coords != tile_coords:
 				_remove_marked_tile_overlay()
+				_add_marked_tile_overlay(tile_coords)
 		else:
 			_remove_marked_tile_overlay()
 	else:
