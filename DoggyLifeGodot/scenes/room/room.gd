@@ -8,9 +8,26 @@ extends Node2D
 @onready var wall_layer: ModifiableTileMapLayer = $Camera2D/WallLayer
 @onready var floor_layer: TileMapLayer = $Camera2D/FloorLayer
 @onready var floor_hologram_layer: TileMapLayer = $Camera2D/FloorHologramLayer
+@onready var floor_items_layer: TileMapLayer = $Camera2D/FloorItemsLayer
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
+
+# FloorItems tileset source id (see room.tscn: TileSet_1mlw3 -> sources/1)
+const FLOOR_ITEMS_SOURCE_ID := 1
+# Mapping from item names to atlas coordinate variants in FloorItemsLayer.
+# - Single-tile items map to Array[Vector2i] (each is a variant).
+# - Bed maps to Array[Array[Vector2i]] where each entry is [left,right] variant.
+const FLOOR_ITEM_ATLAS_VARIANTS: Dictionary = {
+	"lamp-sprite": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0)],
+	"shelf-sprite": [Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1)],
+	"bed-sprite": [
+		[Vector2i(0, 2), Vector2i(1, 2)],
+		[Vector2i(2, 2), Vector2i(3, 2)],
+		[Vector2i(4, 2), Vector2i(5, 2)],
+		[Vector2i(6, 2), Vector2i(7, 2)],
+	]
+}
 
 # Tracks whether the current left mouse press started inside either drag/drop container
 var _mouse_press_began_in_drag_area: bool = false
@@ -23,6 +40,8 @@ var _last_hovered_tile: Vector2i = Vector2i(2147483647, 2147483647)
 # For marking the hovered floor tile
 var _marked_tile_overlay: Polygon2D = null
 var _marked_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
+var _marked_tile_overlay_secondary: Polygon2D = null
+var _marked_tile_coords_secondary: Vector2i = Vector2i(2147483647, 2147483647)
 var _dragging_floor_item: bool = false
 var _debug_floor_tile_overlays: Array[Polygon2D] = []
 var _marked_wall_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
@@ -101,18 +120,32 @@ func _process(_delta: float) -> void:
 		if tile_coords != _last_hovered_tile:
 			_last_hovered_tile = tile_coords
 
-	# Mark hovered floor tile with green overlay if dragging a floor item
+	# Mark hovered floor tile(s) with green overlay if dragging a floor item
 	var dragging_floor := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and _dragging_floor_item
 	if dragging_floor and is_instance_valid(floor_mouse_detector) and is_instance_valid(floor_layer) and is_instance_valid(floor_hologram_layer):
 		var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
 		var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
 		# Check if tile_coords is a used cell in FloorLayer and not a delimiter
 		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
-		if tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES:
-			# Mark this tile
-			if _marked_tile_coords != tile_coords:
-				_remove_marked_tile_overlay()
-				_add_marked_tile_overlay(tile_coords)
+		var primary_ok := tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES
+		if primary_ok:
+			# Special handling for bed: needs two adjacent floor tiles (to the +X direction)
+			if selected_sprite_path == "bed-sprite":
+				var second := tile_coords + Vector2i(1, 0)
+				var second_ok := second in used_cells and floor_layer.get_cell_atlas_coords(second) != DELIMITER_ATLAS_COORDINATES
+				if second_ok:
+					# Update overlays if tiles changed
+					if _marked_tile_coords != tile_coords or _marked_tile_coords_secondary != second:
+						_remove_marked_tile_overlay()
+						_add_marked_tile_overlay(tile_coords)
+						_add_secondary_marked_tile_overlay(second)
+				else:
+					_remove_marked_tile_overlay()
+			else:
+				# Single-tile item
+				if _marked_tile_coords != tile_coords:
+					_remove_marked_tile_overlay()
+					_add_marked_tile_overlay(tile_coords)
 		else:
 			_remove_marked_tile_overlay()
 	else:
@@ -146,10 +179,27 @@ func _process(_delta: float) -> void:
 				var offset_x := display_width * (0.5 if is_floor else 0.85)
 				var offset_y := display_height * (0.25 if is_floor else 0.85)
 				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
+
 		else:
-			# If the button is no longer pressed, stop tracking
+			# If the button is no longer pressed, stop tracking and cleanup (placement handled in _input)
 			_mouse_press_began_in_drag_area = false
+			_dragging_floor_item = false
 			_clear_selected_sprite()
+			_remove_marked_tile_overlay()
+			_clear_marked_wall_tile()
+
+func _input(event: InputEvent) -> void:
+	# Place item exactly when the left mouse button is released anywhere
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and not event.is_echo():
+		if _mouse_press_began_in_drag_area and _dragging_floor_item and is_instance_valid(floor_mouse_detector):
+			var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
+			var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
+			_try_place_floor_item_at(tile_coords)
+			# Cleanup state
+			_mouse_press_began_in_drag_area = false
+			_dragging_floor_item = false
+			_clear_selected_sprite()
+			_remove_marked_tile_overlay()
 			_clear_marked_wall_tile()
 
 ## Helper to create a diamond overlay aligned with isometric floor and return it
@@ -184,12 +234,23 @@ func _add_marked_tile_overlay(tile_coords: Vector2i) -> void:
 	_marked_tile_overlay = poly
 	_marked_tile_coords = tile_coords
 
+func _add_secondary_marked_tile_overlay(tile_coords: Vector2i) -> void:
+	var poly := _create_tile_overlay(tile_coords, Color(0, 1, 0, 0.35))
+	if poly == null:
+		return
+	_marked_tile_overlay_secondary = poly
+	_marked_tile_coords_secondary = tile_coords
+
 # Helper to remove overlay
 func _remove_marked_tile_overlay() -> void:
 	if _marked_tile_overlay and is_instance_valid(_marked_tile_overlay):
 		_marked_tile_overlay.queue_free()
 	_marked_tile_overlay = null
 	_marked_tile_coords = Vector2i(2147483647, 2147483647)
+	if _marked_tile_overlay_secondary and is_instance_valid(_marked_tile_overlay_secondary):
+		_marked_tile_overlay_secondary.queue_free()
+	_marked_tile_overlay_secondary = null
+	_marked_tile_coords_secondary = Vector2i(2147483647, 2147483647)
 
 ## Wall highlighting helpers using runtime modulate
 func _mark_wall_tile(coords: Vector2i) -> void:
@@ -223,3 +284,50 @@ func _debug_clear_all_floor_tiles() -> void:
 		if is_instance_valid(poly):
 			poly.queue_free()
 	_debug_floor_tile_overlays.clear()
+
+## Placement helpers
+func _try_place_floor_item_at(primary: Vector2i) -> void:
+	if not (is_instance_valid(floor_layer) and is_instance_valid(floor_items_layer)):
+		return
+	# Validate primary tile is a real floor tile and not a delimiter
+	var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
+	if not (primary in used_cells) or floor_layer.get_cell_atlas_coords(primary) == DELIMITER_ATLAS_COORDINATES:
+		return
+
+	# Determine item atlas mapping
+	if not FLOOR_ITEM_ATLAS_VARIANTS.has(selected_sprite_path):
+		return
+	var variants = FLOOR_ITEM_ATLAS_VARIANTS[selected_sprite_path]
+	if variants is Array and variants.size() == 0:
+		return
+	# Always use the first variant at release time
+	var atlas_entry = variants[0]
+
+	if atlas_entry is Array:
+		# Multi-tile (bed) – requires the adjacent tile to the +X direction
+		if atlas_entry.size() < 2:
+			return
+		var secondary := primary + Vector2i(1, 0)
+		var secondary_ok := secondary in used_cells and floor_layer.get_cell_atlas_coords(secondary) != DELIMITER_ATLAS_COORDINATES
+		if not secondary_ok:
+			return
+		# Ensure FloorItemsLayer target cells are empty (no overlap)
+		if floor_items_layer.get_cell_source_id(primary) != -1:
+			return
+		if floor_items_layer.get_cell_source_id(secondary) != -1:
+			return
+		# Place both tiles
+		print("Placing %s (left): source=%d atlas=%s" % [selected_sprite_path, FLOOR_ITEMS_SOURCE_ID, str(atlas_entry[0])])
+		floor_items_layer.set_cell(primary, FLOOR_ITEMS_SOURCE_ID, atlas_entry[0])
+		print("Placing %s (right): source=%d atlas=%s" % [selected_sprite_path, FLOOR_ITEMS_SOURCE_ID, str(atlas_entry[1])])
+		floor_items_layer.set_cell(secondary, FLOOR_ITEMS_SOURCE_ID, atlas_entry[1])
+	else:
+		# Single tile item
+		# Ensure FloorItemsLayer target cell is empty (no overlap)
+		if floor_items_layer.get_cell_source_id(primary) != -1:
+			return
+		print("Placing %s: source=%d atlas=%s" % [selected_sprite_path, FLOOR_ITEMS_SOURCE_ID, str(atlas_entry)])
+		floor_items_layer.set_cell(primary, FLOOR_ITEMS_SOURCE_ID, atlas_entry)
+
+	# Optional: ensure the items layer updates immediately
+	floor_items_layer.notify_runtime_tile_data_update()
