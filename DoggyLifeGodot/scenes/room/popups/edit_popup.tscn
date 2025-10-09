@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://81psg7ptirra"]
+[gd_scene load_steps=8 format=3 uid="uid://81psg7ptirra"]
 
 [ext_resource type="Script" uid="uid://bvbupe0ngrlle" path="res://scenes/room/popups/edit_popup.gd" id="1_1e46y"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_qs1y4"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="2_1e46y"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="3_54fjg"]
+[ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-back.png" id="4_5y1oj"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0jbip"]
 
@@ -31,7 +32,7 @@ stretch_mode = 1
 
 [node name="Container" parent="." instance=ExtResource("2_1e46y")]
 custom_minimum_size = Vector2(500, 600)
-layout_mode = 2
+layout_mode = 0
 anchors_preset = 0
 anchor_left = 0.0
 anchor_top = 0.0
@@ -110,16 +111,19 @@ custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_gmbn6")
 
-[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.38
-text = "BACK"
+[node name="BackButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 599.00006
+offset_top = 533.00006
+offset_right = 631.00006
+offset_bottom = 565.00006
+scale = Vector2(2.5, 2.5)
+size_flags_vertical = 3
+texture_normal = ExtResource("4_5y1oj")
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("3_54fjg")
 autoplay = true
 parameters/looping = true
 
-[connection signal="pressed" from="MarginContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
