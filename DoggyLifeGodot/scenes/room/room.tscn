@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=25 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/dogs/white-dog.tscn" id="2_j33j0"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://dahb8dhbdcccw" path="res://icons/pause-button.png" id="7_et4wo"]
 [ext_resource type="Script" uid="uid://brcsmpvmsspgu" path="res://scenes/room/decoration/drag-drop-decoration.gd" id="9_ip1yl"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="12_v5g04"]
+[ext_resource type="Texture2D" uid="uid://xurmccbe5t0a" path="res://ui/buttons/button-edit.png" id="13_1mlw3"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -177,6 +178,9 @@ tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(32, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_p8057"]
+atlas = ExtResource("13_1mlw3")
+
 [node name="Room" type="Node2D"]
 script = ExtResource("1_cy34l")
 
@@ -245,16 +249,6 @@ offset_right = 198.0
 offset_bottom = -115.0
 script = ExtResource("9_ip1yl")
 
-[node name="EditButton" type="Button" parent="Camera2D/OptionsContainer"]
-layout_mode = 0
-offset_left = 17.0
-offset_top = 6.0
-offset_right = 205.0
-offset_bottom = 71.0
-scale = Vector2(0.25, 0.25)
-theme = ExtResource("5_fntg6")
-text = "EDIT"
-
 [node name="PauseButton" type="Button" parent="Camera2D/OptionsContainer"]
 layout_mode = 0
 offset_left = 69.0
@@ -265,6 +259,15 @@ scale = Vector2(0.157, 0.157)
 theme = ExtResource("5_fntg6")
 icon = ExtResource("7_et4wo")
 icon_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="Camera2D/OptionsContainer"]
+layout_mode = 0
+offset_left = 33.0
+offset_top = 6.0
+offset_right = 97.0
+offset_bottom = 38.0
+scale = Vector2(0.5, 0.5)
+texture_normal = SubResource("AtlasTexture_p8057")
 
 [node name="DragContainerBG" parent="Camera2D" instance=ExtResource("12_v5g04")]
 offset_left = 93.0
@@ -316,5 +319,4 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
-[connection signal="pressed" from="Camera2D/OptionsContainer/EditButton" to="." method="_on_edit_button_pressed"]
 [connection signal="pressed" from="Camera2D/OptionsContainer/PauseButton" to="." method="_on_pause_button_pressed"]
