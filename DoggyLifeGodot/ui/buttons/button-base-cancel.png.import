@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvs6aepyikq8m"
-path="res://.godot/imported/button-back.png-79853438e638cd0b289e6d29332798dd.ctex"
+uid="uid://n65dhnylsfno"
+path="res://.godot/imported/button-base-cancel.png-63e13b2fdfef69709cbf81fd7c7b0ab1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ui/buttons/button-back.png"
-dest_files=["res://.godot/imported/button-back.png-79853438e638cd0b289e6d29332798dd.ctex"]
+source_file="res://ui/buttons/button-base-cancel.png"
+dest_files=["res://.godot/imported/button-base-cancel.png-63e13b2fdfef69709cbf81fd7c7b0ab1.ctex"]
 
 [params]
 
