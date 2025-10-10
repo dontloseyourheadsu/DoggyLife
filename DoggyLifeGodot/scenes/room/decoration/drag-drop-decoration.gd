@@ -73,21 +73,20 @@ func populate_grid(grid: GridContainer, dir_path: String) -> void:
 	else:
 		# Wall: 64x96, first version only, all 32x32
 		# Window at x=0, y=0
+		# For wall sprites, crop the first 16px (x=16, width=16)
 		var window := AtlasTexture.new()
 		window.atlas = sheet
-		window.region = Rect2(0, 0, 32, 32)
+		window.region = Rect2(16, 0, 16, 32)
 		add_item_entry(grid, "window-sprite", window, is_floor)
-		
-		# Bookshelf at x=0, y=32
+
 		var bookshelf := AtlasTexture.new()
 		bookshelf.atlas = sheet
-		bookshelf.region = Rect2(0, 32, 32, 32)
+		bookshelf.region = Rect2(16, 32, 16, 32)
 		add_item_entry(grid, "bookshelf-sprite", bookshelf, is_floor)
-		
-		# Painting at x=0, y=64
+
 		var painting := AtlasTexture.new()
 		painting.atlas = sheet
-		painting.region = Rect2(0, 64, 32, 32)
+		painting.region = Rect2(16, 64, 16, 32)
 		add_item_entry(grid, "painting-sprite", painting, is_floor)
 
 func add_item_entry(grid: GridContainer, base: String, texture: Texture2D, is_floor: bool) -> void:
@@ -117,7 +116,6 @@ func add_item_entry(grid: GridContainer, base: String, texture: Texture2D, is_fl
 	preview.size = Vector2(display_width, display_height)
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	preview.tooltip_text = base
 	
 	var room := get_tree().current_scene
 	if room != null and room.has_method("_on_drag_preview_gui_input"):
