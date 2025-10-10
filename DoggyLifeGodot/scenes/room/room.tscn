@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=28 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/dogs/white-dog.tscn" id="2_j33j0"]
@@ -14,6 +14,10 @@
 [ext_resource type="Texture2D" uid="uid://cnb7xb4c0dwi4" path="res://ui/buttons/button-pause.png" id="12_1mlw3"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="12_v5g04"]
 [ext_resource type="Texture2D" uid="uid://xurmccbe5t0a" path="res://ui/buttons/button-edit.png" id="13_1mlw3"]
+[ext_resource type="Texture2D" uid="uid://bawdhomrq7oq8" path="res://ui/buttons/button-rotate-left.png" id="15_7tnhw"]
+[ext_resource type="Texture2D" uid="uid://km07dmnbnnqo" path="res://ui/buttons/button-rotate-right.png" id="16_o3aui"]
+[ext_resource type="Texture2D" uid="uid://n65dhnylsfno" path="res://ui/buttons/button-base-cancel.png" id="17_7njf5"]
+[ext_resource type="Texture2D" uid="uid://ivmpl03hvhea" path="res://ui/buttons/button-base-check.png" id="18_xxq4d"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -203,6 +207,7 @@ stretch_mode = 1
 [node name="FloorLayer" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
+position = Vector2(0, -9)
 tile_map_data = PackedByteArray("AAD+/wAAAgACAAAAAAD+////AgACAAAAAAD/////AgACAAAAAAAAAAAAAgACAAAAAAD//wEAAgACAAAAAAD//wIAAgACAAAAAAD+/wEAAgACAAAAAAD//wAAAgACAAAAAAAAAAEAAgACAAAAAAAAAAIAAgACAAAAAAAAAP//AgACAAAAAAABAP//AgACAAAAAAABAAAAAgACAAAAAAABAAEAAgACAAAAAAABAAIAAgACAAAAAAD+/wIAAgACAAAAAAA=")
 tile_set = SubResource("TileSet_wid0f")
 script = ExtResource("2_tku2a")
@@ -213,15 +218,18 @@ position = Vector2(-6, -4)
 [node name="FloorHologramLayer" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
+position = Vector2(0, -9)
 tile_set = SubResource("TileSet_jp1e5")
 
 [node name="FloorItemsLayer" type="TileMapLayer" parent="Camera2D"]
 z_index = 3
 y_sort_enabled = true
+position = Vector2(0, -9)
 tile_set = SubResource("TileSet_1mlw3")
 
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
+position = Vector2(0, -9)
 tile_map_data = PackedByteArray("AAD8/wEAAAACAAAAAAD8/wAAAAACAAAAAAD8////AAACAAAAAAD8//7/AAACAAAAAAD8//3/AAACAAAAAAD9//3/AAACAAAAAAD+//3/AAACAAAAAAD///3/AAACAAAAAAAAAP3/AAACAAAAAAA=")
 tile_set = SubResource("TileSet_cy34l")
 script = ExtResource("7_68b7a")
@@ -229,7 +237,7 @@ script = ExtResource("7_68b7a")
 [node name="FloorMouseDetector" type="TileMapLayer" parent="Camera2D"]
 z_index = 2
 y_sort_enabled = true
-position = Vector2(0, -50)
+position = Vector2(0, -59)
 tile_set = SubResource("TileSet_v5g04")
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="Camera2D"]
@@ -283,12 +291,15 @@ custom_minimum_size = Vector2(0, 65)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 75.0
+offset_top = 3.0
+offset_bottom = 78.0
 grow_horizontal = 2
 horizontal_scroll_mode = 0
 
 [node name="GridContainer" type="GridContainer" parent="Camera2D/DragsContainer/FloorItemsContainer"]
 layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 3
 theme_override_constants/v_separation = 15
 
 [node name="WallItemsContainer" type="ScrollContainer" parent="Camera2D/DragsContainer"]
@@ -298,14 +309,53 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -75.0
+offset_top = -73.0
+offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 0
 horizontal_scroll_mode = 0
 
 [node name="GridContainer" type="GridContainer" parent="Camera2D/DragsContainer/WallItemsContainer"]
 layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 3
 theme_override_constants/v_separation = 15
+
+[node name="FloorItemsControls" type="Control" parent="Camera2D"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -75.0
+offset_top = 48.0
+offset_right = 75.0
+offset_bottom = 80.0
+
+[node name="RotateLeftButton" type="TextureButton" parent="Camera2D/FloorItemsControls"]
+layout_mode = 0
+offset_left = 42.0
+offset_right = 74.0
+offset_bottom = 32.0
+texture_normal = ExtResource("15_7tnhw")
+
+[node name="RotateRightButton" type="TextureButton" parent="Camera2D/FloorItemsControls"]
+layout_mode = 0
+offset_left = 77.0
+offset_right = 109.0
+offset_bottom = 32.0
+texture_normal = ExtResource("16_o3aui")
+
+[node name="CancelButton" type="TextureButton" parent="Camera2D/FloorItemsControls"]
+layout_mode = 0
+offset_left = 7.0
+offset_right = 39.0
+offset_bottom = 32.0
+texture_normal = ExtResource("17_7njf5")
+
+[node name="CheckButton" type="TextureButton" parent="Camera2D/FloorItemsControls"]
+layout_mode = 0
+offset_left = 112.0
+offset_right = 144.0
+offset_bottom = 32.0
+texture_normal = ExtResource("18_xxq4d")
 
 [node name="SelectedSprite" type="TextureRect" parent="Camera2D"]
 z_index = 5

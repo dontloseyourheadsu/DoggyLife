@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5kdtf2dbj8j"
-path="res://.godot/imported/MCBlocksBlackOutline.png-4f3f7028df77d9a3f99648ea45da1b9e.ctex"
+uid="uid://ivmpl03hvhea"
+path="res://.godot/imported/button-base-check.png-e05f1cdd3f79f88fb46707ee672adb1d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/MCBlocksBlackOutline.png"
-dest_files=["res://.godot/imported/MCBlocksBlackOutline.png-4f3f7028df77d9a3f99648ea45da1b9e.ctex"]
+source_file="res://ui/buttons/button-base-check.png"
+dest_files=["res://.godot/imported/button-base-check.png-e05f1cdd3f79f88fb46707ee672adb1d.ctex"]
 
 [params]
 

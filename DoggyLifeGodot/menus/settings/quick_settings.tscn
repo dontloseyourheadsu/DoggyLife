@@ -4,7 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_vnlla"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_2naqa"]
-[ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-back.png" id="4_s1heo"]
+[ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="4_s1heo"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
 

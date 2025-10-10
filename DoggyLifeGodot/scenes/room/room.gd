@@ -1,9 +1,16 @@
 extends Node2D
 
-@onready var pause_button := $Camera2D/PauseButton as Button
-@onready var edit_button := $Camera2D/EditButton as Button
+@onready var pause_button := $Camera2D/OptionsContainer/PauseButton as BaseButton
+@onready var edit_button := $Camera2D/OptionsContainer/EditButton as BaseButton
 @onready var floor_items_grid: GridContainer = $Camera2D/DragsContainer/FloorItemsContainer/GridContainer
 @onready var wall_items_grid: GridContainer = $Camera2D/DragsContainer/WallItemsContainer/GridContainer
+@onready var floor_items_container: ScrollContainer = $Camera2D/DragsContainer/FloorItemsContainer
+@onready var wall_items_container: ScrollContainer = $Camera2D/DragsContainer/WallItemsContainer
+@onready var floor_controls: Control = $Camera2D/FloorItemsControls
+@onready var btn_rotate_left: BaseButton = $Camera2D/FloorItemsControls/RotateLeftButton
+@onready var btn_rotate_right: BaseButton = $Camera2D/FloorItemsControls/RotateRightButton
+@onready var btn_cancel: BaseButton = $Camera2D/FloorItemsControls/CancelButton
+@onready var btn_check: BaseButton = $Camera2D/FloorItemsControls/CheckButton
 @onready var floor_mouse_detector: TileMapLayer = $Camera2D/FloorMouseDetector
 @onready var wall_layer: ModifiableTileMapLayer = $Camera2D/WallLayer
 @onready var floor_layer: TileMapLayer = $Camera2D/FloorLayer
@@ -46,10 +53,29 @@ var _dragging_floor_item: bool = false
 var _debug_floor_tile_overlays: Array[Polygon2D] = []
 var _marked_wall_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
 
+# Tracking currently edited floor item (only after it has been placed)
+var _editing_active: bool = false
+var _editing_item_name: String = ""
+var _editing_primary: Vector2i = Vector2i(2147483647, 2147483647)
+var _editing_secondary: Vector2i = Vector2i(2147483647, 2147483647) # Used only for multi-tile
+var _editing_rotation: int = 0 # 0..3
+var _editing_is_dragging: bool = false # dragging the placed item to a new tile
+var _editing_drag_texture: Texture2D = null # texture used for dragging preview
+const _SENTINEL := Vector2i(2147483647, 2147483647)
+
 func _ready():
 	# Connect the pause button signal
 	if pause_button:
 		pause_button.pressed.connect(_on_pause_button_pressed)
+	# Connect floor controls
+	if is_instance_valid(btn_rotate_left):
+		btn_rotate_left.pressed.connect(_on_rotate_left_pressed)
+	if is_instance_valid(btn_rotate_right):
+		btn_rotate_right.pressed.connect(_on_rotate_right_pressed)
+	if is_instance_valid(btn_cancel):
+		btn_cancel.pressed.connect(_on_cancel_pressed)
+	if is_instance_valid(btn_check):
+		btn_check.pressed.connect(_on_check_pressed)
 	# Apply saved audio settings on scene load
 	AudioUtilsScript.load_and_apply()
 	# Enable per-frame processing for drag and hover handling
@@ -63,6 +89,10 @@ func _ready():
 		selected_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 	# Debug overlays disabled
+
+	# Hide floor controls at start
+	if is_instance_valid(floor_controls):
+		floor_controls.visible = false
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
@@ -79,6 +109,9 @@ func _on_edit_button_pressed() -> void:
 	get_tree().current_scene = edit_scene
 
 func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: Texture2D, is_floor: bool) -> void:
+	# Block interactions with drag containers while editing an item
+	if _editing_active:
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and not event.is_echo():
 			# Begin drag directly from provided texture
@@ -129,9 +162,12 @@ func _process(_delta: float) -> void:
 		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
 		var primary_ok := tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES
 		if primary_ok:
-			# Special handling for bed: needs two adjacent floor tiles (to the +X direction)
-			if selected_sprite_path == "bed-sprite":
-				var second := tile_coords + Vector2i(1, 0)
+			# Special handling for bed: needs two adjacent floor tiles; direction depends on rotation when editing
+			var dragging_item := _editing_item_name if _editing_is_dragging else selected_sprite_path
+			if dragging_item == "bed-sprite":
+				var rot := _editing_rotation if _editing_active else 0
+				var offset := _bed_secondary_offset(rot)
+				var second := tile_coords + offset
 				var second_ok := second in used_cells and floor_layer.get_cell_atlas_coords(second) != DELIMITER_ATLAS_COORDINATES
 				if second_ok:
 					# Update overlays if tiles changed
@@ -167,7 +203,7 @@ func _process(_delta: float) -> void:
 		_clear_marked_wall_tile()
 
 	# While the left button remains pressed and the press began in the drag area,
-	# continuously print the mouse position.
+	# keep the selected sprite following the mouse.
 	if _mouse_press_began_in_drag_area:
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			# Follow mouse with the selected sprite while pressed; keep last offset behavior
@@ -181,7 +217,7 @@ func _process(_delta: float) -> void:
 				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
 
 		else:
-			# If the button is no longer pressed, stop tracking and cleanup (placement handled in _input)
+			# If the button is no longer pressed, stop temporary sprite (placement handled in _input)
 			_mouse_press_began_in_drag_area = false
 			_dragging_floor_item = false
 			_clear_selected_sprite()
@@ -189,15 +225,56 @@ func _process(_delta: float) -> void:
 			_clear_marked_wall_tile()
 
 func _input(event: InputEvent) -> void:
+	# Start re-dragging if clicking on the tracked item (press)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and not event.is_echo():
+		if _editing_active and not _editing_is_dragging:
+			var local_in_items := floor_items_layer.to_local(get_global_mouse_position())
+			var coords := floor_items_layer.local_to_map(local_in_items)
+			if coords == _editing_primary or (_editing_secondary != _SENTINEL and coords == _editing_secondary):
+				# Remove from map while dragging
+				if is_instance_valid(floor_items_layer):
+					floor_items_layer.erase_cell(_editing_primary)
+					if _editing_secondary != _SENTINEL:
+						floor_items_layer.erase_cell(_editing_secondary)
+					floor_items_layer.notify_runtime_tile_data_update()
+				# Begin drag from tracked item
+				_mouse_press_began_in_drag_area = true
+				_dragging_floor_item = true
+				_editing_is_dragging = true
+				# Build preview texture for current rotation
+				_editing_drag_texture = _make_preview_texture(_editing_item_name, _editing_rotation)
+				if is_instance_valid(selected_sprite):
+					selected_sprite.texture = _editing_drag_texture
+					selected_sprite.visible = true
+					selected_sprite.self_modulate.a = 0.6
+					var w := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(_editing_drag_texture.get_width())
+					var h := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(_editing_drag_texture.get_height())
+					selected_sprite.position = get_global_mouse_position() - Vector2(w * 0.5, h * 0.25)
+
 	# Place item exactly when the left mouse button is released anywhere
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and not event.is_echo():
 		if _mouse_press_began_in_drag_area and _dragging_floor_item and is_instance_valid(floor_mouse_detector):
 			var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
 			var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
-			_try_place_floor_item_at(tile_coords)
-			# Cleanup state
+			if _editing_is_dragging and _editing_active:
+				if _place_item_with_rotation_at(_editing_item_name, tile_coords, _editing_rotation):
+					_editing_primary = tile_coords
+					_editing_secondary = _compute_secondary_if_any(_editing_item_name, tile_coords, _editing_rotation)
+				else:
+					# Failed to place – restore at previous position
+					_place_item_with_rotation_at(_editing_item_name, _editing_primary, _editing_rotation)
+			else:
+				# First-time placement from drag containers
+				if _place_item_with_rotation_at(selected_sprite_path, tile_coords, 0):
+					# Begin tracking for floor items only
+					if selected_sprite_path in ["lamp-sprite", "shelf-sprite", "bed-sprite"]:
+						_start_tracking_item(selected_sprite_path, tile_coords, 0, _selected_texture)
+					else:
+						_stop_tracking_and_hide_controls()
+			# Cleanup temporary drag state
 			_mouse_press_began_in_drag_area = false
 			_dragging_floor_item = false
+			_editing_is_dragging = false
 			_clear_selected_sprite()
 			_remove_marked_tile_overlay()
 			_clear_marked_wall_tile()
@@ -287,47 +364,219 @@ func _debug_clear_all_floor_tiles() -> void:
 
 ## Placement helpers
 func _try_place_floor_item_at(primary: Vector2i) -> void:
+	# Deprecated by _place_item_with_rotation_at; kept for compatibility if referenced elsewhere
+	_place_item_with_rotation_at(selected_sprite_path, primary, 0)
+
+func _place_item_with_rotation_at(item_name: String, primary: Vector2i, rotation_idx: int) -> bool:
 	if not (is_instance_valid(floor_layer) and is_instance_valid(floor_items_layer)):
-		return
+		return false
 	# Validate primary tile is a real floor tile and not a delimiter
 	var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
 	if not (primary in used_cells) or floor_layer.get_cell_atlas_coords(primary) == DELIMITER_ATLAS_COORDINATES:
-		return
+		return false
 
-	# Determine item atlas mapping
-	if not FLOOR_ITEM_ATLAS_VARIANTS.has(selected_sprite_path):
-		return
-	var variants = FLOOR_ITEM_ATLAS_VARIANTS[selected_sprite_path]
+	if not FLOOR_ITEM_ATLAS_VARIANTS.has(item_name):
+		return false
+	var variants = FLOOR_ITEM_ATLAS_VARIANTS[item_name]
 	if variants is Array and variants.size() == 0:
-		return
-	# Always use the first variant at release time
-	var atlas_entry = variants[0]
+		return false
+
+	var atlas_entry = _get_atlas_for_item(item_name, rotation_idx)
+	if typeof(atlas_entry) == TYPE_NIL:
+		return false
 
 	if atlas_entry is Array:
-		# Multi-tile (bed) – requires the adjacent tile to the +X direction
+		# Multi-tile (e.g., bed)
 		if atlas_entry.size() < 2:
-			return
-		var secondary := primary + Vector2i(1, 0)
+			return false
+		var secondary := primary + _bed_secondary_offset(rotation_idx)
 		var secondary_ok := secondary in used_cells and floor_layer.get_cell_atlas_coords(secondary) != DELIMITER_ATLAS_COORDINATES
 		if not secondary_ok:
-			return
-		# Ensure FloorItemsLayer target cells are empty (no overlap)
+			return false
+		# Ensure target cells are empty (no overlap)
 		if floor_items_layer.get_cell_source_id(primary) != -1:
-			return
+			return false
 		if floor_items_layer.get_cell_source_id(secondary) != -1:
-			return
-		# Place both tiles
-		print("Placing %s (left): source=%d atlas=%s" % [selected_sprite_path, FLOOR_ITEMS_SOURCE_ID, str(atlas_entry[0])])
-		floor_items_layer.set_cell(primary, FLOOR_ITEMS_SOURCE_ID, atlas_entry[0])
-		print("Placing %s (right): source=%d atlas=%s" % [selected_sprite_path, FLOOR_ITEMS_SOURCE_ID, str(atlas_entry[1])])
-		floor_items_layer.set_cell(secondary, FLOOR_ITEMS_SOURCE_ID, atlas_entry[1])
+			return false
+		_set_bed_cells(primary, rotation_idx, atlas_entry)
 	else:
-		# Single tile item
-		# Ensure FloorItemsLayer target cell is empty (no overlap)
+		# Single tile
 		if floor_items_layer.get_cell_source_id(primary) != -1:
-			return
-		print("Placing %s: source=%d atlas=%s" % [selected_sprite_path, FLOOR_ITEMS_SOURCE_ID, str(atlas_entry)])
+			return false
 		floor_items_layer.set_cell(primary, FLOOR_ITEMS_SOURCE_ID, atlas_entry)
 
-	# Optional: ensure the items layer updates immediately
 	floor_items_layer.notify_runtime_tile_data_update()
+	return true
+
+func _compute_secondary_if_any(item_name: String, primary: Vector2i, rotation_idx: int) -> Vector2i:
+	if item_name == "bed-sprite":
+		return primary + _bed_secondary_offset(rotation_idx)
+	return _SENTINEL
+
+func _start_tracking_item(item_name: String, primary: Vector2i, rotation_idx: int, drag_texture: Texture2D) -> void:
+	_editing_active = true
+	_editing_item_name = item_name
+	_editing_primary = primary
+	_editing_rotation = rotation_idx
+	_editing_secondary = _compute_secondary_if_any(item_name, primary, rotation_idx)
+	_editing_drag_texture = drag_texture
+	_show_floor_controls(true)
+	_set_drag_containers_interactive(false)
+
+func _stop_tracking_and_hide_controls() -> void:
+	_editing_active = false
+	_editing_item_name = ""
+	_editing_primary = _SENTINEL
+	_editing_secondary = _SENTINEL
+	_editing_rotation = 0
+	_editing_is_dragging = false
+	_editing_drag_texture = null
+	_show_floor_controls(false)
+	_set_drag_containers_interactive(true)
+
+func _show_floor_controls(visible: bool) -> void:
+	if is_instance_valid(floor_controls):
+		floor_controls.visible = visible
+
+func _set_drag_containers_interactive(enabled: bool) -> void:
+	var mode := Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+	if is_instance_valid(floor_items_container):
+		floor_items_container.mouse_filter = mode
+	if is_instance_valid(wall_items_container):
+		wall_items_container.mouse_filter = mode
+	if is_instance_valid(floor_items_grid):
+		floor_items_grid.mouse_filter = mode
+	if is_instance_valid(wall_items_grid):
+		wall_items_grid.mouse_filter = mode
+
+func _get_atlas_for_item(item_name: String, rotation_idx: int):
+	var variants: Array = FLOOR_ITEM_ATLAS_VARIANTS[item_name]
+	if item_name == "bed-sprite":
+		# Return [left,right] atlas coords per rotation
+		var i: int = clamp(rotation_idx % 4, 0, 3)
+		return variants[i]
+	else:
+		var i: int = clamp(rotation_idx % 4, 0, 3)
+		return variants[i]
+
+func _bed_secondary_offset(rotation_idx: int) -> Vector2i:
+	# Even rotations (0,2): +X; Odd rotations (1,3): +Y
+	return Vector2i(1, 0) if (rotation_idx % 2 == 0) else Vector2i(0, 1)
+
+func _set_bed_cells(primary: Vector2i, rotation_idx: int, atlas_pair: Array) -> void:
+	var secondary := primary + _bed_secondary_offset(rotation_idx)
+	if rotation_idx % 2 == 0:
+		# Horizontal (+X): use [left,right]
+		floor_items_layer.set_cell(primary, FLOOR_ITEMS_SOURCE_ID, atlas_pair[0])
+		floor_items_layer.set_cell(secondary, FLOOR_ITEMS_SOURCE_ID, atlas_pair[1])
+	else:
+		# Vertical (+Y): swap so visuals align with intended orientation
+		floor_items_layer.set_cell(primary, FLOOR_ITEMS_SOURCE_ID, atlas_pair[1])
+		floor_items_layer.set_cell(secondary, FLOOR_ITEMS_SOURCE_ID, atlas_pair[0])
+
+func _rotate_current(delta: int) -> void:
+	if not _editing_active:
+		return
+	if _editing_is_dragging:
+		return # avoid rotating mid-drag
+	var new_rot := (_editing_rotation + delta) % 4
+	# Validate space for new rotation
+	var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
+	var new_secondary := _compute_secondary_if_any(_editing_item_name, _editing_primary, new_rot)
+	if _editing_item_name == "bed-sprite":
+		# New secondary must be valid floor and either empty or the current secondary
+		if not (new_secondary in used_cells and floor_layer.get_cell_atlas_coords(new_secondary) != DELIMITER_ATLAS_COORDINATES):
+			return
+		var occ := floor_items_layer.get_cell_source_id(new_secondary)
+		if occ != -1 and new_secondary != _editing_secondary:
+			return
+		# Apply new rotation: clear old secondary if different
+		if _editing_secondary != _SENTINEL and new_secondary != _editing_secondary:
+			floor_items_layer.erase_cell(_editing_secondary)
+		var atlas_pair = _get_atlas_for_item(_editing_item_name, new_rot)
+		_set_bed_cells(_editing_primary, new_rot, atlas_pair)
+		floor_items_layer.notify_runtime_tile_data_update()
+		_editing_rotation = new_rot
+		_editing_secondary = new_secondary
+	else:
+		# Single tile: always valid, just update atlas
+		var atlas = _get_atlas_for_item(_editing_item_name, new_rot)
+		floor_items_layer.set_cell(_editing_primary, FLOOR_ITEMS_SOURCE_ID, atlas)
+		floor_items_layer.notify_runtime_tile_data_update()
+		_editing_rotation = new_rot
+
+func _on_rotate_left_pressed() -> void:
+	_rotate_current(-1)
+
+func _on_rotate_right_pressed() -> void:
+	_rotate_current(1)
+
+func _on_cancel_pressed() -> void:
+	if not _editing_active:
+		return
+	# Remove placed item and stop tracking
+	if is_instance_valid(floor_items_layer):
+		floor_items_layer.erase_cell(_editing_primary)
+		if _editing_secondary != _SENTINEL:
+			floor_items_layer.erase_cell(_editing_secondary)
+		floor_items_layer.notify_runtime_tile_data_update()
+	_stop_tracking_and_hide_controls()
+	_clear_selected_sprite()
+	_remove_marked_tile_overlay()
+	_clear_marked_wall_tile()
+
+func _on_check_pressed() -> void:
+	if not _editing_active:
+		return
+	# Keep item, just stop tracking
+	_stop_tracking_and_hide_controls()
+	_clear_selected_sprite()
+	_remove_marked_tile_overlay()
+	_clear_marked_wall_tile()
+
+func _make_preview_texture(item_name: String, rotation_idx: int) -> Texture2D:
+	# Builds a Texture2D suitable for dragging UI based on spritesheet regions
+	if item_name == "lamp-sprite" or item_name == "shelf-sprite":
+		var sheet: Texture2D = load("res://scenes/room/decoration/floor/floor-sprites.png")
+		if sheet == null:
+			return null
+		var y := 0 if item_name == "lamp-sprite" else 32
+		var x := (rotation_idx % 4) * 32
+		var at := AtlasTexture.new()
+		at.atlas = sheet
+		at.region = Rect2(x, y, 32, 32)
+		return at
+	elif item_name == "bed-sprite":
+		var sheet: Texture2D = load("res://scenes/room/decoration/floor/floor-sprites.png")
+		if sheet == null:
+			return null
+		var i := rotation_idx % 4
+		var left_x := (i * 2) * 32
+		var right_x := left_x + 32
+		var y := 64
+		var sheet_img := sheet.get_image()
+		if sheet_img == null:
+			var at := AtlasTexture.new()
+			at.atlas = sheet
+			at.region = Rect2(left_x, y, 64, 32)
+			return at
+		# Compose 48x32 preview. Rotations 2 and 4 (i=1,3) need special assembly.
+		var img := Image.create(48, 32, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		if i == 1 or i == 3:
+			# Take first 16px from the left tile, crop bottom (8 for rot2, 7 for rot4) and place with top padding.
+			var h_crop := 24 if i == 1 else 25
+			var dst_y := 8 if i == 1 else 7
+			# 16px slice from LEFT tile
+			img.blit_rect(sheet_img, Rect2i(left_x, y, 16, h_crop), Vector2i(0, dst_y))
+			# Then take the whole RIGHT tile (32x32) and place to the right
+			img.blit_rect(sheet_img, Rect2i(right_x, y, 32, 32), Vector2i(16, 0))
+		else:
+			# Rotations 1 and 3 (i=0,2): base 32 from LEFT tile + 16px slice from RIGHT tile
+			var h_crop := 24 if i == 0 else 25
+			var dst_y := 8 if i == 0 else 7
+			img.blit_rect(sheet_img, Rect2i(left_x, y, 32, 32), Vector2i(0, 0))
+			# Slice the rightmost 16px from the RIGHT tile
+			img.blit_rect(sheet_img, Rect2i(right_x + 16, y, 16, h_crop), Vector2i(32, dst_y))
+		return ImageTexture.create_from_image(img)
+	return null

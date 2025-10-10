@@ -49,7 +49,7 @@ func _on_button_pressed() -> void:
 	save_settings()
 	
 	# Load room scene
-	var room_scene = load("res://room/room.tscn").instantiate()  # Godot 4 uses instantiate()
+	var room_scene = load("res://scenes/room/room.tscn").instantiate()  # Godot 4 uses instantiate()
 	get_tree().root.add_child(room_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = room_scene
