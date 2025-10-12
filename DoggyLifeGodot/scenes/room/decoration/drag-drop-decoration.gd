@@ -6,6 +6,16 @@ extends Control
 const FLOOR_DIR := "res://scenes/room/decoration/floor"
 const WALL_DIR := "res://scenes/room/decoration/wall"
 
+# Keeps references to created entries to toggle state (opacity/interaction)
+# Structure: {
+#   "item-name": {
+#       "item": VBoxContainer,
+#       "preview": TextureRect,
+#       "label": Label
+#    }
+# }
+var _entries: Dictionary = {}
+
 func _ready() -> void:
 	populate_grid(floor_grid, FLOOR_DIR)
 	populate_grid(wall_grid, WALL_DIR)
@@ -106,6 +116,7 @@ func add_item_entry(grid: GridContainer, base: String, texture: Texture2D, is_fl
 	item.alignment = BoxContainer.ALIGNMENT_CENTER
 	item.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	item.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	item.mouse_filter = Control.MOUSE_FILTER_STOP
 	
 	var preview := TextureRect.new()
 	preview.texture = texture
@@ -116,6 +127,7 @@ func add_item_entry(grid: GridContainer, base: String, texture: Texture2D, is_fl
 	preview.size = Vector2(display_width, display_height)
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	preview.mouse_filter = Control.MOUSE_FILTER_STOP
 	
 	var room := get_tree().current_scene
 	if room != null and room.has_method("_on_drag_preview_gui_input"):
@@ -130,3 +142,42 @@ func add_item_entry(grid: GridContainer, base: String, texture: Texture2D, is_fl
 	item.add_child(preview)
 	item.add_child(label)
 	grid.add_child(item)
+
+	# Keep references for later updates and initialize used state if any
+	_entries[base] = {
+		"item": item,
+		"preview": preview,
+		"label": label,
+		"grid": grid,
+		"texture": texture,
+		"is_floor": is_floor
+	}
+
+	# If the room already has this item placed, remove it from options
+	if room != null and room.has_method("is_item_placed"):
+		var used: bool = room.is_item_placed(base)
+		mark_item_used(base, used)
+
+# External API for the Room to mark items as used/unused in the drag containers
+func mark_item_used(item_name: String, used: bool = true) -> void:
+	if not _entries.has(item_name):
+		return
+	var entry: Dictionary = _entries[item_name]
+	var item: Control = entry.get("item")
+	if used:
+		# Remove from grid if currently present
+		if is_instance_valid(item):
+			item.queue_free()
+		entry["item"] = null
+		entry["preview"] = null
+		entry["label"] = null
+		_entries[item_name] = entry
+	else:
+		# Add back to grid if not present
+		if not is_instance_valid(item):
+			var grid: GridContainer = entry.get("grid")
+			var texture: Texture2D = entry.get("texture")
+			var is_floor: bool = entry.get("is_floor")
+			if is_instance_valid(grid) and texture != null:
+				# Recreate entry; this will refresh _entries[item_name]
+				add_item_entry(grid, item_name, texture, is_floor)
