@@ -11,6 +11,7 @@ extends Node2D
 @onready var btn_rotate_right: BaseButton = $Camera2D/FloorItemsControls/RotateRightButton
 @onready var btn_cancel: BaseButton = $Camera2D/FloorItemsControls/CancelButton
 @onready var btn_check: BaseButton = $Camera2D/FloorItemsControls/CheckButton
+@onready var btn_delete: BaseButton = $Camera2D/FloorItemsControls/DeleteButton
 @onready var floor_mouse_detector: TileMapLayer = $Camera2D/FloorMouseDetector
 @onready var wall_layer: ModifiableTileMapLayer = $Camera2D/WallLayer
 @onready var floor_layer: TileMapLayer = $Camera2D/FloorLayer
@@ -21,6 +22,7 @@ extends Node2D
 @onready var wall_btn_cancel: BaseButton = $Camera2D/WallItemsControls/CancelButton
 @onready var wall_btn_check: BaseButton = $Camera2D/WallItemsControls/CheckButton
 @onready var wall_btn_switch: BaseButton = $Camera2D/WallItemsControls/SwitchButton
+@onready var wall_btn_delete: BaseButton = $Camera2D/WallItemsControls/DeleteButton
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
@@ -75,6 +77,14 @@ var _editing_secondary: Vector2i = Vector2i(2147483647, 2147483647) # Used only 
 var _editing_rotation: int = 0 # 0..3
 var _editing_is_dragging: bool = false # dragging the placed item to a new tile
 var _editing_drag_texture: Texture2D = null # texture used for dragging preview
+# Track original position/rotation and whether this is first-time placement session
+var _editing_is_newly_placed: bool = false
+var _editing_original_primary: Vector2i = Vector2i(2147483647, 2147483647)
+var _editing_original_secondary: Vector2i = Vector2i(2147483647, 2147483647)
+var _editing_original_rotation: int = 0
+
+# Rotation used while preview-dragging before first placement
+var _preview_rotation: int = 0
 const _SENTINEL := Vector2i(2147483647, 2147483647)
 
 # Wall item editing state
@@ -82,6 +92,12 @@ var _wall_editing_active: bool = false
 var _wall_editing_item_name: String = ""
 var _wall_editing_coords: Vector2i = Vector2i(2147483647, 2147483647)
 var _wall_editing_side: String = "" # "left" | "right"
+var _wall_editing_is_newly_placed: bool = false
+var _wall_original_coords: Vector2i = Vector2i(2147483647, 2147483647)
+var _wall_original_side: String = ""
+
+# Tracks which items were confirmed with the Check button (single-place items)
+var _placed_items: Dictionary = {}
 
 func _ready():
 	# Connect the pause button signal
@@ -96,6 +112,8 @@ func _ready():
 		btn_cancel.pressed.connect(_on_cancel_pressed)
 	if is_instance_valid(btn_check):
 		btn_check.pressed.connect(_on_check_pressed)
+	if is_instance_valid(btn_delete):
+		btn_delete.pressed.connect(_on_delete_pressed)
 	# Apply saved audio settings on scene load
 	AudioUtilsScript.load_and_apply()
 	# Enable per-frame processing for drag and hover handling
@@ -123,6 +141,8 @@ func _ready():
 		wall_btn_check.pressed.connect(_on_wall_check_pressed)
 	if is_instance_valid(wall_btn_switch):
 		wall_btn_switch.pressed.connect(_on_wall_switch_pressed)
+	if is_instance_valid(wall_btn_delete):
+		wall_btn_delete.pressed.connect(_on_wall_delete_pressed)
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
@@ -142,12 +162,16 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 	# Block interactions with drag containers while editing an item
 	if _editing_active or _wall_editing_active:
 		return
+	# Prevent starting a drag if this item was already placed/confirmed
+	if is_item_placed(tile_name):
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and not event.is_echo():
 			# Begin drag directly from provided texture
 			_mouse_press_began_in_drag_area = true
 			_dragging_floor_item = is_floor
 			_selected_texture = texture
+			_preview_rotation = 0
 			if is_instance_valid(selected_sprite):
 				selected_sprite.texture = _selected_texture
 				selected_sprite.visible = true
@@ -192,10 +216,10 @@ func _process(_delta: float) -> void:
 		var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
 		var primary_ok := tile_coords in used_cells and floor_layer.get_cell_atlas_coords(tile_coords) != DELIMITER_ATLAS_COORDINATES
 		if primary_ok:
-			# Special handling for bed: needs two adjacent floor tiles; direction depends on rotation when editing
-			var dragging_item := _editing_item_name if _editing_is_dragging else selected_sprite_path
+			# Special handling for bed: needs two adjacent floor tiles; direction depends on rotation
+			var dragging_item := _editing_item_name if _editing_is_dragging or _editing_active else selected_sprite_path
 			if dragging_item == "bed-sprite":
-				var rot := _editing_rotation if _editing_active else 0
+				var rot := _editing_rotation if _editing_active else _preview_rotation
 				var offset := _bed_secondary_offset(rot)
 				var second := tile_coords + offset
 				var second_ok := second in used_cells and floor_layer.get_cell_atlas_coords(second) != DELIMITER_ATLAS_COORDINATES
@@ -257,6 +281,56 @@ func _process(_delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	# Start re-dragging if clicking on the tracked item (press)
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and not event.is_echo():
+		# If no edit in progress, allow selecting already placed floor item by clicking it
+		if not _editing_active and not _wall_editing_active:
+			# Check floor items first
+			if is_instance_valid(floor_items_layer):
+				var local_in_items := floor_items_layer.to_local(get_global_mouse_position())
+				var coords := floor_items_layer.local_to_map(local_in_items)
+				if floor_items_layer.get_cell_source_id(coords) != -1:
+					var atlas: Vector2i = floor_items_layer.get_cell_atlas_coords(coords)
+					var found := false
+					# Single-tile items
+					for item_key in ["lamp-sprite", "shelf-sprite"]:
+						var variants: Array = FLOOR_ITEM_ATLAS_VARIANTS[item_key]
+						for i in range(variants.size()):
+							if variants[i] == atlas:
+								_start_tracking_item(item_key, coords, i, null, false)
+								found = true
+								break
+						if found:
+							return
+					# Bed (two tiles)
+					var bed_variants: Array = FLOOR_ITEM_ATLAS_VARIANTS["bed-sprite"]
+					for rot in range(bed_variants.size()):
+						var pair: Array = bed_variants[rot]
+						if pair.size() >= 2 and (pair[0] == atlas or pair[1] == atlas):
+							var primary := coords
+							var off := _bed_secondary_offset(rot)
+							if rot % 2 == 0:
+								# Horizontal: primary uses pair[0]
+								if atlas == pair[1]:
+									primary = coords - off
+							else:
+								# Vertical: primary uses pair[1]
+								if atlas == pair[0]:
+									primary = coords - off
+							_start_tracking_item("bed-sprite", primary, rot, null, false)
+							return
+			# If not a floor item, check wall items layer
+			if is_instance_valid(wall_items_layer):
+				var local_in_wall := wall_items_layer.to_local(get_global_mouse_position())
+				var wcoords := wall_items_layer.local_to_map(local_in_wall)
+				if wall_items_layer.get_cell_source_id(wcoords) != -1:
+					var watlas: Vector2i = wall_items_layer.get_cell_atlas_coords(wcoords)
+					var item_name := ""
+					for k in WALL_ITEM_ROWS.keys():
+						if WALL_ITEM_ROWS[k] == watlas.y:
+							item_name = k
+							break
+					if item_name != "":
+						_start_tracking_wall_item(item_name, wcoords, false)
+						return
 		if _editing_active and not _editing_is_dragging:
 			var local_in_items := floor_items_layer.to_local(get_global_mouse_position())
 			var coords := floor_items_layer.local_to_map(local_in_items)
@@ -313,11 +387,11 @@ func _input(event: InputEvent) -> void:
 					# Failed to place – restore at previous position
 					_place_item_with_rotation_at(_editing_item_name, _editing_primary, _editing_rotation)
 			else:
-				# First-time placement from drag containers
-				if _place_item_with_rotation_at(selected_sprite_path, tile_coords, 0):
+				# First-time placement from drag containers (use preview rotation)
+				if _place_item_with_rotation_at(selected_sprite_path, tile_coords, _preview_rotation):
 					# Begin tracking for floor items only
 					if selected_sprite_path in ["lamp-sprite", "shelf-sprite", "bed-sprite"]:
-						_start_tracking_item(selected_sprite_path, tile_coords, 0, _selected_texture)
+						_start_tracking_item(selected_sprite_path, tile_coords, _preview_rotation, _selected_texture, true)
 					else:
 						_stop_tracking_and_hide_controls()
 		elif _mouse_press_began_in_drag_area and not _dragging_floor_item and is_instance_valid(wall_layer):
@@ -331,7 +405,7 @@ func _input(event: InputEvent) -> void:
 					_place_wall_item_at(_wall_editing_item_name, _wall_editing_coords)
 			else:
 				if _place_wall_item_at(selected_sprite_path, wall_coords):
-					_start_tracking_wall_item(selected_sprite_path, wall_coords)
+					_start_tracking_wall_item(selected_sprite_path, wall_coords, true)
 				else:
 					_stop_tracking_wall_and_hide_controls()
 			# Cleanup temporary drag state
@@ -476,13 +550,18 @@ func _compute_secondary_if_any(item_name: String, primary: Vector2i, rotation_id
 		return primary + _bed_secondary_offset(rotation_idx)
 	return _SENTINEL
 
-func _start_tracking_item(item_name: String, primary: Vector2i, rotation_idx: int, drag_texture: Texture2D) -> void:
+func _start_tracking_item(item_name: String, primary: Vector2i, rotation_idx: int, drag_texture: Texture2D, is_newly_placed: bool) -> void:
 	_editing_active = true
 	_editing_item_name = item_name
 	_editing_primary = primary
 	_editing_rotation = rotation_idx
 	_editing_secondary = _compute_secondary_if_any(item_name, primary, rotation_idx)
 	_editing_drag_texture = drag_texture
+	_editing_is_newly_placed = is_newly_placed
+	# capture originals
+	_editing_original_primary = primary
+	_editing_original_secondary = _editing_secondary
+	_editing_original_rotation = rotation_idx
 	_show_floor_controls(true)
 	_set_drag_containers_interactive(false)
 
@@ -494,6 +573,10 @@ func _stop_tracking_and_hide_controls() -> void:
 	_editing_rotation = 0
 	_editing_is_dragging = false
 	_editing_drag_texture = null
+	_editing_is_newly_placed = false
+	_editing_original_primary = _SENTINEL
+	_editing_original_secondary = _SENTINEL
+	_editing_original_rotation = 0
 	_show_floor_controls(false)
 	_set_drag_containers_interactive(true)
 
@@ -538,10 +621,28 @@ func _set_bed_cells(primary: Vector2i, rotation_idx: int, atlas_pair: Array) -> 
 		floor_items_layer.set_cell(secondary, FLOOR_ITEMS_SOURCE_ID, atlas_pair[0])
 
 func _rotate_current(delta: int) -> void:
+	# If dragging a fresh item from the UI, rotate preview
+	if _mouse_press_began_in_drag_area and _dragging_floor_item and not _editing_active:
+		_preview_rotation = (_preview_rotation + delta) % 4
+		if is_instance_valid(selected_sprite) and selected_sprite_path != "":
+			var tex := _make_preview_texture(selected_sprite_path, _preview_rotation)
+			if tex != null:
+				selected_sprite.texture = tex
+		return
+
 	if not _editing_active:
 		return
+
+	# If currently re-dragging an edited item, rotate the preview and update final rotation for placement
 	if _editing_is_dragging:
-		return # avoid rotating mid-drag
+		_editing_rotation = (_editing_rotation + delta) % 4
+		if is_instance_valid(selected_sprite) and _editing_item_name != "":
+			var tex2 := _make_preview_texture(_editing_item_name, _editing_rotation)
+			if tex2 != null:
+				selected_sprite.texture = tex2
+		return
+
+	# Rotating an item that is currently placed (not dragging): update tiles in place
 	var new_rot := (_editing_rotation + delta) % 4
 	# Validate space for new rotation
 	var used_cells: Array[Vector2i] = floor_layer.get_used_cells()
@@ -577,12 +678,41 @@ func _on_rotate_right_pressed() -> void:
 func _on_cancel_pressed() -> void:
 	if not _editing_active:
 		return
-	# Remove placed item and stop tracking
+	if is_instance_valid(floor_items_layer):
+		# Revert if editing existing, erase if first-time placement
+		# Clear current cells first
+		floor_items_layer.erase_cell(_editing_primary)
+		if _editing_secondary != _SENTINEL:
+			floor_items_layer.erase_cell(_editing_secondary)
+		if _editing_is_newly_placed:
+			# Do not restore
+			pass
+		else:
+			# Restore original state
+			if _editing_item_name == "bed-sprite":
+				var pair = _get_atlas_for_item(_editing_item_name, _editing_original_rotation)
+				_set_bed_cells(_editing_original_primary, _editing_original_rotation, pair)
+			else:
+				var atlas = _get_atlas_for_item(_editing_item_name, _editing_original_rotation)
+				floor_items_layer.set_cell(_editing_original_primary, FLOOR_ITEMS_SOURCE_ID, atlas)
+		floor_items_layer.notify_runtime_tile_data_update()
+	_stop_tracking_and_hide_controls()
+	_clear_selected_sprite()
+	_remove_marked_tile_overlay()
+	_clear_marked_wall_tile()
+
+func _on_delete_pressed() -> void:
+	if not _editing_active:
+		return
 	if is_instance_valid(floor_items_layer):
 		floor_items_layer.erase_cell(_editing_primary)
 		if _editing_secondary != _SENTINEL:
 			floor_items_layer.erase_cell(_editing_secondary)
 		floor_items_layer.notify_runtime_tile_data_update()
+	# Allow reusing this item again in the grid
+	if _editing_item_name != "":
+		_placed_items.erase(_editing_item_name)
+		_update_drag_ui_used_state(_editing_item_name, false)
 	_stop_tracking_and_hide_controls()
 	_clear_selected_sprite()
 	_remove_marked_tile_overlay()
@@ -591,11 +721,17 @@ func _on_cancel_pressed() -> void:
 func _on_check_pressed() -> void:
 	if not _editing_active:
 		return
+	# Capture item before clearing state
+	var item_to_mark := _editing_item_name
 	# Keep item, just stop tracking
 	_stop_tracking_and_hide_controls()
 	_clear_selected_sprite()
 	_remove_marked_tile_overlay()
 	_clear_marked_wall_tile()
+	# Mark this item as placed/confirmed and dim in drag UI
+	if item_to_mark != "":
+		_placed_items[item_to_mark] = true
+		_update_drag_ui_used_state(item_to_mark, true)
 
 # ====================== WALL ITEMS ======================
 func _detect_wall_side_from_coords(coords: Vector2i) -> String:
@@ -662,11 +798,14 @@ func _place_wall_item_at(item_name: String, coords: Vector2i) -> bool:
 	wall_items_layer.notify_runtime_tile_data_update()
 	return true
 
-func _start_tracking_wall_item(item_name: String, coords: Vector2i) -> void:
+func _start_tracking_wall_item(item_name: String, coords: Vector2i, is_newly_placed: bool) -> void:
 	_wall_editing_active = true
 	_wall_editing_item_name = item_name
 	_wall_editing_coords = coords
 	_wall_editing_side = _detect_wall_side_from_coords(coords)
+	_wall_editing_is_newly_placed = is_newly_placed
+	_wall_original_coords = coords
+	_wall_original_side = _wall_editing_side
 	_show_wall_controls(true)
 	_show_floor_controls(false)
 	_set_drag_containers_interactive(false)
@@ -676,6 +815,9 @@ func _stop_tracking_wall_and_hide_controls() -> void:
 	_wall_editing_item_name = ""
 	_wall_editing_coords = _SENTINEL
 	_wall_editing_side = ""
+	_wall_editing_is_newly_placed = false
+	_wall_original_coords = _SENTINEL
+	_wall_original_side = ""
 	_show_wall_controls(false)
 	_set_drag_containers_interactive(true)
 
@@ -687,7 +829,12 @@ func _on_wall_cancel_pressed() -> void:
 	if not _wall_editing_active:
 		return
 	if is_instance_valid(wall_items_layer):
+		# Clear current
 		wall_items_layer.erase_cell(_wall_editing_coords)
+		if not _wall_editing_is_newly_placed:
+			# Restore original
+			var atlas := _get_wall_atlas_for(_wall_editing_item_name, _wall_original_side)
+			wall_items_layer.set_cell(_wall_original_coords, WALL_ITEMS_SOURCE_ID, atlas)
 		wall_items_layer.notify_runtime_tile_data_update()
 	_stop_tracking_wall_and_hide_controls()
 	_clear_selected_sprite()
@@ -696,6 +843,23 @@ func _on_wall_cancel_pressed() -> void:
 func _on_wall_check_pressed() -> void:
 	if not _wall_editing_active:
 		return
+	var item_to_mark := _wall_editing_item_name
+	_stop_tracking_wall_and_hide_controls()
+	_clear_selected_sprite()
+	_clear_marked_wall_tile()
+	if item_to_mark != "":
+		_placed_items[item_to_mark] = true
+		_update_drag_ui_used_state(item_to_mark, true)
+
+func _on_wall_delete_pressed() -> void:
+	if not _wall_editing_active:
+		return
+	if is_instance_valid(wall_items_layer):
+		wall_items_layer.erase_cell(_wall_editing_coords)
+		wall_items_layer.notify_runtime_tile_data_update()
+	if _wall_editing_item_name != "":
+		_placed_items.erase(_wall_editing_item_name)
+		_update_drag_ui_used_state(_wall_editing_item_name, false)
 	_stop_tracking_wall_and_hide_controls()
 	_clear_selected_sprite()
 	_clear_marked_wall_tile()
@@ -775,3 +939,47 @@ func _make_preview_texture(item_name: String, rotation_idx: int) -> Texture2D:
 			img.blit_rect(sheet_img, Rect2i(right_x + 16, y, 16, h_crop), Vector2i(32, dst_y))
 		return ImageTexture.create_from_image(img)
 	return null
+
+# ====================== USED ITEMS / UI HELPERS ======================
+func is_item_placed(item_name: String) -> bool:
+	# Check tracked set first
+	if _placed_items.has(item_name) and _placed_items[item_name]:
+		return true
+	# Fallback by scanning layers (useful on first load or external changes)
+	if item_name in ["lamp-sprite", "shelf-sprite"]:
+		if not is_instance_valid(floor_items_layer):
+			return false
+		var atlas_list: Array = FLOOR_ITEM_ATLAS_VARIANTS[item_name]
+		for c in floor_items_layer.get_used_cells():
+			var ac := floor_items_layer.get_cell_atlas_coords(c)
+			if ac in atlas_list:
+				return true
+		return false
+	if item_name == "bed-sprite":
+		if not is_instance_valid(floor_items_layer):
+			return false
+		var bed_variants: Array = FLOOR_ITEM_ATLAS_VARIANTS[item_name]
+		for c in floor_items_layer.get_used_cells():
+			var ac := floor_items_layer.get_cell_atlas_coords(c)
+			for rot in range(bed_variants.size()):
+				var pair: Array = bed_variants[rot]
+				if ac == pair[0] or ac == pair[1]:
+					return true
+		return false
+	# Wall items
+	if item_name in WALL_ITEM_ROWS:
+		if not is_instance_valid(wall_items_layer):
+			return false
+		var row: int = WALL_ITEM_ROWS[item_name]
+		for c in wall_items_layer.get_used_cells():
+			var ac2 := wall_items_layer.get_cell_atlas_coords(c)
+			if ac2.y == row:
+				return true
+		return false
+	return false
+
+func _update_drag_ui_used_state(item_name: String, used: bool) -> void:
+	var ui := get_node_or_null("Camera2D/OptionsContainer")
+	if ui != null:
+		# Defer to ensure UI changes happen after any queue_free/add_child cycles
+		ui.call_deferred("mark_item_used", item_name, used)
