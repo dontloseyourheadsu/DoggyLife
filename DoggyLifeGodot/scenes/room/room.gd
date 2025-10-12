@@ -16,6 +16,11 @@ extends Node2D
 @onready var floor_layer: TileMapLayer = $Camera2D/FloorLayer
 @onready var floor_hologram_layer: TileMapLayer = $Camera2D/FloorHologramLayer
 @onready var floor_items_layer: TileMapLayer = $Camera2D/FloorItemsLayer
+@onready var wall_items_layer: TileMapLayer = $Camera2D/WallItemsLayer
+@onready var wall_controls: Control = $Camera2D/WallItemsControls
+@onready var wall_btn_cancel: BaseButton = $Camera2D/WallItemsControls/CancelButton
+@onready var wall_btn_check: BaseButton = $Camera2D/WallItemsControls/CheckButton
+@onready var wall_btn_switch: BaseButton = $Camera2D/WallItemsControls/SwitchButton
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
@@ -34,6 +39,15 @@ const FLOOR_ITEM_ATLAS_VARIANTS: Dictionary = {
 		[Vector2i(4, 2), Vector2i(5, 2)],
 		[Vector2i(6, 2), Vector2i(7, 2)],
 	]
+}
+
+# Wall items configuration
+const WALL_ITEMS_SOURCE_ID := 0 # see room.tscn: TileSet_e4auk -> sources/0
+# Atlas rows per item; column is 0 for left wall, 1 for right wall
+const WALL_ITEM_ROWS := {
+	"window-sprite": 0,
+	"bookshelf-sprite": 1,
+	"painting-sprite": 2,
 }
 
 # Tracks whether the current left mouse press started inside either drag/drop container
@@ -62,6 +76,12 @@ var _editing_rotation: int = 0 # 0..3
 var _editing_is_dragging: bool = false # dragging the placed item to a new tile
 var _editing_drag_texture: Texture2D = null # texture used for dragging preview
 const _SENTINEL := Vector2i(2147483647, 2147483647)
+
+# Wall item editing state
+var _wall_editing_active: bool = false
+var _wall_editing_item_name: String = ""
+var _wall_editing_coords: Vector2i = Vector2i(2147483647, 2147483647)
+var _wall_editing_side: String = "" # "left" | "right"
 
 func _ready():
 	# Connect the pause button signal
@@ -94,6 +114,16 @@ func _ready():
 	if is_instance_valid(floor_controls):
 		floor_controls.visible = false
 
+	# Hide wall controls at start and wire wall buttons
+	if is_instance_valid(wall_controls):
+		wall_controls.visible = false
+	if is_instance_valid(wall_btn_cancel):
+		wall_btn_cancel.pressed.connect(_on_wall_cancel_pressed)
+	if is_instance_valid(wall_btn_check):
+		wall_btn_check.pressed.connect(_on_wall_check_pressed)
+	if is_instance_valid(wall_btn_switch):
+		wall_btn_switch.pressed.connect(_on_wall_switch_pressed)
+
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
 	var settings_scene = load("res://menus/settings/quick_settings.tscn").instantiate()
@@ -110,7 +140,7 @@ func _on_edit_button_pressed() -> void:
 
 func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: Texture2D, is_floor: bool) -> void:
 	# Block interactions with drag containers while editing an item
-	if _editing_active:
+	if _editing_active or _wall_editing_active:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and not event.is_echo():
@@ -251,6 +281,25 @@ func _input(event: InputEvent) -> void:
 					var h := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(_editing_drag_texture.get_height())
 					selected_sprite.position = get_global_mouse_position() - Vector2(w * 0.5, h * 0.25)
 
+		# Start re-dragging a tracked wall item if clicked
+		if _wall_editing_active:
+			var local_in_wall := wall_items_layer.to_local(get_global_mouse_position())
+			var wcoords := wall_items_layer.local_to_map(local_in_wall)
+			if wcoords == _wall_editing_coords:
+				if is_instance_valid(wall_items_layer):
+					wall_items_layer.erase_cell(_wall_editing_coords)
+					wall_items_layer.notify_runtime_tile_data_update()
+				_mouse_press_began_in_drag_area = true
+				_dragging_floor_item = false
+				var preview := _make_wall_preview_texture(_wall_editing_item_name, _wall_editing_side)
+				if is_instance_valid(selected_sprite) and preview != null:
+					selected_sprite.texture = preview
+					selected_sprite.visible = true
+					selected_sprite.self_modulate.a = 0.6
+					var w2 := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(preview.get_width())
+					var h2 := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(preview.get_height())
+					selected_sprite.position = get_global_mouse_position() - Vector2(w2 * 0.85, h2 * 0.85)
+
 	# Place item exactly when the left mouse button is released anywhere
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and not event.is_echo():
 		if _mouse_press_began_in_drag_area and _dragging_floor_item and is_instance_valid(floor_mouse_detector):
@@ -271,6 +320,20 @@ func _input(event: InputEvent) -> void:
 						_start_tracking_item(selected_sprite_path, tile_coords, 0, _selected_texture)
 					else:
 						_stop_tracking_and_hide_controls()
+		elif _mouse_press_began_in_drag_area and not _dragging_floor_item and is_instance_valid(wall_layer):
+			var wall_local := wall_layer.to_local(get_global_mouse_position())
+			var wall_coords: Vector2i = wall_layer.local_to_map(wall_local)
+			if _wall_editing_active:
+				if _place_wall_item_at(_wall_editing_item_name, wall_coords):
+					_wall_editing_coords = wall_coords
+					_wall_editing_side = _detect_wall_side_from_coords(wall_coords)
+				else:
+					_place_wall_item_at(_wall_editing_item_name, _wall_editing_coords)
+			else:
+				if _place_wall_item_at(selected_sprite_path, wall_coords):
+					_start_tracking_wall_item(selected_sprite_path, wall_coords)
+				else:
+					_stop_tracking_wall_and_hide_controls()
 			# Cleanup temporary drag state
 			_mouse_press_began_in_drag_area = false
 			_dragging_floor_item = false
@@ -434,9 +497,9 @@ func _stop_tracking_and_hide_controls() -> void:
 	_show_floor_controls(false)
 	_set_drag_containers_interactive(true)
 
-func _show_floor_controls(visible: bool) -> void:
+func _show_floor_controls(p_visible: bool) -> void:
 	if is_instance_valid(floor_controls):
-		floor_controls.visible = visible
+		floor_controls.visible = p_visible
 
 func _set_drag_containers_interactive(enabled: bool) -> void:
 	var mode := Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
@@ -533,6 +596,138 @@ func _on_check_pressed() -> void:
 	_clear_selected_sprite()
 	_remove_marked_tile_overlay()
 	_clear_marked_wall_tile()
+
+# ====================== WALL ITEMS ======================
+func _detect_wall_side_from_coords(coords: Vector2i) -> String:
+	if coords.x == -4:
+		return "left"
+	if coords.y == -3:
+		return "right"
+	return ""
+
+func _get_last_tile_for_wall(side: String) -> Vector2i:
+	if not is_instance_valid(wall_layer):
+		return _SENTINEL
+	var used: Array[Vector2i] = wall_layer.get_used_cells()
+	var best := _SENTINEL
+	if side == "left":
+		var max_y := -2147483648
+		for c in used:
+			if c == HIDDEN_WALL_TILE_COORDINATE:
+				continue
+			if c.x == -4 and c.y > max_y:
+				max_y = c.y
+				best = c
+	elif side == "right":
+		var max_x := -2147483648
+		for c in used:
+			if c == HIDDEN_WALL_TILE_COORDINATE:
+				continue
+			if c.y == -3 and c.x > max_x:
+				max_x = c.x
+				best = c
+	return best
+
+func _get_wall_atlas_for(item_name: String, side: String) -> Vector2i:
+	if not WALL_ITEM_ROWS.has(item_name):
+		return Vector2i(-1, -1)
+	var row: int = WALL_ITEM_ROWS[item_name]
+	var col: int = (0 if side == "left" else 1)
+	return Vector2i(col, row)
+
+func _is_valid_wall_coord(coords: Vector2i) -> bool:
+	if not is_instance_valid(wall_layer):
+		return false
+	if coords == HIDDEN_WALL_TILE_COORDINATE:
+		return false
+	var used: Array[Vector2i] = wall_layer.get_used_cells()
+	if not (coords in used):
+		return false
+	if not (coords.x == -4 or coords.y == -3):
+		return false
+	return true
+
+func _place_wall_item_at(item_name: String, coords: Vector2i) -> bool:
+	if not (is_instance_valid(wall_items_layer) and _is_valid_wall_coord(coords)):
+		return false
+	if not WALL_ITEM_ROWS.has(item_name):
+		return false
+	if wall_items_layer.get_cell_source_id(coords) != -1:
+		return false
+	var side := _detect_wall_side_from_coords(coords)
+	var atlas := _get_wall_atlas_for(item_name, side)
+	if atlas.x < 0:
+		return false
+	wall_items_layer.set_cell(coords, WALL_ITEMS_SOURCE_ID, atlas)
+	wall_items_layer.notify_runtime_tile_data_update()
+	return true
+
+func _start_tracking_wall_item(item_name: String, coords: Vector2i) -> void:
+	_wall_editing_active = true
+	_wall_editing_item_name = item_name
+	_wall_editing_coords = coords
+	_wall_editing_side = _detect_wall_side_from_coords(coords)
+	_show_wall_controls(true)
+	_show_floor_controls(false)
+	_set_drag_containers_interactive(false)
+
+func _stop_tracking_wall_and_hide_controls() -> void:
+	_wall_editing_active = false
+	_wall_editing_item_name = ""
+	_wall_editing_coords = _SENTINEL
+	_wall_editing_side = ""
+	_show_wall_controls(false)
+	_set_drag_containers_interactive(true)
+
+func _show_wall_controls(p_visible: bool) -> void:
+	if is_instance_valid(wall_controls):
+		wall_controls.visible = p_visible
+
+func _on_wall_cancel_pressed() -> void:
+	if not _wall_editing_active:
+		return
+	if is_instance_valid(wall_items_layer):
+		wall_items_layer.erase_cell(_wall_editing_coords)
+		wall_items_layer.notify_runtime_tile_data_update()
+	_stop_tracking_wall_and_hide_controls()
+	_clear_selected_sprite()
+	_clear_marked_wall_tile()
+
+func _on_wall_check_pressed() -> void:
+	if not _wall_editing_active:
+		return
+	_stop_tracking_wall_and_hide_controls()
+	_clear_selected_sprite()
+	_clear_marked_wall_tile()
+
+func _on_wall_switch_pressed() -> void:
+	if not _wall_editing_active:
+		return
+	var target_side := ("right" if _wall_editing_side == "left" else "left")
+	var target_coords := _get_last_tile_for_wall(target_side)
+	if target_coords == _SENTINEL:
+		return
+	if wall_items_layer.get_cell_source_id(target_coords) != -1:
+		return
+	wall_items_layer.erase_cell(_wall_editing_coords)
+	var atlas := _get_wall_atlas_for(_wall_editing_item_name, target_side)
+	wall_items_layer.set_cell(target_coords, WALL_ITEMS_SOURCE_ID, atlas)
+	wall_items_layer.notify_runtime_tile_data_update()
+	_wall_editing_coords = target_coords
+	_wall_editing_side = target_side
+
+func _make_wall_preview_texture(item_name: String, side: String) -> Texture2D:
+	if not WALL_ITEM_ROWS.has(item_name):
+		return null
+	var sheet: Texture2D = load("res://scenes/room/decoration/wall/wall-sprites.png")
+	if sheet == null:
+		return null
+	var row: int = WALL_ITEM_ROWS[item_name]
+	var col: int = (0 if side == "left" else 1)
+	var at := AtlasTexture.new()
+	at.atlas = sheet
+	at.region = Rect2(col * 32, row * 32, 32, 32)
+	return at
 
 func _make_preview_texture(item_name: String, rotation_idx: int) -> Texture2D:
 	# Builds a Texture2D suitable for dragging UI based on spritesheet regions
