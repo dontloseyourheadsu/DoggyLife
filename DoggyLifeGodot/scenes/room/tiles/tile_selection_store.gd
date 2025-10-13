@@ -9,6 +9,12 @@ class_name TileSelectionStore
 @export var selected_floor_tile_index: int = -1
 @export var selected_wall_tile_index: int = -1
 
+# Persisted placed items
+# Floor items: { "item-name": { "primary": Vector2i, "rotation": int } }
+# Wall items:  { "item-name": { "coords": Vector2i } }
+@export var placed_floor_items: Dictionary = {}
+@export var placed_wall_items: Dictionary = {}
+
 const STORE_PATH := "user://tile_selection_store.tres"
 
 static func load_store() -> TileSelectionStore:
@@ -59,3 +65,44 @@ static func get_selected_wall_atlas_coords(default_coords: Vector2i = Vector2i(1
 		return Vector2i(idx, 0)
 	return default_coords
 
+# ===================== PLACED ITEMS PERSISTENCE =====================
+# --- Floor items ---
+static func set_placed_floor_item(item_name: String, primary: Vector2i, rotation: int) -> void:
+	var store := load_store()
+	if store.placed_floor_items == null:
+		store.placed_floor_items = {}
+	store.placed_floor_items[item_name] = {
+		"primary": primary,
+		"rotation": rotation
+	}
+	save_store(store)
+
+static func remove_placed_floor_item(item_name: String) -> void:
+	var store := load_store()
+	if store.placed_floor_items != null and store.placed_floor_items.has(item_name):
+		store.placed_floor_items.erase(item_name)
+		save_store(store)
+
+static func get_all_placed_floor_items() -> Dictionary:
+	var store := load_store()
+	return store.placed_floor_items if store.placed_floor_items != null else {}
+
+# --- Wall items ---
+static func set_placed_wall_item(item_name: String, coords: Vector2i) -> void:
+	var store := load_store()
+	if store.placed_wall_items == null:
+		store.placed_wall_items = {}
+	store.placed_wall_items[item_name] = {
+		"coords": coords
+	}
+	save_store(store)
+
+static func remove_placed_wall_item(item_name: String) -> void:
+	var store := load_store()
+	if store.placed_wall_items != null and store.placed_wall_items.has(item_name):
+		store.placed_wall_items.erase(item_name)
+		save_store(store)
+
+static func get_all_placed_wall_items() -> Dictionary:
+	var store := load_store()
+	return store.placed_wall_items if store.placed_wall_items != null else {}
