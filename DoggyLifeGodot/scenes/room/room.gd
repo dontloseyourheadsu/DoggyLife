@@ -24,6 +24,7 @@ extends Node2D
 @onready var wall_btn_switch: BaseButton = $Camera2D/WallItemsControls/SwitchButton
 @onready var wall_btn_delete: BaseButton = $Camera2D/WallItemsControls/DeleteButton
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
+const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
 
@@ -143,6 +144,9 @@ func _ready():
 		wall_btn_switch.pressed.connect(_on_wall_switch_pressed)
 	if is_instance_valid(wall_btn_delete):
 		wall_btn_delete.pressed.connect(_on_wall_delete_pressed)
+
+	# Restore any previously placed items from persistent store
+	_restore_persisted_items()
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
@@ -713,6 +717,8 @@ func _on_delete_pressed() -> void:
 	if _editing_item_name != "":
 		_placed_items.erase(_editing_item_name)
 		_update_drag_ui_used_state(_editing_item_name, false)
+		# Remove from persistence
+		TileSelectionStore.remove_placed_floor_item(_editing_item_name)
 	_stop_tracking_and_hide_controls()
 	_clear_selected_sprite()
 	_remove_marked_tile_overlay()
@@ -723,6 +729,8 @@ func _on_check_pressed() -> void:
 		return
 	# Capture item before clearing state
 	var item_to_mark := _editing_item_name
+	var persist_primary := _editing_primary
+	var persist_rotation := _editing_rotation
 	# Keep item, just stop tracking
 	_stop_tracking_and_hide_controls()
 	_clear_selected_sprite()
@@ -732,6 +740,8 @@ func _on_check_pressed() -> void:
 	if item_to_mark != "":
 		_placed_items[item_to_mark] = true
 		_update_drag_ui_used_state(item_to_mark, true)
+		# Persist floor item placement
+		TileSelectionStore.set_placed_floor_item(item_to_mark, persist_primary, persist_rotation)
 
 # ====================== WALL ITEMS ======================
 func _detect_wall_side_from_coords(coords: Vector2i) -> String:
@@ -844,12 +854,15 @@ func _on_wall_check_pressed() -> void:
 	if not _wall_editing_active:
 		return
 	var item_to_mark := _wall_editing_item_name
+	var persist_coords := _wall_editing_coords
 	_stop_tracking_wall_and_hide_controls()
 	_clear_selected_sprite()
 	_clear_marked_wall_tile()
 	if item_to_mark != "":
 		_placed_items[item_to_mark] = true
 		_update_drag_ui_used_state(item_to_mark, true)
+		# Persist wall item placement
+		TileSelectionStore.set_placed_wall_item(item_to_mark, persist_coords)
 
 func _on_wall_delete_pressed() -> void:
 	if not _wall_editing_active:
@@ -860,6 +873,8 @@ func _on_wall_delete_pressed() -> void:
 	if _wall_editing_item_name != "":
 		_placed_items.erase(_wall_editing_item_name)
 		_update_drag_ui_used_state(_wall_editing_item_name, false)
+		# Remove from persistence
+		TileSelectionStore.remove_placed_wall_item(_wall_editing_item_name)
 	_stop_tracking_wall_and_hide_controls()
 	_clear_selected_sprite()
 	_clear_marked_wall_tile()
@@ -983,3 +998,38 @@ func _update_drag_ui_used_state(item_name: String, used: bool) -> void:
 	if ui != null:
 		# Defer to ensure UI changes happen after any queue_free/add_child cycles
 		ui.call_deferred("mark_item_used", item_name, used)
+
+# ====================== RESTORE PERSISTED ======================
+func _restore_persisted_items() -> void:
+	# Restore floor items
+	var floor_dict: Dictionary = TileSelectionStore.get_all_placed_floor_items()
+	if is_instance_valid(floor_items_layer) and is_instance_valid(floor_layer):
+		for item_name in floor_dict.keys():
+			var rec: Dictionary = floor_dict[item_name]
+			if not rec.has("primary") or not rec.has("rotation"):
+				continue
+			var primary: Vector2i = rec["primary"]
+			var rotation: int = int(rec["rotation"])
+			var ok := _place_item_with_rotation_at(item_name, primary, rotation)
+			if ok:
+				_placed_items[item_name] = true
+				_update_drag_ui_used_state(item_name, true)
+	# Restore wall items
+	var wall_dict: Dictionary = TileSelectionStore.get_all_placed_wall_items()
+	if is_instance_valid(wall_items_layer) and is_instance_valid(wall_layer):
+		for wname in wall_dict.keys():
+			var wrec: Dictionary = wall_dict[wname]
+			if not wrec.has("coords"):
+				continue
+			var coords: Vector2i = wrec["coords"]
+			if wall_items_layer.get_cell_source_id(coords) == -1 and _is_valid_wall_coord(coords):
+				var side := _detect_wall_side_from_coords(coords)
+				var atlas := _get_wall_atlas_for(wname, side)
+				if atlas.x >= 0:
+					wall_items_layer.set_cell(coords, WALL_ITEMS_SOURCE_ID, atlas)
+					_placed_items[wname] = true
+					_update_drag_ui_used_state(wname, true)
+	if is_instance_valid(floor_items_layer):
+		floor_items_layer.notify_runtime_tile_data_update()
+	if is_instance_valid(wall_items_layer):
+		wall_items_layer.notify_runtime_tile_data_update()
