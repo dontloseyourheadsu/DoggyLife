@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://2ffuhh1f5i6k"]
 
-[ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://menus/settings/quick_settings.gd" id="1_kxsdx"]
+[ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://scenes/menus/settings/quick_settings.gd" id="1_kxsdx"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_vnlla"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_2naqa"]

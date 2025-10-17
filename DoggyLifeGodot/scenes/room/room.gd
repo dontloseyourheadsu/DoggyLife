@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var pause_button := $Camera2D/OptionsContainer/PauseButton as BaseButton
 @onready var edit_button := $Camera2D/OptionsContainer/EditButton as BaseButton
+@onready var shop_button := $Camera2D/OptionsContainer/ShopButton as BaseButton
 @onready var floor_items_grid: GridContainer = $Camera2D/DragsContainer/FloorItemsContainer/GridContainer
 @onready var wall_items_grid: GridContainer = $Camera2D/DragsContainer/WallItemsContainer/GridContainer
 @onready var floor_items_container: ScrollContainer = $Camera2D/DragsContainer/FloorItemsContainer
@@ -115,6 +116,9 @@ func _ready():
 		btn_check.pressed.connect(_on_check_pressed)
 	if is_instance_valid(btn_delete):
 		btn_delete.pressed.connect(_on_delete_pressed)
+	# Connect the shop button signal
+	if shop_button:
+		shop_button.pressed.connect(_on_shop_button_pressed)
 	# Apply saved audio settings on scene load
 	AudioUtilsScript.load_and_apply()
 	# Enable per-frame processing for drag and hover handling
@@ -150,7 +154,7 @@ func _ready():
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
-	var settings_scene = load("res://menus/settings/quick_settings.tscn").instantiate()
+	var settings_scene = load("res://scenes/menus/settings/quick_settings.tscn").instantiate()
 	get_tree().root.add_child(settings_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = settings_scene
@@ -161,6 +165,13 @@ func _on_edit_button_pressed() -> void:
 	get_tree().root.add_child(edit_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = edit_scene
+
+func _on_shop_button_pressed() -> void:
+	# Load shop scene
+	var shop_scene = load("res://scenes/shop/shop.tscn").instantiate()
+	get_tree().root.add_child(shop_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = shop_scene
 
 func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: Texture2D, is_floor: bool) -> void:
 	# Block interactions with drag containers while editing an item

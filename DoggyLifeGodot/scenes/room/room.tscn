@@ -303,7 +303,7 @@ scale = Vector2(0.75, 0.75)
 tooltip_text = "Edit room"
 texture_normal = ExtResource("13_1mlw3")
 
-[node name="TextureButton" type="TextureButton" parent="Camera2D/OptionsContainer"]
+[node name="ShopButton" type="TextureButton" parent="Camera2D/OptionsContainer"]
 layout_mode = 0
 offset_left = 11.0
 offset_right = 43.0
