@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cla0eac1sn6ha"
-path="res://.godot/imported/samoyed-dog.png-8575ece4f815a1eb460239d20ca12aed.ctex"
+uid="uid://dlqfpow41lpt7"
+path="res://.godot/imported/shiba-dog.png-d09c1f88ac603830d59feb3f3071a8ce.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/dogs/images/samoyed-dog.png"
-dest_files=["res://.godot/imported/samoyed-dog.png-8575ece4f815a1eb460239d20ca12aed.ctex"]
+source_file="res://sprites/dogs/images/shiba-dog.png"
+dest_files=["res://.godot/imported/shiba-dog.png-d09c1f88ac603830d59feb3f3071a8ce.ctex"]
 
 [params]
 

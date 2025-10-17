@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@onready var animated_sprite = $AnimatedSprite2D
+@onready var animated_dog_sprite: AnimatedSprite2D = $DogAnimations
 @onready var movement_timer = Timer.new()
 @onready var animation_timer = Timer.new()
 
@@ -17,23 +17,58 @@ enum DogState {
 var current_state = DogState.SITTING
 var available_walk_animations = ["walk-front", "walk-back", "walk-left", "walk-right"]
 var available_sit_animations = ["sit-front", "sit-left", "sit-right"]
+var available_scratch_animations = ["scratch-left", "scratch-right"]
+
+# Paths to available dog SpriteFrames (breeds)
+const DOG_SPRITEFRAMES_PATHS: Array[String] = [
+	"res://sprites/dogs/spriteframes/samoyed-dog.tres",
+	"res://sprites/dogs/spriteframes/beagle-dog.tres",
+	"res://sprites/dogs/spriteframes/shiba-dog.tres",
+	"res://sprites/dogs/spriteframes/spaniel-dog.tres",
+]
 
 func _ready():
+	# Ensure random values are different each run
+	randomize()
+
+	# Randomly choose a dog SpriteFrames set on load
+	_apply_random_dog_spriteframes()
+
 	# Setup movement timer
 	add_child(movement_timer)
-	movement_timer.wait_time = randf_range(2.0, 5.0)  # Random time between movements
+	movement_timer.wait_time = randf_range(2.0, 5.0) # Random time between movements
 	movement_timer.timeout.connect(_on_movement_timer_timeout)
 	movement_timer.start()
 	
 	# Setup animation timer
 	add_child(animation_timer)
-	animation_timer.wait_time = 0.8  # Minimum time for 4 frames at 5 FPS (4/5 = 0.8 seconds)
+	animation_timer.wait_time = 0.8 # Minimum time for 4 frames at 5 FPS (4/5 = 0.8 seconds)
 	animation_timer.timeout.connect(_on_animation_timer_timeout)
 	
 	# Start with a random sitting animation
 	_start_sitting()
 
-func _physics_process(delta):
+func _apply_random_dog_spriteframes() -> void:
+	if not animated_dog_sprite:
+		return
+	if DOG_SPRITEFRAMES_PATHS.is_empty():
+		return
+	var idx := int(randi() % DOG_SPRITEFRAMES_PATHS.size())
+	var path: String = DOG_SPRITEFRAMES_PATHS[idx]
+	var res: Resource = load(path)
+	if res is SpriteFrames:
+		animated_dog_sprite.sprite_frames = res
+	else:
+		push_warning("Failed to load dog SpriteFrames: %s" % path)
+
+func play_anim(anim_name: String) -> void:
+	# Safely play an animation if it exists, otherwise warn once
+	if animated_dog_sprite and animated_dog_sprite.sprite_frames and animated_dog_sprite.sprite_frames.has_animation(anim_name):
+		animated_dog_sprite.play(anim_name)
+	else:
+		push_warning("Dog animation not found or sprite missing: %s" % anim_name)
+
+func _physics_process(_delta):
 	if is_moving:
 		velocity = current_direction * movement_speed
 		move_and_slide()
@@ -45,7 +80,7 @@ func _start_sitting():
 	
 	# Play random sitting animation
 	var sit_anim = available_sit_animations[randi() % available_sit_animations.size()]
-	animated_sprite.play(sit_anim)
+	play_anim(sit_anim)
 	
 	# Start animation timer to ensure animation plays for at least 0.8 seconds
 	animation_timer.wait_time = randf_range(0.8, 2.0)
@@ -60,16 +95,16 @@ func _start_walking():
 	match direction_choice:
 		0: # Front (down)
 			current_direction = Vector2(0, 1)
-			animated_sprite.play("walk-front")
+			play_anim("walk-front")
 		1: # Back (up)
 			current_direction = Vector2(0, -1)
-			animated_sprite.play("walk-back")
+			play_anim("walk-back")
 		2: # Left
 			current_direction = Vector2(-1, 0)
-			animated_sprite.play("walk-left")
+			play_anim("walk-left")
 		3: # Right
 			current_direction = Vector2(1, 0)
-			animated_sprite.play("walk-right")
+			play_anim("walk-right")
 	
 	# Start animation timer to ensure animation plays for at least 0.8 seconds
 	animation_timer.wait_time = randf_range(0.8, 3.0)
