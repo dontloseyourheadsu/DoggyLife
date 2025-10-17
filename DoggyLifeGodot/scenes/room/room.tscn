@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=34 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://sprites/dogs/dog.tscn" id="2_j33j0"]
@@ -12,10 +12,11 @@
 [ext_resource type="Script" uid="uid://bv46cnrqklwkm" path="res://scenes/room/tiles/wall_layer.gd" id="7_68b7a"]
 [ext_resource type="Texture2D" uid="uid://b7v0qec3gyhm6" path="res://scenes/room/decoration/wall/wall-sprites.png" id="9_7ep0u"]
 [ext_resource type="Script" uid="uid://brcsmpvmsspgu" path="res://scenes/room/decoration/drag-drop-decoration.gd" id="9_ip1yl"]
-[ext_resource type="Texture2D" uid="uid://cnb7xb4c0dwi4" path="res://ui/buttons/button-pause.png" id="12_1mlw3"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="12_v5g04"]
 [ext_resource type="Texture2D" uid="uid://xurmccbe5t0a" path="res://ui/buttons/button-edit.png" id="13_1mlw3"]
+[ext_resource type="Texture2D" uid="uid://clr0vej8j3wdw" path="res://ui/buttons/button-settings.png" id="13_237u8"]
 [ext_resource type="Texture2D" uid="uid://bawdhomrq7oq8" path="res://ui/buttons/button-rotate-left.png" id="15_7tnhw"]
+[ext_resource type="Texture2D" uid="uid://cy3fd3x18k16w" path="res://ui/buttons/button-shop.png" id="15_237u8"]
 [ext_resource type="Texture2D" uid="uid://km07dmnbnnqo" path="res://ui/buttons/button-rotate-right.png" id="16_o3aui"]
 [ext_resource type="Texture2D" uid="uid://n65dhnylsfno" path="res://ui/buttons/button-base-cancel.png" id="17_7njf5"]
 [ext_resource type="Texture2D" uid="uid://ivmpl03hvhea" path="res://ui/buttons/button-base-check.png" id="18_xxq4d"]
@@ -277,7 +278,7 @@ parameters/looping = true
 [node name="OptionsContainer" type="Control" parent="Camera2D"]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 135.0
+offset_left = 100.0
 offset_top = -138.0
 offset_right = 192.0
 offset_bottom = -113.0
@@ -285,20 +286,31 @@ script = ExtResource("9_ip1yl")
 
 [node name="PauseButton" type="TextureButton" parent="Camera2D/OptionsContainer"]
 layout_mode = 0
-offset_left = 33.0
-offset_right = 65.0
+offset_left = 67.0
+offset_right = 99.0
 offset_bottom = 32.0
 scale = Vector2(0.75, 0.75)
+tooltip_text = "Settings"
 theme = ExtResource("5_fntg6")
-texture_normal = ExtResource("12_1mlw3")
+texture_normal = ExtResource("13_237u8")
 
 [node name="EditButton" type="TextureButton" parent="Camera2D/OptionsContainer"]
 layout_mode = 0
-offset_left = 4.0
-offset_right = 36.0
+offset_left = 39.0
+offset_right = 71.0
 offset_bottom = 32.0
 scale = Vector2(0.75, 0.75)
+tooltip_text = "Edit room"
 texture_normal = ExtResource("13_1mlw3")
+
+[node name="ShopButton" type="TextureButton" parent="Camera2D/OptionsContainer"]
+layout_mode = 0
+offset_left = 11.0
+offset_right = 43.0
+offset_bottom = 32.0
+scale = Vector2(0.75, 0.75)
+tooltip_text = "Shop"
+texture_normal = ExtResource("15_237u8")
 
 [node name="DragContainerBG" parent="Camera2D" instance=ExtResource("12_v5g04")]
 offset_left = 93.0
@@ -394,6 +406,7 @@ layout_mode = 0
 offset_left = 35.0
 offset_right = 67.0
 offset_bottom = 32.0
+tooltip_text = "Delete item"
 texture_normal = ExtResource("21_fuscm")
 
 [node name="WallItemsControls" type="Control" parent="Camera2D"]
@@ -434,6 +447,7 @@ layout_mode = 0
 offset_left = 42.0
 offset_right = 74.0
 offset_bottom = 32.0
+tooltip_text = "Delete item"
 texture_normal = ExtResource("21_fuscm")
 
 [node name="SelectedSprite" type="TextureRect" parent="Camera2D"]
