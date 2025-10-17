@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
-@onready var animated_sprite: AnimatedSprite2D = $WhiteDogAnimations
+@onready var animated_sprite: AnimatedSprite2D = $SamoyedDogAnimations
+@onready var animated_shiba_sprite: AnimatedSprite2D = $ShibaDogAnimations
 @onready var movement_timer = Timer.new()
 @onready var animation_timer = Timer.new()
 
