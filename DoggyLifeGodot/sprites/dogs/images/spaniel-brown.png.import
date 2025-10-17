@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cmdlblt7d4iwn"
-path="res://.godot/imported/spaniel-brown.png-dc9088eada5df608fa6308f0bf2d50b9.ctex"
+path="res://.godot/imported/spaniel-brown.png-30da335b3f5965014c1edade105b1402.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/room/dogs/images/spaniel-brown.png"
-dest_files=["res://.godot/imported/spaniel-brown.png-dc9088eada5df608fa6308f0bf2d50b9.ctex"]
+source_file="res://sprites/dogs/images/spaniel-brown.png"
+dest_files=["res://.godot/imported/spaniel-brown.png-30da335b3f5965014c1edade105b1402.ctex"]
 
 [params]
 

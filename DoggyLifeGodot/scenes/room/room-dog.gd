@@ -1,7 +1,6 @@
 extends CharacterBody2D
 
-@onready var animated_sprite: AnimatedSprite2D = $SamoyedDogAnimations
-@onready var animated_shiba_sprite: AnimatedSprite2D = $ShibaDogAnimations
+@onready var animated_dog_sprite: AnimatedSprite2D = $DogAnimations
 @onready var movement_timer = Timer.new()
 @onready var animation_timer = Timer.new()
 
@@ -40,8 +39,8 @@ func _ready():
 
 func play_anim(anim_name: String) -> void:
 	# Safely play an animation if it exists, otherwise warn once
-	if animated_sprite and animated_sprite.sprite_frames and animated_sprite.sprite_frames.has_animation(anim_name):
-		animated_sprite.play(anim_name)
+	if animated_dog_sprite and animated_dog_sprite.sprite_frames and animated_dog_sprite.sprite_frames.has_animation(anim_name):
+		animated_dog_sprite.play(anim_name)
 	else:
 		push_warning("Dog animation not found or sprite missing: %s" % anim_name)
 
