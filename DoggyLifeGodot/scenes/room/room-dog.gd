@@ -19,9 +19,20 @@ var available_walk_animations = ["walk-front", "walk-back", "walk-left", "walk-r
 var available_sit_animations = ["sit-front", "sit-left", "sit-right"]
 var available_scratch_animations = ["scratch-left", "scratch-right"]
 
+# Paths to available dog SpriteFrames (breeds)
+const DOG_SPRITEFRAMES_PATHS: Array[String] = [
+	"res://sprites/dogs/spriteframes/samoyed-dog.tres",
+	"res://sprites/dogs/spriteframes/beagle-dog.tres",
+	"res://sprites/dogs/spriteframes/shiba-dog.tres",
+	"res://sprites/dogs/spriteframes/spaniel-dog.tres",
+]
+
 func _ready():
 	# Ensure random values are different each run
 	randomize()
+
+	# Randomly choose a dog SpriteFrames set on load
+	_apply_random_dog_spriteframes()
 
 	# Setup movement timer
 	add_child(movement_timer)
@@ -36,6 +47,19 @@ func _ready():
 	
 	# Start with a random sitting animation
 	_start_sitting()
+
+func _apply_random_dog_spriteframes() -> void:
+	if not animated_dog_sprite:
+		return
+	if DOG_SPRITEFRAMES_PATHS.is_empty():
+		return
+	var idx := int(randi() % DOG_SPRITEFRAMES_PATHS.size())
+	var path: String = DOG_SPRITEFRAMES_PATHS[idx]
+	var res: Resource = load(path)
+	if res is SpriteFrames:
+		animated_dog_sprite.sprite_frames = res
+	else:
+		push_warning("Failed to load dog SpriteFrames: %s" % path)
 
 func play_anim(anim_name: String) -> void:
 	# Safely play an animation if it exists, otherwise warn once
