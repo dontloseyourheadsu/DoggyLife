@@ -168,7 +168,7 @@ func _on_edit_button_pressed() -> void:
 
 func _on_shop_button_pressed() -> void:
 	# Load shop scene
-	var shop_scene = load("res://scenes/shop/shop.tscn").instantiate()
+	var shop_scene = load("res://scenes/menus/shop/shop.tscn").instantiate()
 	get_tree().root.add_child(shop_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = shop_scene
