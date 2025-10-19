@@ -1,0 +1,70 @@
+[gd_scene load_steps=5 format=3 uid="uid://cjvn200fttr3n"]
+
+[ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_oui4f"]
+[ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="2_7xc3h"]
+[ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="3_6mgri"]
+[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="4_hpvc8"]
+
+[node name="Shop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="TextureRect" parent="."]
+z_index = -1
+texture_repeat = 2
+layout_mode = 0
+offset_right = 2560.0
+offset_bottom = 1440.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+texture = ExtResource("1_oui4f")
+stretch_mode = 1
+
+[node name="Container" parent="." instance=ExtResource("2_7xc3h")]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 0
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 150.0
+offset_top = 75.0
+offset_right = 1150.0
+offset_bottom = 675.0
+grow_horizontal = 1
+grow_vertical = 1
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="Container"]
+layout_mode = 0
+offset_left = 445.0
+offset_top = 80.0
+offset_right = 565.0
+offset_bottom = 110.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "SHOP"
+
+[node name="BackButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 191.00006
+offset_top = 565.0
+offset_right = 223.00006
+offset_bottom = 597.0
+scale = Vector2(2.25, 2.25)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+size_flags_stretch_ratio = 0.38
+texture_normal = ExtResource("3_6mgri")
+
+[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_hpvc8")
+autoplay = true
+parameters/looping = true
