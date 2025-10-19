@@ -195,7 +195,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5toap")
 }],
-"loop": true,
+"loop": false,
 "name": &"sit-front",
 "speed": 5.0
 }, {
@@ -212,7 +212,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_si3d6")
 }],
-"loop": true,
+"loop": false,
 "name": &"sit-left",
 "speed": 5.0
 }, {
@@ -229,7 +229,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_fuk0o")
 }],
-"loop": true,
+"loop": false,
 "name": &"sit-right",
 "speed": 5.0
 }, {
