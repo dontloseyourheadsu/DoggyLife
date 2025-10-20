@@ -1,5 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://cjvn200fttr3n"]
 
+[ext_resource type="Script" uid="uid://d3garcjnys56m" path="res://scenes/menus/shop/shop.gd" id="1_hpvc8"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_oui4f"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="2_7xc3h"]
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="3_6mgri"]
@@ -15,6 +16,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_hpvc8")
 
 [node name="Background" type="TextureRect" parent="."]
 z_index = -1
@@ -56,6 +58,7 @@ theme_override_font_sizes/font_size = 30
 text = "SHOP"
 
 [node name="RoomItemsScrollContainer" type="ScrollContainer" parent="Container"]
+visible = false
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 0
 offset_left = 150.0
@@ -66,6 +69,40 @@ follow_focus = true
 horizontal_scroll_mode = 0
 
 [node name="RoomItemsGridContainer" type="GridContainer" parent="Container/RoomItemsScrollContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 6
+
+[node name="DogsScrollContainer" type="ScrollContainer" parent="Container"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 0
+offset_left = 150.0
+offset_top = 150.0
+offset_right = 850.0
+offset_bottom = 450.0
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="DogsGridContainer" type="GridContainer" parent="Container/DogsScrollContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 6
+
+[node name="TilesScrollContainer" type="ScrollContainer" parent="Container"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 0
+offset_left = 150.0
+offset_top = 150.0
+offset_right = 850.0
+offset_bottom = 450.0
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="TilesGridContainer" type="GridContainer" parent="Container/TilesScrollContainer"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/h_separation = 4
@@ -118,3 +155,8 @@ texture_normal = ExtResource("3_6mgri")
 stream = ExtResource("4_hpvc8")
 autoplay = true
 parameters/looping = true
+
+[connection signal="pressed" from="Container/TabNavigation/ItemsTabButton" to="." method="_on_items_tab_button_pressed"]
+[connection signal="pressed" from="Container/TabNavigation/DogsTabButton" to="." method="_on_dogs_tab_button_pressed"]
+[connection signal="pressed" from="Container/TabNavigation/ItemsTabButton3" to="." method="_on_items_tab_button_3_pressed"]
+[connection signal="pressed" from="Container/BackButton" to="." method="_on_back_button_pressed"]
