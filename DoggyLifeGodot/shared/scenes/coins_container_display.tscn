@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3 uid="uid://dmyjlacq8uf03"]
+
+[ext_resource type="Texture2D" uid="uid://dt13m0s4yg6dk" path="res://ui/containers/container-secondary.png" id="1_qir53"]
+[ext_resource type="Texture2D" uid="uid://b0dhl30adao48" path="res://ui/icons/dog-paw-coin.png" id="2_832jd"]
+[ext_resource type="Script" uid="uid://bg17eomame8jq" path="res://shared/scenes/coins_container_display.gd" id="2_bni4m"]
+
+[node name="CoinsContainerDisplay" type="TextureRect"]
+anchors_preset = -1
+anchor_left = 0.066
+anchor_top = 0.128
+anchor_right = 0.066
+anchor_bottom = 0.128
+offset_left = -36.0
+offset_top = -36.800003
+offset_right = 139.0
+offset_bottom = 35.199997
+texture = ExtResource("1_qir53")
+script = ExtResource("2_bni4m")
+
+[node name="CoinCount" type="Label" parent="."]
+layout_mode = 0
+offset_left = 79.0
+offset_top = 27.0
+offset_right = 151.0
+offset_bottom = 51.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "999"
+horizontal_alignment = 2
+
+[node name="CoinIcon" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 27.0
+offset_top = 17.0
+offset_right = 67.0
+offset_bottom = 57.0
+texture = ExtResource("2_832jd")
