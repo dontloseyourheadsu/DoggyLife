@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://cjvn200fttr3n"]
+[gd_scene load_steps=7 format=3 uid="uid://cjvn200fttr3n"]
 
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_oui4f"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="2_7xc3h"]
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="3_6mgri"]
 [ext_resource type="Texture2D" uid="uid://c0854hc6282os" path="res://ui/buttons/button-couch.png" id="3_7xc3h"]
+[ext_resource type="Texture2D" uid="uid://c7dyhefwixg5o" path="res://ui/buttons/button-dog-face.png" id="4_6mgri"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="4_hpvc8"]
 
 [node name="Shop" type="Control"]
@@ -80,6 +81,22 @@ offset_bottom = 562.0
 [node name="ItemsTabButton" type="TextureButton" parent="Container/TabNavigation"]
 layout_mode = 0
 offset_right = 32.0
+offset_bottom = 32.0
+scale = Vector2(2.25, 2.25)
+texture_normal = ExtResource("3_7xc3h")
+
+[node name="DogsTabButton" type="TextureButton" parent="Container/TabNavigation"]
+layout_mode = 0
+offset_left = 82.000046
+offset_right = 114.000046
+offset_bottom = 32.0
+scale = Vector2(2.25, 2.25)
+texture_normal = ExtResource("4_6mgri")
+
+[node name="ItemsTabButton3" type="TextureButton" parent="Container/TabNavigation"]
+layout_mode = 0
+offset_left = 164.0
+offset_right = 196.0
 offset_bottom = 32.0
 scale = Vector2(2.25, 2.25)
 texture_normal = ExtResource("3_7xc3h")
