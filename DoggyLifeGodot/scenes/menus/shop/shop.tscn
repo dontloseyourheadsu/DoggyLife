@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cjvn200fttr3n"]
+[gd_scene load_steps=10 format=3 uid="uid://cjvn200fttr3n"]
 
 [ext_resource type="Script" uid="uid://d3garcjnys56m" path="res://scenes/menus/shop/shop.gd" id="1_hpvc8"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_oui4f"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://c0854hc6282os" path="res://ui/buttons/button-couch.png" id="3_7xc3h"]
 [ext_resource type="Texture2D" uid="uid://c7dyhefwixg5o" path="res://ui/buttons/button-dog-face.png" id="4_6mgri"]
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="4_hpvc8"]
+[ext_resource type="PackedScene" uid="uid://dmyjlacq8uf03" path="res://shared/scenes/coins_container_display.tscn" id="4_m2rju"]
 [ext_resource type="Texture2D" uid="uid://dupl0giv52k7q" path="res://ui/buttons/button-floor-tile.png" id="5_hpvc8"]
 
 [node name="Shop" type="Control"]
@@ -45,6 +46,18 @@ grow_horizontal = 1
 grow_vertical = 1
 size_flags_horizontal = 4
 size_flags_vertical = 4
+
+[node name="CoinsContainerDisplay" parent="Container" instance=ExtResource("4_m2rju")]
+layout_mode = 0
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 225.0
+offset_bottom = 122.0
 
 [node name="Label" type="Label" parent="Container"]
 layout_mode = 0
