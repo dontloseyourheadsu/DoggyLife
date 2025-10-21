@@ -14,6 +14,7 @@ enum Tab {
 @onready var _tiles_scroll: ScrollContainer = $Container/TilesScrollContainer
 @onready var _items_grid: GridContainer = $Container/RoomItemsScrollContainer/RoomItemsGridContainer
 @onready var _tiles_grid: GridContainer = $Container/TilesScrollContainer/TilesGridContainer
+@onready var _dogs_grid: GridContainer = $Container/DogsScrollContainer/DogsGridContainer
 
 # Tab buttons
 @onready var _items_btn: TextureButton = $Container/TabNavigation/ItemsTabButton
@@ -39,6 +40,7 @@ var _selected_item_name: String = ""
 var _selected_item_price: int = 0
 var _items_populated: bool = false
 var _tiles_populated: bool = false
+var _dogs_populated: bool = false
 
 var _current_tab: Tab = Tab.ITEMS
 
@@ -78,6 +80,8 @@ func _set_tab(tab: Tab) -> void:
 		_populate_items_if_needed()
 	elif tab == Tab.TILES:
 		_populate_tiles_if_needed()
+	elif tab == Tab.DOGS:
+		_populate_dogs_if_needed()
 
 func _apply_tab_visibility() -> void:
 	# Hide all sections first
@@ -146,6 +150,46 @@ func _populate_tiles_if_needed() -> void:
 		return
 	_populate_tiles_grid()
 	_tiles_populated = true
+
+func _populate_dogs_if_needed() -> void:
+	if _dogs_populated:
+		return
+	_populate_dogs_grid()
+	_dogs_populated = true
+
+func _populate_dogs_grid() -> void:
+	# Clear existing
+	for child in _dogs_grid.get_children():
+		child.queue_free()
+
+	_ensure_default_owned_dog()
+
+	# Map item names to preview image paths
+	var dogs := [
+		{"name": "dog-samoyed", "path": "res://sprites/dogs/images/samoyed-dog.png"},
+		{"name": "dog-beagle", "path": "res://sprites/dogs/images/beagle-dog.png"},
+		{"name": "dog-shiba", "path": "res://sprites/dogs/images/shiba-dog.png"},
+		{"name": "dog-spaniel", "path": "res://sprites/dogs/images/spaniel-brown.png"},
+	]
+
+	for d in dogs:
+		var dname: String = d["name"]
+		if PLAYER_DATA_STORAGE.owns_item(dname):
+			continue
+		var tex_path: String = d["path"]
+		if not ResourceLoader.exists(tex_path):
+			continue
+		var tex := load(tex_path) as Texture2D
+		if tex == null:
+			continue
+		# Only show the first 32x32 frame (top-left) for each dog sprite
+		var dog_preview: Texture2D = _atlas(tex, Rect2(0, 0, TILE_SIZE, TILE_SIZE))
+		_add_item_entry(dname, dog_preview, _dogs_grid)
+
+func _ensure_default_owned_dog() -> void:
+	var default_name := "dog-samoyed"
+	if not PLAYER_DATA_STORAGE.owns_item(default_name):
+		PLAYER_DATA_STORAGE.add_owned_item(default_name)
 
 func _populate_tiles_grid() -> void:
 	# Clear existing
@@ -321,6 +365,8 @@ func _get_item_price(item_name: String) -> int:
 	if item_name.begins_with("floor-tile-"):
 		return 4
 	if item_name.begins_with("wall-tile-"):
+		return 6
+	if item_name.begins_with("dog-"):
 		return 6
 	match item_name:
 		"lamp-sprite":
