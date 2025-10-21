@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://cjvn200fttr3n"]
+[gd_scene load_steps=12 format=3 uid="uid://cjvn200fttr3n"]
 
 [ext_resource type="Script" uid="uid://d3garcjnys56m" path="res://scenes/menus/shop/shop.gd" id="1_hpvc8"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_oui4f"]
@@ -9,6 +9,8 @@
 [ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="4_hpvc8"]
 [ext_resource type="PackedScene" uid="uid://dmyjlacq8uf03" path="res://shared/scenes/coins_container_display.tscn" id="4_m2rju"]
 [ext_resource type="Texture2D" uid="uid://dupl0giv52k7q" path="res://ui/buttons/button-floor-tile.png" id="5_hpvc8"]
+[ext_resource type="Texture2D" uid="uid://dt13m0s4yg6dk" path="res://ui/containers/container-secondary.png" id="8_m2rju"]
+[ext_resource type="Texture2D" uid="uid://73kti7eoxidb" path="res://ui/icons/dollar-sign.png" id="10_edlgw"]
 
 [node name="Shop" type="Control"]
 layout_mode = 3
@@ -71,7 +73,6 @@ theme_override_font_sizes/font_size = 30
 text = "SHOP"
 
 [node name="RoomItemsScrollContainer" type="ScrollContainer" parent="Container"]
-visible = false
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 0
 offset_left = 150.0
@@ -84,11 +85,30 @@ horizontal_scroll_mode = 0
 [node name="RoomItemsGridContainer" type="GridContainer" parent="Container/RoomItemsScrollContainer"]
 layout_mode = 2
 mouse_filter = 2
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 4
+columns = 4
+
+[node name="TilesScrollContainer" type="ScrollContainer" parent="Container"]
+visible = false
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 0
+offset_left = 150.0
+offset_top = 150.0
+offset_right = 850.0
+offset_bottom = 450.0
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="TilesGridContainer" type="GridContainer" parent="Container/TilesScrollContainer"]
+layout_mode = 2
+mouse_filter = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 columns = 6
 
 [node name="DogsScrollContainer" type="ScrollContainer" parent="Container"]
+visible = false
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 0
 offset_left = 150.0
@@ -105,22 +125,17 @@ theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 columns = 6
 
-[node name="TilesScrollContainer" type="ScrollContainer" parent="Container"]
-custom_minimum_size = Vector2(0, 64)
+[node name="BackButton" type="TextureButton" parent="Container"]
 layout_mode = 0
-offset_left = 150.0
-offset_top = 150.0
-offset_right = 850.0
-offset_bottom = 450.0
-follow_focus = true
-horizontal_scroll_mode = 0
-
-[node name="TilesGridContainer" type="GridContainer" parent="Container/TilesScrollContainer"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 4
-columns = 6
+offset_left = 41.00006
+offset_top = 490.0
+offset_right = 73.00006
+offset_bottom = 522.0
+scale = Vector2(2.25, 2.25)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+size_flags_stretch_ratio = 0.38
+texture_normal = ExtResource("3_6mgri")
 
 [node name="TabNavigation" type="Control" parent="Container"]
 anchors_preset = 0
@@ -152,24 +167,42 @@ offset_bottom = 32.0
 scale = Vector2(2.25, 2.25)
 texture_normal = ExtResource("5_hpvc8")
 
-[node name="BackButton" type="TextureButton" parent="Container"]
+[node name="PriceContainer" type="TextureButton" parent="Container"]
 layout_mode = 0
-offset_left = 41.00006
-offset_top = 490.0
-offset_right = 73.00006
-offset_bottom = 522.0
-scale = Vector2(2.25, 2.25)
+offset_left = 764.0
+offset_top = 493.0
+offset_right = 939.0
+offset_bottom = 565.0
+texture_normal = ExtResource("8_m2rju")
+stretch_mode = 0
+
+[node name="PriceIcon" type="TextureRect" parent="Container/PriceContainer"]
+layout_mode = 0
+offset_left = 27.0
+offset_top = 17.0
+offset_right = 67.0
+offset_bottom = 57.0
+texture = ExtResource("10_edlgw")
+
+[node name="PriceDisplay" type="Label" parent="Container/PriceContainer"]
+layout_mode = 0
+offset_left = 79.0
+offset_top = 27.0
+offset_right = 151.0
+offset_bottom = 51.0
 size_flags_horizontal = 4
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.38
-texture_normal = ExtResource("3_6mgri")
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "999"
+horizontal_alignment = 2
 
 [node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4_hpvc8")
 autoplay = true
 parameters/looping = true
 
+[connection signal="pressed" from="Container/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="Container/TabNavigation/ItemsTabButton" to="." method="_on_items_tab_button_pressed"]
 [connection signal="pressed" from="Container/TabNavigation/DogsTabButton" to="." method="_on_dogs_tab_button_pressed"]
 [connection signal="pressed" from="Container/TabNavigation/ItemsTabButton3" to="." method="_on_items_tab_button_3_pressed"]
-[connection signal="pressed" from="Container/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="Container/PriceContainer" to="." method="_on_price_container_pressed"]
