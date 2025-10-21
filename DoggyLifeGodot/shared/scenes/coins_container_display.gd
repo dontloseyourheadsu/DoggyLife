@@ -12,3 +12,8 @@ func _ready() -> void:
 	coin_count = coins
 	
 	coin_count_display.text = "%d" % [coins]
+
+func refresh() -> void:
+	var coins: int = PLAYER_DATA_STORAGE.get_coins_count()
+	coin_count = coins
+	coin_count_display.text = "%d" % [coins]

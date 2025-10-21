@@ -3,17 +3,9 @@ extends Control
 @onready var floor_grid: GridContainer = get_node_or_null("../DragsContainer/FloorItemsContainer/GridContainer")
 @onready var wall_grid: GridContainer = get_node_or_null("../DragsContainer/WallItemsContainer/GridContainer")
 
-const FLOOR_DIR := "res://scenes/room/decoration/floor"
-const WALL_DIR := "res://scenes/room/decoration/wall"
+const FLOOR_DIR := "res://sprites/decoration/floor"
+const WALL_DIR := "res://sprites/decoration/wall"
 
-# Keeps references to created entries to toggle state (opacity/interaction)
-# Structure: {
-#   "item-name": {
-#       "item": VBoxContainer,
-#       "preview": TextureRect,
-#       "label": Label
-#    }
-# }
 var _entries: Dictionary = {}
 
 func _ready() -> void:
