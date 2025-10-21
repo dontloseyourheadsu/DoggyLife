@@ -103,9 +103,9 @@ horizontal_scroll_mode = 0
 [node name="TilesGridContainer" type="GridContainer" parent="Container/TilesScrollContainer"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/h_separation = 4
+theme_override_constants/h_separation = 32
 theme_override_constants/v_separation = 4
-columns = 6
+columns = 3
 
 [node name="DogsScrollContainer" type="ScrollContainer" parent="Container"]
 visible = false

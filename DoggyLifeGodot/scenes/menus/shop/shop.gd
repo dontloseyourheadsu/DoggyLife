@@ -13,6 +13,7 @@ enum Tab {
 @onready var _dogs_scroll: ScrollContainer = $Container/DogsScrollContainer
 @onready var _tiles_scroll: ScrollContainer = $Container/TilesScrollContainer
 @onready var _items_grid: GridContainer = $Container/RoomItemsScrollContainer/RoomItemsGridContainer
+@onready var _tiles_grid: GridContainer = $Container/TilesScrollContainer/TilesGridContainer
 
 # Tab buttons
 @onready var _items_btn: TextureButton = $Container/TabNavigation/ItemsTabButton
@@ -28,11 +29,16 @@ const PLAYER_DATA_STORAGE = preload("res://storage/player_data.gd")
 const FLOOR_DIR := "res://sprites/decoration/floor"
 const WALL_DIR := "res://sprites/decoration/wall"
 const PREVIEW_SCALE := 3
+const TILE_SIZE := 32
+const WALL_TILE_HEIGHT := 64
+const FLOOR_TILES_PATH := "res://scenes/room/tiles/floor-tiles.png"
+const WALL_TILES_PATH := "res://scenes/room/tiles/wall-tiles.png"
 
 var _entry_nodes: Dictionary = {}
 var _selected_item_name: String = ""
 var _selected_item_price: int = 0
 var _items_populated: bool = false
+var _tiles_populated: bool = false
 
 var _current_tab: Tab = Tab.ITEMS
 
@@ -70,6 +76,8 @@ func _set_tab(tab: Tab) -> void:
 	_apply_tab_visibility()
 	if tab == Tab.ITEMS:
 		_populate_items_if_needed()
+	elif tab == Tab.TILES:
+		_populate_tiles_if_needed()
 
 func _apply_tab_visibility() -> void:
 	# Hide all sections first
@@ -125,13 +133,66 @@ func _populate_items_grid() -> void:
 
 	# Skip already owned items
 	for it in items:
-		var name: String = it.name
-		if PLAYER_DATA_STORAGE.owns_item(name):
+		var entry_name: String = it["name"]
+		if PLAYER_DATA_STORAGE.owns_item(entry_name):
 			continue
-		var tex: Texture2D = it.texture
+		var tex: Texture2D = it["texture"]
 		if tex == null:
 			continue
-		_add_item_entry(name, tex)
+		_add_item_entry(entry_name, tex)
+
+func _populate_tiles_if_needed() -> void:
+	if _tiles_populated:
+		return
+	_populate_tiles_grid()
+	_tiles_populated = true
+
+func _populate_tiles_grid() -> void:
+	# Clear existing
+	for child in _tiles_grid.get_children():
+		child.queue_free()
+
+	# Floor tiles
+	var floor_texture := load(FLOOR_TILES_PATH) as Texture2D
+	if floor_texture != null:
+		var image := floor_texture.get_image()
+		if image != null:
+			var image_width: int = image.get_width()
+			var tile_count: int = int(floor(float(image_width) / float(TILE_SIZE)))
+			var usable_tile_count: int = int(max(tile_count - 1, 0))
+			_ensure_default_owned_tiles("floor", usable_tile_count)
+			for i in range(usable_tile_count):
+				var tile_image := Image.create(TILE_SIZE, TILE_SIZE, false, Image.FORMAT_RGBA8)
+				tile_image.blit_rect(image, Rect2i(i * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE), Vector2i(0, 0))
+				var tile_texture := ImageTexture.create_from_image(tile_image)
+				var item_name := "floor-tile-%d" % i
+				if not PLAYER_DATA_STORAGE.owns_item(item_name):
+					_add_item_entry(item_name, tile_texture, _tiles_grid)
+
+	# Wall tiles
+	var wall_texture := load(WALL_TILES_PATH) as Texture2D
+	if wall_texture != null:
+		var wimage := wall_texture.get_image()
+		if wimage != null:
+			var w_image_width: int = wimage.get_width()
+			var w_tile_count: int = int(floor(float(w_image_width) / float(TILE_SIZE)))
+			var w_usable_tile_count: int = int(max(w_tile_count - 1, 0))
+			_ensure_default_owned_tiles("wall", w_usable_tile_count)
+			for j in range(w_usable_tile_count):
+				var w_tile_image := Image.create(TILE_SIZE, WALL_TILE_HEIGHT, false, Image.FORMAT_RGBA8)
+				w_tile_image.blit_rect(wimage, Rect2i(j * TILE_SIZE, 0, TILE_SIZE, WALL_TILE_HEIGHT), Vector2i(0, 0))
+				var w_tile_texture := ImageTexture.create_from_image(w_tile_image)
+				var w_item_name := "wall-tile-%d" % j
+				if not PLAYER_DATA_STORAGE.owns_item(w_item_name):
+					_add_item_entry(w_item_name, w_tile_texture, _tiles_grid)
+
+
+func _ensure_default_owned_tiles(kind: String, usable_tile_count: int) -> void:
+	var defaults: int = int(min(3, usable_tile_count))
+	for i in range(defaults):
+		var owned_name := ("%s-tile-%%d" % kind) % i
+		if not PLAYER_DATA_STORAGE.owns_item(owned_name):
+			PLAYER_DATA_STORAGE.add_owned_item(owned_name)
 
 func _atlas(sheet: Texture2D, region: Rect2) -> Texture2D:
 	var at := AtlasTexture.new()
@@ -154,7 +215,9 @@ func _compose_bed_texture(sheet: Texture2D) -> Texture2D:
 	img.blit_rect(sheet_image, Rect2i(48, 64, 16, 24), Vector2i(32, 8))
 	return ImageTexture.create_from_image(img)
 
-func _add_item_entry(item_name: String, texture: Texture2D) -> void:
+func _add_item_entry(item_name: String, texture: Texture2D, target_grid: GridContainer = null) -> void:
+	if target_grid == null:
+		target_grid = _items_grid
 	# Visuals
 	var base_display_height := 25
 	var display_height: int = int(round(float(base_display_height) * PREVIEW_SCALE))
@@ -195,7 +258,7 @@ func _add_item_entry(item_name: String, texture: Texture2D) -> void:
 
 	item.add_child(preview)
 	item.add_child(label)
-	_items_grid.add_child(item)
+	target_grid.add_child(item)
 
 	# Interaction: select on click anywhere inside the item
 	item.gui_input.connect(func(event: InputEvent) -> void:
@@ -255,6 +318,10 @@ func _on_price_container_pressed() -> void:
 
 func _get_item_price(item_name: String) -> int:
 	# Deterministic mapping within 8..15
+	if item_name.begins_with("floor-tile-"):
+		return 4
+	if item_name.begins_with("wall-tile-"):
+		return 6
 	match item_name:
 		"lamp-sprite":
 			return 10
