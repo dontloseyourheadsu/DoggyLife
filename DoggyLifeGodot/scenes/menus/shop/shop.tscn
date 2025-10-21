@@ -73,6 +73,7 @@ theme_override_font_sizes/font_size = 30
 text = "SHOP"
 
 [node name="RoomItemsScrollContainer" type="ScrollContainer" parent="Container"]
+visible = false
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 0
 offset_left = 150.0
@@ -121,9 +122,9 @@ horizontal_scroll_mode = 0
 [node name="DogsGridContainer" type="GridContainer" parent="Container/DogsScrollContainer"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/h_separation = 4
+theme_override_constants/h_separation = 32
 theme_override_constants/v_separation = 4
-columns = 6
+columns = 3
 
 [node name="BackButton" type="TextureButton" parent="Container"]
 layout_mode = 0
