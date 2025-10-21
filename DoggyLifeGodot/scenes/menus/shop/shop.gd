@@ -24,8 +24,12 @@ enum Tab {
 @onready var _price_button: TextureButton = $Container/PriceContainer
 @onready var _price_label: Label = $Container/PriceContainer/PriceDisplay
 @onready var _coins_display: Node = $Container/CoinsContainerDisplay
+@onready var _price_item_name: Label = $Container/PriceItemName
 
 const PLAYER_DATA_STORAGE = preload("res://storage/player_data.gd")
+const ItemsTabLoader = preload("res://scenes/menus/shop/items_tab_loader.gd")
+const TilesTabLoader = preload("res://scenes/menus/shop/tiles_tab_loader.gd")
+const DogsTabLoader = preload("res://scenes/menus/shop/dogs_tab_loader.gd")
 
 const FLOOR_DIR := "res://sprites/decoration/floor"
 const WALL_DIR := "res://sprites/decoration/wall"
@@ -48,6 +52,7 @@ func _ready() -> void:
 	# Ensure the initial visibility reflects the default tab
 	_apply_tab_visibility()
 	_update_price_display(null)
+	_update_item_name_display("")
 	# Populate the items list initially
 	_populate_items_if_needed()
 
@@ -75,6 +80,7 @@ func _set_tab(tab: Tab) -> void:
 	if _current_tab == tab:
 		return
 	_current_tab = tab
+	_clear_selection()
 	_apply_tab_visibility()
 	if tab == Tab.ITEMS:
 		_populate_items_if_needed()
@@ -110,40 +116,15 @@ func _populate_items_grid() -> void:
 		child.queue_free()
 	_entry_nodes.clear()
 
-	# Load sheets
-	var floor_sheet_path := FLOOR_DIR.path_join("floor-sprites.png")
-	var wall_sheet_path := WALL_DIR.path_join("wall-sprites.png")
-	var floor_sheet: Texture2D = null
-	var wall_sheet: Texture2D = null
-	if ResourceLoader.exists(floor_sheet_path):
-		floor_sheet = load(floor_sheet_path)
-	if ResourceLoader.exists(wall_sheet_path):
-		wall_sheet = load(wall_sheet_path)
-
-	if floor_sheet == null and wall_sheet == null:
-		push_warning("No decoration spritesheets found for shop.")
-		return
-
-	# Define sellable entries (names align with room decoration identifiers)
-	var items: Array = []
-	if floor_sheet != null:
-		items.append({"name": "lamp-sprite", "type": "floor", "texture": _atlas(floor_sheet, Rect2(0, 0, 32, 32))})
-		items.append({"name": "shelf-sprite", "type": "floor", "texture": _atlas(floor_sheet, Rect2(0, 32, 32, 32))})
-		items.append({"name": "bed-sprite", "type": "floor", "texture": _compose_bed_texture(floor_sheet)})
-	if wall_sheet != null:
-		items.append({"name": "window-sprite", "type": "wall", "texture": _atlas(wall_sheet, Rect2(16, 0, 16, 32))})
-		items.append({"name": "bookshelf-sprite", "type": "wall", "texture": _atlas(wall_sheet, Rect2(16, 32, 16, 32))})
-		items.append({"name": "painting-sprite", "type": "wall", "texture": _atlas(wall_sheet, Rect2(16, 64, 16, 32))})
-
-	# Skip already owned items
-	for it in items:
-		var entry_name: String = it["name"]
-		if PLAYER_DATA_STORAGE.owns_item(entry_name):
-			continue
-		var tex: Texture2D = it["texture"]
-		if tex == null:
-			continue
-		_add_item_entry(entry_name, tex)
+	# Delegate population to loader
+	ItemsTabLoader.populate(
+		_items_grid,
+		PLAYER_DATA_STORAGE,
+		FLOOR_DIR,
+		WALL_DIR,
+		func(entry_name: String, tex: Texture2D) -> void:
+			_add_item_entry(entry_name, tex)
+	)
 
 func _populate_tiles_if_needed() -> void:
 	if _tiles_populated:
@@ -161,30 +142,16 @@ func _populate_dogs_grid() -> void:
 	# Clear existing
 	for child in _dogs_grid.get_children():
 		child.queue_free()
+	_entry_nodes.clear()
 
-	_ensure_default_owned_dog()
-
-	# Map item names to preview image paths
-	var dogs := [
-		{"name": "dog-samoyed", "path": "res://sprites/dogs/images/samoyed-dog.png"},
-		{"name": "dog-beagle", "path": "res://sprites/dogs/images/beagle-dog.png"},
-		{"name": "dog-shiba", "path": "res://sprites/dogs/images/shiba-dog.png"},
-		{"name": "dog-spaniel", "path": "res://sprites/dogs/images/spaniel-brown.png"},
-	]
-
-	for d in dogs:
-		var dname: String = d["name"]
-		if PLAYER_DATA_STORAGE.owns_item(dname):
-			continue
-		var tex_path: String = d["path"]
-		if not ResourceLoader.exists(tex_path):
-			continue
-		var tex := load(tex_path) as Texture2D
-		if tex == null:
-			continue
-		# Only show the first 32x32 frame (top-left) for each dog sprite
-		var dog_preview: Texture2D = _atlas(tex, Rect2(0, 0, TILE_SIZE, TILE_SIZE))
-		_add_item_entry(dname, dog_preview, _dogs_grid)
+	# Delegate population to loader
+	DogsTabLoader.populate(
+		_dogs_grid,
+		PLAYER_DATA_STORAGE,
+		TILE_SIZE,
+		func(entry_name: String, tex: Texture2D) -> void:
+			_add_item_entry(entry_name, tex, _dogs_grid)
+	)
 
 func _ensure_default_owned_dog() -> void:
 	var default_name := "dog-samoyed"
@@ -195,40 +162,19 @@ func _populate_tiles_grid() -> void:
 	# Clear existing
 	for child in _tiles_grid.get_children():
 		child.queue_free()
+	_entry_nodes.clear()
 
-	# Floor tiles
-	var floor_texture := load(FLOOR_TILES_PATH) as Texture2D
-	if floor_texture != null:
-		var image := floor_texture.get_image()
-		if image != null:
-			var image_width: int = image.get_width()
-			var tile_count: int = int(floor(float(image_width) / float(TILE_SIZE)))
-			var usable_tile_count: int = int(max(tile_count - 1, 0))
-			_ensure_default_owned_tiles("floor", usable_tile_count)
-			for i in range(usable_tile_count):
-				var tile_image := Image.create(TILE_SIZE, TILE_SIZE, false, Image.FORMAT_RGBA8)
-				tile_image.blit_rect(image, Rect2i(i * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE), Vector2i(0, 0))
-				var tile_texture := ImageTexture.create_from_image(tile_image)
-				var item_name := "floor-tile-%d" % i
-				if not PLAYER_DATA_STORAGE.owns_item(item_name):
-					_add_item_entry(item_name, tile_texture, _tiles_grid)
-
-	# Wall tiles
-	var wall_texture := load(WALL_TILES_PATH) as Texture2D
-	if wall_texture != null:
-		var wimage := wall_texture.get_image()
-		if wimage != null:
-			var w_image_width: int = wimage.get_width()
-			var w_tile_count: int = int(floor(float(w_image_width) / float(TILE_SIZE)))
-			var w_usable_tile_count: int = int(max(w_tile_count - 1, 0))
-			_ensure_default_owned_tiles("wall", w_usable_tile_count)
-			for j in range(w_usable_tile_count):
-				var w_tile_image := Image.create(TILE_SIZE, WALL_TILE_HEIGHT, false, Image.FORMAT_RGBA8)
-				w_tile_image.blit_rect(wimage, Rect2i(j * TILE_SIZE, 0, TILE_SIZE, WALL_TILE_HEIGHT), Vector2i(0, 0))
-				var w_tile_texture := ImageTexture.create_from_image(w_tile_image)
-				var w_item_name := "wall-tile-%d" % j
-				if not PLAYER_DATA_STORAGE.owns_item(w_item_name):
-					_add_item_entry(w_item_name, w_tile_texture, _tiles_grid)
+	# Delegate population to loader
+	TilesTabLoader.populate(
+		_tiles_grid,
+		PLAYER_DATA_STORAGE,
+		FLOOR_TILES_PATH,
+		WALL_TILES_PATH,
+		TILE_SIZE,
+		WALL_TILE_HEIGHT,
+		func(entry_name: String, tex: Texture2D) -> void:
+			_add_item_entry(entry_name, tex, _tiles_grid)
+	)
 
 
 func _ensure_default_owned_tiles(kind: String, usable_tile_count: int) -> void:
@@ -293,7 +239,8 @@ func _add_item_entry(item_name: String, texture: Texture2D, target_grid: GridCon
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var label := Label.new()
-	label.text = item_name.replace("-sprite", "").replace("_", " ").capitalize()
+	# Use unified display-name formatter so we never show the "sprite" suffix
+	label.text = _format_item_display_name(item_name)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.add_theme_font_size_override("font_size", int(round(6.0 * PREVIEW_SCALE)))
@@ -316,6 +263,7 @@ func _select_item(item_name: String, item_node: Control) -> void:
 	_selected_item_name = item_name
 	_selected_item_price = _get_item_price(item_name)
 	_update_price_display(_selected_item_price)
+	_update_item_name_display(item_name)
 	# Highlight selected
 	for k in _entry_nodes.keys():
 		var n: Control = _entry_nodes[k]
@@ -356,6 +304,7 @@ func _on_price_container_pressed() -> void:
 	_selected_item_name = ""
 	_selected_item_price = 0
 	_update_price_display(null)
+	_update_item_name_display("")
 	# Update coin HUD
 	if is_instance_valid(_coins_display) and _coins_display.has_method("refresh"):
 		_coins_display.refresh()
@@ -396,3 +345,32 @@ func _update_tab_button_states() -> void:
 	_items_btn.modulate = active if _current_tab == Tab.ITEMS else inactive
 	_dogs_btn.modulate = active if _current_tab == Tab.DOGS else inactive
 	_tiles_btn.modulate = active if _current_tab == Tab.TILES else inactive
+
+# --- Selection helpers ---
+func _clear_selection() -> void:
+	_selected_item_name = ""
+	_selected_item_price = 0
+	_update_price_display(null)
+	_update_item_name_display("")
+	# Reset any highlight
+	for k in _entry_nodes.keys():
+		var n: Control = _entry_nodes[k]
+		if is_instance_valid(n):
+			n.self_modulate = Color(1, 1, 1, 1)
+
+func _update_item_name_display(item_name: String) -> void:
+	if item_name == null or item_name == "":
+		_price_item_name.text = ""
+		return
+	_price_item_name.text = "%s:" % _format_item_display_name(item_name)
+
+func _format_item_display_name(raw_name: String) -> String:
+	var s := raw_name
+	# Strip common suffixes or words we don't want in the display
+	s = s.replace("-sprite", "")
+	s = s.replace(" sprite", "")
+	# Normalize separators to spaces
+	s = s.replace("_", " ").replace("-", " ")
+	# Trim and capitalize for user-facing label
+	s = s.strip_edges()
+	return s.capitalize()
