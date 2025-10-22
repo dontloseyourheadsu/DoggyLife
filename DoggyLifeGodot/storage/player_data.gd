@@ -14,6 +14,16 @@ static func load_player_data() -> PlayerData:
 		return pd
 	var fresh := PlayerData.new()
 	fresh.owned_items = []
+	# Seed default ownership on fresh profile
+	# Dogs: default samoyed
+	fresh.owned_items.append("dog-samoyed")
+	# Tiles: first 3 for floor and wall
+	for i in range(3):
+		fresh.owned_items.append("floor-tile-%d" % i)
+		fresh.owned_items.append("wall-tile-%d" % i)
+	# Items: none by default
+	# Persist immediately so subsequent loads use the same defaults
+	PlayerData.save_player_data(fresh)
 	return fresh
 
 static func save_player_data(player_data: PlayerData) -> void:
