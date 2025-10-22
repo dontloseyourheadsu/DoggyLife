@@ -17,6 +17,11 @@ var current_selected_wall_tile: int = -1
 var floor_tile_buttons: Array[TextureButton] = []
 var wall_tile_buttons: Array[TextureButton] = []
 const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
+const PlayerData = preload("res://storage/player_data.gd")
+
+# Map original tile indices -> created buttons (after filtering by ownership)
+var _floor_button_by_index: Dictionary = {}
+var _wall_button_by_index: Dictionary = {}
 
 func _ready():
 	setup_containers()
@@ -27,9 +32,18 @@ func _ready():
 	var saved_floor_idx := TileSelectionStore.get_selected_floor_tile_index(-1)
 	if saved_floor_idx >= 0:
 		_on_tile_button_pressed(saved_floor_idx)
+	# If nothing selected (e.g., saved index not owned), select first available
+	if current_selected_floor_tile < 0 and _floor_button_by_index.size() > 0:
+		var keys := _floor_button_by_index.keys()
+		keys.sort()
+		_on_tile_button_pressed(keys[0])
 	var saved_wall_idx := TileSelectionStore.get_selected_wall_tile_index(-1)
 	if saved_wall_idx >= 0:
 		_on_wall_tile_button_pressed(saved_wall_idx)
+	if current_selected_wall_tile < 0 and _wall_button_by_index.size() > 0:
+		var wkeys := _wall_button_by_index.keys()
+		wkeys.sort()
+		_on_wall_tile_button_pressed(wkeys[0])
 
 	# Connect back button
 	if back_button:
@@ -60,9 +74,14 @@ func load_floor_tiles_to_grid():
 	var usable_tile_count = max(tile_count - 1, 0)
 	
 	clear_floor_tile_buttons()
+	_floor_button_by_index.clear()
 	
 	# Extract each tile and add to GridContainer
 	for i in range(usable_tile_count):
+		# Only show if owned
+		var owned_name := "floor-tile-%d" % i
+		if not PlayerData.owns_item(owned_name):
+			continue
 		# Calculate tile position
 		var tile_x = i * TILE_SIZE
 		var tile_y = 0 # Since it's a horizontal strip
@@ -77,7 +96,7 @@ func load_floor_tiles_to_grid():
 		var tile_texture = ImageTexture.new()
 		tile_texture.set_image(tile_image)
 		tile_texture.set_size_override(Vector2(32, 32))
-		
+
 		# Create TextureButton for this tile
 		var tile_button = TextureButton.new()
 		tile_button.texture_normal = tile_texture
@@ -85,13 +104,14 @@ func load_floor_tiles_to_grid():
 		# Make sure the button can receive input
 		tile_button.mouse_filter = Control.MOUSE_FILTER_PASS
 		tile_button.focus_mode = Control.FOCUS_ALL
-		
-		# Connect the button signal
+		# Store original index on the node
+		tile_button.set_meta("tile_index", i)
+		# Connect the button signal with original index
 		tile_button.pressed.connect(_on_tile_button_pressed.bind(i))
-		
 		# Add to grid and store reference
 		floor_grid_container.add_child(tile_button)
 		floor_tile_buttons.append(tile_button)
+		_floor_button_by_index[i] = tile_button
 
 func clear_floor_tile_buttons():
 	for button in floor_tile_buttons:
@@ -112,7 +132,11 @@ func load_wall_tiles_to_grid():
 	# Ignore last empty tile
 	var usable_tile_count = max(tile_count - 1, 0)
 	clear_wall_tile_buttons()
+	_wall_button_by_index.clear()
 	for i in range(usable_tile_count):
+		var owned_name := "wall-tile-%d" % i
+		if not PlayerData.owns_item(owned_name):
+			continue
 		var tile_x = i * TILE_SIZE
 		var tile_image = Image.create(TILE_SIZE, WALL_TILE_HEIGHT, false, Image.FORMAT_RGBA8)
 		tile_image.blit_rect(image, Rect2i(tile_x, 0, TILE_SIZE, WALL_TILE_HEIGHT), Vector2i(0, 0))
@@ -124,9 +148,11 @@ func load_wall_tiles_to_grid():
 		tile_button.custom_minimum_size = Vector2(TILE_SIZE, WALL_TILE_HEIGHT)
 		tile_button.mouse_filter = Control.MOUSE_FILTER_PASS
 		tile_button.focus_mode = Control.FOCUS_ALL
+		tile_button.set_meta("tile_index", i)
 		tile_button.pressed.connect(_on_wall_tile_button_pressed.bind(i))
 		wall_grid_container.add_child(tile_button)
 		wall_tile_buttons.append(tile_button)
+		_wall_button_by_index[i] = tile_button
 
 func clear_wall_tile_buttons():
 	for button in wall_tile_buttons:
@@ -137,21 +163,28 @@ func clear_wall_tile_buttons():
 		child.queue_free()
 
 func _on_tile_button_pressed(tile_index: int):
-	# Guard in case an invalid index is somehow passed (e.g., previously saved selection referencing now-ignored empty tile)
-	if tile_index < 0 or tile_index >= floor_tile_buttons.size():
-		return
-	update_floor_selection_visual(tile_index)
-	var selected_texture = floor_tile_buttons[tile_index].texture_normal
+	# tile_index is the original tile ordinal in the spritesheet.
+	if not _floor_button_by_index.has(tile_index):
+		return # Not owned / not present
+	var button: TextureButton = _floor_button_by_index[tile_index]
+	# Update visuals: highlight only this button
+	for i in range(floor_tile_buttons.size()):
+		var b: TextureButton = floor_tile_buttons[i]
+		b.modulate = Color(1.2, 1.2, 1.2) if b == button else Color.WHITE
+	var selected_texture = button.texture_normal
 	_set_display_texture(floor_tile_display, selected_texture, "Floor")
 	current_selected_floor_tile = tile_index
 	# Persist selection to scene store
 	TileSelectionStore.set_selected_floor_tile_index(tile_index)
 
 func _on_wall_tile_button_pressed(tile_index: int):
-	if tile_index < 0 or tile_index >= wall_tile_buttons.size():
+	if not _wall_button_by_index.has(tile_index):
 		return
-	update_wall_selection_visual(tile_index)
-	var selected_texture = wall_tile_buttons[tile_index].texture_normal
+	var button: TextureButton = _wall_button_by_index[tile_index]
+	for i in range(wall_tile_buttons.size()):
+		var b: TextureButton = wall_tile_buttons[i]
+		b.modulate = Color(1.2, 1.2, 1.2) if b == button else Color.WHITE
+	var selected_texture = button.texture_normal
 	_set_display_texture(wall_tile_display, selected_texture, "Wall")
 	current_selected_wall_tile = tile_index
 	# Persist selection
@@ -174,13 +207,15 @@ func get_selected_wall_tile_index() -> int:
 	return current_selected_wall_tile
 
 func get_selected_floor_tile_texture() -> Texture2D:
-	if current_selected_floor_tile >= 0 and current_selected_floor_tile < floor_tile_buttons.size():
-		return floor_tile_buttons[current_selected_floor_tile].texture_normal
+	if current_selected_floor_tile >= 0 and _floor_button_by_index.has(current_selected_floor_tile):
+		var btn: TextureButton = _floor_button_by_index[current_selected_floor_tile]
+		return btn.texture_normal
 	return null
 
 func get_selected_wall_tile_texture() -> Texture2D:
-	if current_selected_wall_tile >= 0 and current_selected_wall_tile < wall_tile_buttons.size():
-		return wall_tile_buttons[current_selected_wall_tile].texture_normal
+	if current_selected_wall_tile >= 0 and _wall_button_by_index.has(current_selected_wall_tile):
+		var btn: TextureButton = _wall_button_by_index[current_selected_wall_tile]
+		return btn.texture_normal
 	return null
 
 func _on_back_button_pressed() -> void:

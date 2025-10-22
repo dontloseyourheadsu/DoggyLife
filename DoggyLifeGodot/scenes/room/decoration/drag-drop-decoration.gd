@@ -5,6 +5,7 @@ extends Control
 
 const FLOOR_DIR := "res://sprites/decoration/floor"
 const WALL_DIR := "res://sprites/decoration/wall"
+const PlayerData = preload("res://storage/player_data.gd")
 
 var _entries: Dictionary = {}
 
@@ -40,13 +41,15 @@ func populate_grid(grid: GridContainer, dir_path: String) -> void:
 		var lamp := AtlasTexture.new()
 		lamp.atlas = sheet
 		lamp.region = Rect2(0, 0, 32, 32)
-		add_item_entry(grid, "lamp-sprite", lamp, is_floor)
+		if PlayerData.owns_item("lamp-sprite"):
+			add_item_entry(grid, "lamp-sprite", lamp, is_floor)
 		
 		# Shelf (32x32) at x=0, y=32
 		var shelf := AtlasTexture.new()
 		shelf.atlas = sheet
 		shelf.region = Rect2(0, 32, 32, 32)
-		add_item_entry(grid, "shelf-sprite", shelf, is_floor)
+		if PlayerData.owns_item("shelf-sprite"):
+			add_item_entry(grid, "shelf-sprite", shelf, is_floor)
 		
 		# Bed preview: compose with cropping to emulate (-16, +8) displacement without changing final size
 		# 1) First 32x32 at (0,64) drawn at (0,0)
@@ -71,7 +74,8 @@ func populate_grid(grid: GridContainer, dir_path: String) -> void:
 			bed.atlas = sheet
 			bed.region = Rect2(0, 64, 48, 32)
 			composed_bed_texture = bed
-		add_item_entry(grid, "bed-sprite", composed_bed_texture, is_floor)
+		if PlayerData.owns_item("bed-sprite"):
+			add_item_entry(grid, "bed-sprite", composed_bed_texture, is_floor)
 	else:
 		# Wall: 64x96, first version only, all 32x32
 		# Window at x=0, y=0
@@ -79,17 +83,20 @@ func populate_grid(grid: GridContainer, dir_path: String) -> void:
 		var window := AtlasTexture.new()
 		window.atlas = sheet
 		window.region = Rect2(16, 0, 16, 32)
-		add_item_entry(grid, "window-sprite", window, is_floor)
+		if PlayerData.owns_item("window-sprite"):
+			add_item_entry(grid, "window-sprite", window, is_floor)
 
 		var bookshelf := AtlasTexture.new()
 		bookshelf.atlas = sheet
 		bookshelf.region = Rect2(16, 32, 16, 32)
-		add_item_entry(grid, "bookshelf-sprite", bookshelf, is_floor)
+		if PlayerData.owns_item("bookshelf-sprite"):
+			add_item_entry(grid, "bookshelf-sprite", bookshelf, is_floor)
 
 		var painting := AtlasTexture.new()
 		painting.atlas = sheet
 		painting.region = Rect2(16, 64, 16, 32)
-		add_item_entry(grid, "painting-sprite", painting, is_floor)
+		if PlayerData.owns_item("painting-sprite"):
+			add_item_entry(grid, "painting-sprite", painting, is_floor)
 
 func add_item_entry(grid: GridContainer, base: String, texture: Texture2D, is_floor: bool) -> void:
 	var display_name := base.replace("-sprite", "").replace("_", " ")
