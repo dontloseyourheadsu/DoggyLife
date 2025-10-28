@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://c2g43srrg4k70" path="res://sprites/decoration/floor/floor-sprites.png" id="6_jp1e5"]
 [ext_resource type="Texture2D" uid="uid://4wxa2b4ntjwr" path="res://scenes/room/tiles/wall-tiles.png" id="6_lbx1e"]
 [ext_resource type="Script" uid="uid://bv46cnrqklwkm" path="res://scenes/room/tiles/wall_layer.gd" id="7_68b7a"]
+[ext_resource type="Script" uid="uid://diisbrx77lecy" path="res://scenes/room/tiles/floor_items_layer.gd" id="8_asort"]
 [ext_resource type="Texture2D" uid="uid://b7v0qec3gyhm6" path="res://sprites/decoration/wall/wall-sprites.png" id="9_7ep0u"]
 [ext_resource type="Script" uid="uid://brcsmpvmsspgu" path="res://scenes/room/decoration/drag-drop-decoration.gd" id="9_ip1yl"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="12_v5g04"]
@@ -22,8 +23,6 @@
 [ext_resource type="Texture2D" uid="uid://ivmpl03hvhea" path="res://ui/buttons/button-base-check.png" id="18_xxq4d"]
 [ext_resource type="Texture2D" uid="uid://b4jdyfn36bvpa" path="res://ui/buttons/button-switch.png" id="20_fuscm"]
 [ext_resource type="Texture2D" uid="uid://b0j6j3njf0pxv" path="res://ui/buttons/button-delete.png" id="21_fuscm"]
-
-[ext_resource type="Script" path="res://scenes/room/tiles/floor_items_layer.gd" id="8_asort"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -108,29 +107,46 @@ texture = ExtResource("6_jp1e5")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 8)
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -8, -6.182643, 0, 0.44515038, 6.5288715, 5.8858776, 0.395689)
 1:0/0 = 0
 1:0/0/texture_origin = Vector2i(0, 8)
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -8, -6.182643, 0, 0.44515038, 6.5288715, 5.8858776, 0.395689)
 2:0/0 = 0
 2:0/0/texture_origin = Vector2i(0, 8)
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -8, -6.182643, 0, 0.44515038, 6.5288715, 5.8858776, 0.395689)
 3:0/0 = 0
 3:0/0/texture_origin = Vector2i(0, 8)
+3:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -8, -6.182643, 0, 0.44515038, 6.5288715, 5.8858776, 0.395689)
 0:1/0 = 0
+0:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.96385574, -15.246483, -14.788883, -8.012707, -14.12102, -0.93948984, 1.5332966, 6.2321033, 14.398003, -0.8009987, 14.887806, -7.6170177)
 1:1/0 = 0
+1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.96385574, -15.246483, -14.788883, -8.012707, -14.12102, -0.93948984, 1.5332966, 6.2321033, 14.398003, -0.8009987, 14.887806, -7.6170177)
 2:1/0 = 0
+2:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.96385574, -15.246483, -14.788883, -8.012707, -14.12102, -0.93948984, 1.5332966, 6.2321033, 14.398003, -0.8009987, 14.887806, -7.6170177)
 3:1/0 = 0
+3:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.96385574, -15.246483, -14.788883, -8.012707, -14.12102, -0.93948984, 1.5332966, 6.2321033, 14.398003, -0.8009987, 14.887806, -7.6170177)
 0:2/0 = 0
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-1.3354511, -16.124334, -15.580261, -8.60624, -16, 0, 15.184574, 14.73942, 16.272717, -3.956892)
 1:2/0 = 0
+1:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.34622765, -11.079298, 0, 8, 15.189383, 0.40530872, 14.986729, -3.561203)
 2:2/0 = 0
+2:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.34622765, -11.079298, 0, 8, -15.0856495, 1.582756, -15.97595, -3.561203)
 3:2/0 = 0
+3:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(15.778107, -10.4857645, 16, 0, -15.97595, 15.530802, -16.866251, -3.0665913, 1.8400917, -14.895988)
 4:2/0 = 0
+4:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-1.0386848, -10.683609, 16.37164, -2.4730587, 16.074875, 16.124334, -16, 0, -15.778107, -4.5504265)
 5:2/0 = 0
+5:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0.64299583, -8.9030075, 0, 8, 16.074875, 0.9892216, 15.283497, -8.5073185)
 6:2/0 = 0
+6:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -8, 0, 8, -16.272718, 1.2859898, -15.679184, -8.705163)
 7:2/0 = 0
+7:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(14.986729, -4.5504265, 16, 0, -15.97595, 15.530802, -16.866251, -3.0665913, 2.190586, -10.690063)
 
 [sub_resource type="TileSet" id="TileSet_1mlw3"]
 tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(32, 16)
+physics_layer_0/collision_layer = 1
 sources/1 = SubResource("TileSetAtlasSource_jp1e5")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wid0f"]
@@ -264,8 +280,8 @@ tile_set = SubResource("TileSet_cy34l")
 script = ExtResource("7_68b7a")
 
 [node name="WallItemsLayer" type="TileMapLayer" parent="Camera2D"]
-y_sort_enabled = true
 z_index = -50
+y_sort_enabled = true
 tile_set = SubResource("TileSet_e4auk")
 
 [node name="FloorMouseDetector" type="TileMapLayer" parent="Camera2D"]
