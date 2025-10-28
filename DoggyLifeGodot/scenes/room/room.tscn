@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=35 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://sprites/dogs/dog.tscn" id="2_j33j0"]
@@ -22,6 +22,8 @@
 [ext_resource type="Texture2D" uid="uid://ivmpl03hvhea" path="res://ui/buttons/button-base-check.png" id="18_xxq4d"]
 [ext_resource type="Texture2D" uid="uid://b4jdyfn36bvpa" path="res://ui/buttons/button-switch.png" id="20_fuscm"]
 [ext_resource type="Texture2D" uid="uid://b0j6j3njf0pxv" path="res://ui/buttons/button-delete.png" id="21_fuscm"]
+
+[ext_resource type="Script" path="res://scenes/room/tiles/floor_items_layer.gd" id="8_asort"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -252,6 +254,7 @@ z_index = 3
 y_sort_enabled = true
 position = Vector2(0, -9)
 tile_set = SubResource("TileSet_1mlw3")
+script = ExtResource("8_asort")
 
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
@@ -262,6 +265,7 @@ script = ExtResource("7_68b7a")
 
 [node name="WallItemsLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
+z_index = -50
 tile_set = SubResource("TileSet_e4auk")
 
 [node name="FloorMouseDetector" type="TileMapLayer" parent="Camera2D"]
