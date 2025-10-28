@@ -31,6 +31,11 @@ func _ready():
 	# Ensure random values are different each run
 	randomize()
 
+	# Place the dog in the high z band so it never goes behind the base floor.
+	# Use absolute z to decouple from parent TileMap's z.
+	z_as_relative = false
+	z_index = 1000
+
 	# Randomly choose a dog SpriteFrames set on load
 	_apply_random_dog_spriteframes()
 
@@ -47,6 +52,9 @@ func _ready():
 	
 	# Start with a random sitting animation
 	_start_sitting()
+
+	# Initial z-order update for floor items relative to the dog
+	_update_floor_items_z()
 
 func _apply_random_dog_spriteframes() -> void:
 	if not animated_dog_sprite:
@@ -72,6 +80,8 @@ func _physics_process(_delta):
 	if is_moving:
 		velocity = current_direction * movement_speed
 		move_and_slide()
+		# Update z-order of floor items when the dog moves
+		_update_floor_items_z()
 
 func _start_sitting():
 	current_state = DogState.SITTING
@@ -127,3 +137,19 @@ func _on_animation_timer_timeout():
 	# Animation has played long enough, we can change state
 	# The movement timer will handle the actual state change
 	pass
+
+# Inform the FloorItemsLayer to update per-tile z-indexing relative to the dog
+func _update_floor_items_z() -> void:
+	var camera2d := get_parent() # FloorLayer
+	if camera2d and camera2d.get_parent():
+		var floor_items_layer := camera2d.get_parent().get_node_or_null("FloorItemsLayer")
+		if floor_items_layer and floor_items_layer.has_method("update_z_order_relative_to"):
+			# Pass global position adjusted by half the sprite's height (approx feet)
+			var adjusted_pos := global_position
+			if animated_dog_sprite and animated_dog_sprite.sprite_frames:
+				var anim_name := animated_dog_sprite.animation
+				var frame := animated_dog_sprite.frame
+				var tex: Texture2D = animated_dog_sprite.sprite_frames.get_frame_texture(anim_name, frame)
+				if tex:
+					adjusted_pos += Vector2(0, tex.get_size().y * 2)
+			floor_items_layer.update_z_order_relative_to(adjusted_pos)
