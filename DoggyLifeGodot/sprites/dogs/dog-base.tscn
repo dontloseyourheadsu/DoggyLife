@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://cce6tq2ex4ujp"]
+
+[ext_resource type="SpriteFrames" uid="uid://drymo5cd0gf1j" path="res://sprites/dogs/spriteframes/samoyed-dog.tres" id="2_t3mvc"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_6x52x"]
+radius = 7.071068
+
+[node name="Dog" type="CharacterBody2D"]
+z_index = 3
+texture_filter = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-1, 6)
+scale = Vector2(-1, 0.8)
+shape = SubResource("CircleShape2D_6x52x")
+
+[node name="DogAnimations" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_t3mvc")
+animation = &"scratch-right"

@@ -1,7 +1,7 @@
 [gd_scene load_steps=35 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
-[ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://sprites/dogs/dog.tscn" id="2_j33j0"]
+[ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/room-dog.tscn" id="2_j33j0"]
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://scenes/room/tiles/floor_layer.gd" id="2_tku2a"]
 [ext_resource type="Texture2D" uid="uid://fhwsqqgw1t27" path="res://scenes/room/tiles/floor-tiles.png" id="3_lbx1e"]
 [ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="5_fntg6"]
