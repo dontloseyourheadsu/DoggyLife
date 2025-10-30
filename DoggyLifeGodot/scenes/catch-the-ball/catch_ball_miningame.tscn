@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=3 uid="uid://b3fnmffpoh008"]
+
+[ext_resource type="PackedScene" uid="uid://cv4hyjlxp00nu" path="res://scenes/catch-the-ball/dog-catch.tscn" id="1_xkf2s"]
+[ext_resource type="Script" uid="uid://celcfq1m1h5ng" path="res://scenes/catch-the-ball/dog_catch.gd" id="2_v0rxd"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_14p0o"]
+load_path = "res://.godot/imported/park-walk.png-f1ed9fbde0dc8713b1b8f7b319984cb3.ctex"
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_xkf2s"]
+distance = -250.0
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_v0rxd"]
+normal = Vector2(1, 0)
+distance = -640.0
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_grvyc"]
+normal = Vector2(-1, 0)
+distance = -640.0
+
+[node name="CatchBallMiningame" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="TextureRect" type="TextureRect" parent="Camera2D"]
+offset_left = -640.0
+offset_top = -359.0
+offset_right = 640.0
+offset_bottom = 360.0
+texture = SubResource("CompressedTexture2D_14p0o")
+
+[node name="Dog" parent="Camera2D" instance=ExtResource("1_xkf2s")]
+position = Vector2(-1, 122)
+scale = Vector2(4, 4)
+script = ExtResource("2_v0rxd")
+
+[node name="GroundLimit" type="StaticBody2D" parent="Camera2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/GroundLimit"]
+shape = SubResource("WorldBoundaryShape2D_xkf2s")
+
+[node name="LeftWallLimit" type="StaticBody2D" parent="Camera2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/LeftWallLimit"]
+shape = SubResource("WorldBoundaryShape2D_v0rxd")
+
+[node name="RightWallLimit" type="StaticBody2D" parent="Camera2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/RightWallLimit"]
+shape = SubResource("WorldBoundaryShape2D_grvyc")
