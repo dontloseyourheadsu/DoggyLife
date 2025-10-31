@@ -25,6 +25,17 @@ var available_scratch_animations = ["scratch-left", "scratch-right"]
 var scratch_count = 0
 const MAX_SCRATCHES = 2
 
+# Commanded walking state
+var _command_active: bool = false
+var _command_target: Vector2 = Vector2.INF
+const _ARRIVAL_EPS := 6.0
+const _DIR_X_THRESHOLD := 0.1
+
+# Signals for command progress
+signal go_to_started(target_position: Vector2)
+signal go_to_arrived(target_position: Vector2)
+signal go_to_canceled(target_position: Vector2)
+
 # Mapping from dog name to SpriteFrames path
 const DOG_SPRITEFRAMES_MAP: Dictionary = {
 	"dog-samoyed": "res://sprites/dogs/spriteframes/samoyed-dog.tres",
@@ -96,7 +107,50 @@ func play_anim(anim_name: String) -> void:
 		push_warning("Dog animation not found or sprite missing: %s" % anim_name)
 
 func _physics_process(_delta):
-	if is_moving:
+	if _command_active:
+		var to_target := _command_target - global_position
+		if to_target.length() <= _ARRIVAL_EPS:
+			# Arrived
+			_command_active = false
+			is_moving = false
+			velocity = Vector2.ZERO
+			_start_sitting()
+			# Resume autonomous timer cycle after arriving
+			if movement_timer:
+				movement_timer.wait_time = randf_range(0.8, 3.0)
+				movement_timer.start()
+			go_to_arrived.emit(_command_target)
+		else:
+			# Move diagonally if needed but choose animation with priority:
+			# - If there is any X movement (abs > threshold), use left/right
+			# - Only use front/back when X component is ~0
+			var dir := to_target.normalized()
+			is_moving = true
+			current_direction = dir
+			velocity = dir * movement_speed
+
+			if abs(dir.x) > _DIR_X_THRESHOLD:
+				if dir.x < 0:
+					play_anim("walk-left")
+				else:
+					play_anim("walk-right")
+			else:
+				if dir.y < 0:
+					play_anim("walk-back")
+				else:
+					play_anim("walk-front")
+
+			move_and_slide()
+
+			# If we hit something, cancel the command and handle collision gracefully
+			if get_slide_collision_count() > 0:
+				_command_active = false
+				go_to_canceled.emit(_command_target)
+				_handle_collision()
+
+			# Update z-order of floor items when the dog moves
+			_update_floor_items_z()
+	elif is_moving:
 		velocity = current_direction * movement_speed
 		move_and_slide()
 		
@@ -238,6 +292,10 @@ func _on_movement_timer_timeout():
 	# 45% sit, 50% walk, 5% scratch (reduced scratch frequency)
 	var action_choice = randi() % 100
 
+	# Ignore random decisions while an explicit command is active
+	if _command_active:
+		return
+
 	if action_choice < 45:
 		_start_sitting()
 	elif action_choice < 95:
@@ -269,3 +327,23 @@ func _update_floor_items_z() -> void:
 				if tex:
 					adjusted_pos += Vector2(0, tex.get_size().y * 2)
 			floor_items_layer.update_z_order_relative_to(adjusted_pos)
+
+# =============== Public API ===============
+func go_to_global_position(target: Vector2) -> void:
+	"""Command the dog to walk towards the given global position.
+	Suspends random wandering until the command completes or collides.
+	"""
+	_command_target = target
+	_command_active = true
+	current_state = DogState.WALKING
+	is_moving = true
+	# Pause autonomous timers during command
+	if movement_timer:
+		movement_timer.stop()
+	if animation_timer:
+		animation_timer.stop()
+	go_to_started.emit(target)
+
+func cancel_command() -> void:
+	_command_active = false
+	_command_target = Vector2.INF

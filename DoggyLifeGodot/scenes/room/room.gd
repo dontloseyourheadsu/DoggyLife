@@ -24,8 +24,9 @@ extends Node2D
 @onready var wall_btn_check: BaseButton = $Camera2D/WallItemsControls/CheckButton
 @onready var wall_btn_switch: BaseButton = $Camera2D/WallItemsControls/SwitchButton
 @onready var wall_btn_delete: BaseButton = $Camera2D/WallItemsControls/DeleteButton
+@onready var room_dog: Node = get_node("Camera2D/FloorLayer/White-dog")
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
-const TileSelectionStore = preload("res://scenes/room/tiles/tile_selection_store.gd")
+# Use global class_name TileSelectionStore (defined in tile_selection_store.gd)
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
 
@@ -70,6 +71,10 @@ var _marked_tile_coords_secondary: Vector2i = Vector2i(2147483647, 2147483647)
 var _dragging_floor_item: bool = false
 var _debug_floor_tile_overlays: Array[Polygon2D] = []
 var _marked_wall_tile_coords: Vector2i = Vector2i(2147483647, 2147483647)
+
+# Destination marker for dog
+var _dog_dest_overlay: Polygon2D = null
+var _dog_dest_coords: Vector2i = Vector2i(2147483647, 2147483647)
 
 # Tracking currently edited floor item (only after it has been placed)
 var _editing_active: bool = false
@@ -151,6 +156,13 @@ func _ready():
 
 	# Restore any previously placed items from persistent store
 	_restore_persisted_items()
+
+	# Connect dog go-to signals to clear destination marker
+	if is_instance_valid(room_dog):
+		if room_dog.has_signal("go_to_arrived"):
+			room_dog.connect("go_to_arrived", Callable(self, "_on_dog_go_to_end"))
+		if room_dog.has_signal("go_to_canceled"):
+			room_dog.connect("go_to_canceled", Callable(self, "_on_dog_go_to_end"))
 
 func _on_pause_button_pressed() -> void:
 	# Load settings scene
@@ -389,6 +401,10 @@ func _input(event: InputEvent) -> void:
 					var h2 := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(preview.get_height())
 					selected_sprite.position = get_global_mouse_position() - Vector2(w2 * 0.85, h2 * 0.85)
 
+		# If not dragging or editing anything, interpret click as a dog move command
+		if not _mouse_press_began_in_drag_area and not _editing_active and not _wall_editing_active:
+			_command_dog_to_mouse(event.position)
+
 	# Place item exactly when the left mouse button is released anywhere
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and not event.is_echo():
 		if _mouse_press_began_in_drag_area and _dragging_floor_item and is_instance_valid(floor_mouse_detector):
@@ -430,6 +446,68 @@ func _input(event: InputEvent) -> void:
 			_clear_selected_sprite()
 			_remove_marked_tile_overlay()
 			_clear_marked_wall_tile()
+
+## Command dog helpers
+func _command_dog_to_mouse(_screen_pos: Vector2) -> void:
+	if not (is_instance_valid(floor_layer) and is_instance_valid(room_dog)):
+		return
+	# Convert global mouse -> floor local -> tile coords
+	var local_in_floor := floor_layer.to_local(get_global_mouse_position())
+	var coords: Vector2i = floor_layer.local_to_map(local_in_floor)
+
+	# Validate coords: must be used and not a delimiter
+	var used: Array[Vector2i] = floor_layer.get_used_cells()
+	var is_valid := (coords in used) and floor_layer.get_cell_atlas_coords(coords) != DELIMITER_ATLAS_COORDINATES
+	if not is_valid:
+		var nearest := _find_closest_valid_floor_tile(coords)
+		if nearest.x == 2147483647:
+			return
+		coords = nearest
+
+	# Compute tile center in global space
+	var center_local := floor_layer.map_to_local(coords)
+	var target_global := floor_layer.to_global(center_local)
+
+	# Ask the dog to go there if it exposes the method
+	if room_dog and room_dog.has_method("go_to_global_position"):
+		# Mark destination on the floor overlay layer
+		_set_dog_destination_marker(coords)
+		room_dog.go_to_global_position(target_global)
+
+func _set_dog_destination_marker(tile_coords: Vector2i) -> void:
+	_clear_dog_destination_marker()
+	var poly := _create_tile_overlay(tile_coords, Color(0.2, 0.6, 1.0, 0.45))
+	if poly == null:
+		return
+	_dog_dest_overlay = poly
+	_dog_dest_coords = tile_coords
+	_dog_dest_overlay.z_index = 200
+
+func _clear_dog_destination_marker() -> void:
+	if _dog_dest_overlay and is_instance_valid(_dog_dest_overlay):
+		_dog_dest_overlay.queue_free()
+	_dog_dest_overlay = null
+	_dog_dest_coords = Vector2i(2147483647, 2147483647)
+
+func _on_dog_go_to_end(_pos: Vector2) -> void:
+	_clear_dog_destination_marker()
+
+func _find_closest_valid_floor_tile(target: Vector2i) -> Vector2i:
+	if not is_instance_valid(floor_layer):
+		return _SENTINEL
+	var used: Array[Vector2i] = floor_layer.get_used_cells()
+	var best := _SENTINEL
+	var best_d2 := INF
+	for c in used:
+		if floor_layer.get_cell_source_id(c) == -1:
+			continue
+		if floor_layer.get_cell_atlas_coords(c) == DELIMITER_ATLAS_COORDINATES:
+			continue
+		var d2 := float((c.x - target.x) * (c.x - target.x) + (c.y - target.y) * (c.y - target.y))
+		if d2 < best_d2:
+			best_d2 = d2
+			best = c
+	return best
 
 ## Helper to create a diamond overlay aligned with isometric floor and return it
 func _create_tile_overlay(tile_coords: Vector2i, color: Color) -> Polygon2D:
@@ -1020,8 +1098,8 @@ func _restore_persisted_items() -> void:
 			if not rec.has("primary") or not rec.has("rotation"):
 				continue
 			var primary: Vector2i = rec["primary"]
-			var rotation: int = int(rec["rotation"])
-			var ok := _place_item_with_rotation_at(item_name, primary, rotation)
+			var rot_idx: int = int(rec["rotation"]) # avoid shadowing Node2D.rotation
+			var ok := _place_item_with_rotation_at(item_name, primary, rot_idx)
 			if ok:
 				_placed_items[item_name] = true
 				_update_drag_ui_used_state(item_name, true)
