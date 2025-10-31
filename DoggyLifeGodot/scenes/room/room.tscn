@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=36 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/room-dog.tscn" id="2_j33j0"]
@@ -23,6 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://ivmpl03hvhea" path="res://ui/buttons/button-base-check.png" id="18_xxq4d"]
 [ext_resource type="Texture2D" uid="uid://b4jdyfn36bvpa" path="res://ui/buttons/button-switch.png" id="20_fuscm"]
 [ext_resource type="Texture2D" uid="uid://b0j6j3njf0pxv" path="res://ui/buttons/button-delete.png" id="21_fuscm"]
+[ext_resource type="Texture2D" uid="uid://d3hbu5e0udebi" path="res://ui/buttons/button-play.png" id="24_26thi"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -203,17 +204,17 @@ sources/0 = SubResource("TileSetAtlasSource_wid0f")
 texture = ExtResource("9_7ep0u")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 16)
+0:0/0/texture_origin = Vector2i(0, 4)
 1:0/0 = 0
-1:0/0/texture_origin = Vector2i(0, 16)
+1:0/0/texture_origin = Vector2i(0, 4)
 0:1/0 = 0
-0:1/0/texture_origin = Vector2i(0, 16)
+0:1/0/texture_origin = Vector2i(0, 4)
 1:1/0 = 0
-1:1/0/texture_origin = Vector2i(0, 16)
+1:1/0/texture_origin = Vector2i(0, 4)
 0:2/0 = 0
-0:2/0/texture_origin = Vector2i(0, 16)
+0:2/0/texture_origin = Vector2i(0, 4)
 1:2/0 = 0
-1:2/0/texture_origin = Vector2i(0, 16)
+1:2/0/texture_origin = Vector2i(0, 4)
 
 [sub_resource type="TileSet" id="TileSet_e4auk"]
 tile_shape = 1
@@ -252,7 +253,7 @@ stretch_mode = 1
 z_index = 2
 y_sort_enabled = true
 position = Vector2(0, -9)
-tile_map_data = PackedByteArray("AAD+/wAAAgACAAAAAAD+////AgACAAAAAAD/////AgACAAAAAAAAAAAAAgACAAAAAAD//wEAAgACAAAAAAD//wIAAgACAAAAAAD+/wEAAgACAAAAAAD//wAAAgACAAAAAAAAAAEAAgACAAAAAAAAAAIAAgACAAAAAAAAAP//AgACAAAAAAABAP//AgACAAAAAAABAAAAAgACAAAAAAABAAEAAgACAAAAAAABAAIAAgACAAAAAAD+/wIAAgACAAAAAAA=")
+tile_map_data = PackedByteArray("AAD+/wAAAgACAAAAAAD+////AgACAAAAAAD/////AgACAAAAAAAAAAAAAgACAAAAAAD//wEAAgACAAAAAAD//wIAAgACAAAAAAD+/wEAAgACAAAAAAD//wAAAgACAAAAAAAAAAEAAgACAAAAAAAAAAIAAgACAAAAAAAAAP//AgACAAAAAAD+/wIAAgACAAAAAAD9////AgACAAAAAAD8////AgACAAAAAAD7////AgACAAAAAAD7/wAAAgACAAAAAAD7/wEAAgACAAAAAAD7/wIAAgACAAAAAAD7/wMAAgACAAAAAAD7/wQAAgACAAAAAAD9/wQAAgACAAAAAAD+/wQAAgACAAAAAAD9/wMAAgACAAAAAAD9/wIAAgACAAAAAAD8/wIAAgACAAAAAAD8/wEAAgACAAAAAAD8/wAAAgACAAAAAAD9/wEAAgACAAAAAAD8/wMAAgACAAAAAAD8/wQAAgACAAAAAAD+/wMAAgACAAAAAAD//wMAAgACAAAAAAAAAAMAAgACAAAAAAD//wQAAgACAAAAAAAAAAQAAgACAAAAAAD9/wAAAgACAAAAAAA=")
 tile_set = SubResource("TileSet_wid0f")
 script = ExtResource("2_tku2a")
 
@@ -275,13 +276,14 @@ script = ExtResource("8_asort")
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
 position = Vector2(0, -9)
-tile_map_data = PackedByteArray("AAD8/wEAAAACAAAAAAD8/wAAAAACAAAAAAD8////AAACAAAAAAD8//7/AAACAAAAAAD8//3/AAACAAAAAAD9//3/AAACAAAAAAD+//3/AAACAAAAAAD///3/AAACAAAAAAAAAP3/AAACAAAAAAA=")
+tile_map_data = PackedByteArray("AAD9//3/AAACAAAAAAD+//3/AAACAAAAAAD///3/AAACAAAAAAD8//3/AAACAAAAAAD7//3/AAACAAAAAAD6//3/AAACAAAAAAD5//3/AAACAAAAAAD5//7/AAACAAAAAAD5////AAACAAAAAAD5/wAAAAACAAAAAAD5/wEAAAACAAAAAAD5/wIAAAACAAAAAAD5/wMAAAACAAAAAAA=")
 tile_set = SubResource("TileSet_cy34l")
 script = ExtResource("7_68b7a")
 
 [node name="WallItemsLayer" type="TileMapLayer" parent="Camera2D"]
-z_index = -50
+z_index = 4
 y_sort_enabled = true
+position = Vector2(0, -9)
 tile_set = SubResource("TileSet_e4auk")
 
 [node name="FloorMouseDetector" type="TileMapLayer" parent="Camera2D"]
@@ -383,11 +385,12 @@ size_flags_vertical = 3
 theme_override_constants/v_separation = 15
 
 [node name="FloorItemsControls" type="Control" parent="Camera2D"]
+visible = false
 layout_mode = 3
 anchors_preset = 0
-offset_left = -86.0
+offset_left = -134.0
 offset_top = 48.0
-offset_right = 86.0
+offset_right = 38.0
 offset_bottom = 80.0
 
 [node name="RotateLeftButton" type="TextureButton" parent="Camera2D/FloorItemsControls"]
@@ -433,9 +436,9 @@ texture_normal = ExtResource("21_fuscm")
 visible = false
 layout_mode = 3
 anchors_preset = 0
-offset_left = -75.0
+offset_left = -123.0
 offset_top = 48.0
-offset_right = 75.0
+offset_right = 27.0
 offset_bottom = 80.0
 
 [node name="CancelButton" type="TextureButton" parent="Camera2D/WallItemsControls"]
@@ -470,6 +473,14 @@ offset_bottom = 32.0
 tooltip_text = "Delete item"
 texture_normal = ExtResource("21_fuscm")
 
+[node name="PlayButton" type="TextureButton" parent="Camera2D"]
+offset_left = -191.0
+offset_top = -138.0
+offset_right = -159.0
+offset_bottom = -106.0
+scale = Vector2(0.75, 0.75)
+texture_normal = ExtResource("24_26thi")
+
 [node name="SelectedSprite" type="TextureRect" parent="Camera2D"]
 z_index = 5
 offset_left = -3.0
@@ -480,3 +491,4 @@ offset_bottom = 49.0
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
 [connection signal="pressed" from="Camera2D/OptionsContainer/PauseButton" to="." method="_on_pause_button_pressed"]
 [connection signal="pressed" from="Camera2D/OptionsContainer/EditButton" to="." method="_on_edit_button_pressed"]
+[connection signal="pressed" from="Camera2D/PlayButton" to="." method="_on_play_button_pressed"]
