@@ -1,0 +1,99 @@
+[gd_scene load_steps=8 format=3 uid="uid://40ombcyqniqt"]
+
+[ext_resource type="Script" uid="uid://pqfbq14ft72c" path="res://scenes/menus/minigames_nav/minigames_nav.gd" id="1_0nguh"]
+[ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_spkjx"]
+[ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_x7iem"]
+[ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="4_qbev7"]
+[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_e2e0o"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2naqa"]
+
+[node name="MinigamesNav" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0nguh")
+
+[node name="Background" type="TextureRect" parent="."]
+z_index = -1
+texture_repeat = 2
+layout_mode = 0
+offset_right = 2560.0
+offset_bottom = 1440.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+texture = ExtResource("2_spkjx")
+stretch_mode = 1
+
+[node name="Container" parent="." instance=ExtResource("3_x7iem")]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 0
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 390.0
+offset_top = 110.0
+offset_right = 890.0
+offset_bottom = 610.0
+grow_horizontal = 1
+grow_vertical = 1
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+z_index = 15
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+z_index = 5
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "PLAY"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_vnlla")
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_2naqa")
+
+[node name="BackButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 420.0
+offset_top = 507.0
+offset_right = 452.0
+offset_bottom = 539.0
+scale = Vector2(2, 2)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+size_flags_stretch_ratio = 0.38
+texture_normal = ExtResource("4_qbev7")
+
+[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_e2e0o")
+autoplay = true
+parameters/looping = true
+
+[connection signal="pressed" from="BackButton" to="." method="_on_button_pressed"]

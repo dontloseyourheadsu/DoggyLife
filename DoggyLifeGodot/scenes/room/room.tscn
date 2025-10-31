@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=36 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/room-dog.tscn" id="2_j33j0"]
@@ -23,6 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://ivmpl03hvhea" path="res://ui/buttons/button-base-check.png" id="18_xxq4d"]
 [ext_resource type="Texture2D" uid="uid://b4jdyfn36bvpa" path="res://ui/buttons/button-switch.png" id="20_fuscm"]
 [ext_resource type="Texture2D" uid="uid://b0j6j3njf0pxv" path="res://ui/buttons/button-delete.png" id="21_fuscm"]
+[ext_resource type="Texture2D" uid="uid://d3hbu5e0udebi" path="res://ui/buttons/button-play.png" id="24_26thi"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -472,6 +473,14 @@ offset_bottom = 32.0
 tooltip_text = "Delete item"
 texture_normal = ExtResource("21_fuscm")
 
+[node name="PlayButton" type="TextureButton" parent="Camera2D"]
+offset_left = -191.0
+offset_top = -138.0
+offset_right = -159.0
+offset_bottom = -106.0
+scale = Vector2(0.75, 0.75)
+texture_normal = ExtResource("24_26thi")
+
 [node name="SelectedSprite" type="TextureRect" parent="Camera2D"]
 z_index = 5
 offset_left = -3.0
@@ -482,3 +491,4 @@ offset_bottom = 49.0
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
 [connection signal="pressed" from="Camera2D/OptionsContainer/PauseButton" to="." method="_on_pause_button_pressed"]
 [connection signal="pressed" from="Camera2D/OptionsContainer/EditButton" to="." method="_on_edit_button_pressed"]
+[connection signal="pressed" from="Camera2D/PlayButton" to="." method="_on_play_button_pressed"]

@@ -1161,3 +1161,11 @@ func _restore_persisted_items() -> void:
 		floor_items_layer.notify_runtime_tile_data_update()
 	if is_instance_valid(wall_items_layer):
 		wall_items_layer.notify_runtime_tile_data_update()
+
+
+func _on_play_button_pressed() -> void:
+	# Load the minigames navigation scene and switch to it
+	var minigames_scene = load("res://scenes/menus/minigames_nav/minigames_nav.tscn").instantiate()
+	get_tree().root.add_child(minigames_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = minigames_scene
