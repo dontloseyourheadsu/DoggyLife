@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://cnld8djuw1qpf"]
+[gd_resource type="Theme" load_steps=9 format=3 uid="uid://cnld8djuw1qpf"]
 
 [ext_resource type="FontFile" uid="uid://ktpqor7f6673" path="res://fonts/PressStart2P-Regular.ttf" id="1_rjgu6"]
 
@@ -27,6 +27,8 @@ shadow_offset = Vector2(-3, 2)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ydht1"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rjgu6"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ydht1"]
 bg_color = Color(0.57254905, 0.4862745, 0.6901961, 1)
 border_color = Color(0.8, 0.40784314, 0.8, 1)
@@ -49,6 +51,8 @@ Button/styles/hover = SubResource("StyleBoxFlat_rjgu6")
 Button/styles/normal = SubResource("StyleBoxFlat_rjgu6")
 Button/styles/pressed = SubResource("StyleBoxFlat_vu6l5")
 CheckBox/styles/normal = SubResource("StyleBoxEmpty_ydht1")
+ItemList/colors/font_color = Color(1, 1, 1, 1)
+ItemList/styles/panel = SubResource("StyleBoxEmpty_rjgu6")
 ScrollContainer/styles/panel = SubResource("StyleBoxFlat_ydht1")
 VScrollBar/styles/grabber = SubResource("StyleBoxFlat_uobgu")
 VScrollBar/styles/scroll = SubResource("StyleBoxFlat_g21io")
