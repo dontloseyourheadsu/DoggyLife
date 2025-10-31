@@ -28,7 +28,7 @@ extends Node2D
 const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 # Use global class_name TileSelectionStore (defined in tile_selection_store.gd)
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
-const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Not visible in the room, ignore for hover/tint
+const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Legacy default; superseded by dynamic axes below
 
 # FloorItems tileset source id (see room.tscn: TileSet_1mlw3 -> sources/1)
 const FLOOR_ITEMS_SOURCE_ID := 1
@@ -103,6 +103,11 @@ var _wall_editing_is_newly_placed: bool = false
 var _wall_original_coords: Vector2i = Vector2i(2147483647, 2147483647)
 var _wall_original_side: String = ""
 
+# Dynamic wall axes, computed from the WallLayer TileMap at runtime so changes in room size/layout don't break placement.
+var _left_wall_axis_x: int = 0
+var _right_wall_axis_y: int = 0
+var _hidden_wall_intersection: Vector2i = Vector2i(2147483647, 2147483647)
+
 # Tracks which items were confirmed with the Check button (single-place items)
 var _placed_items: Dictionary = {}
 
@@ -153,6 +158,9 @@ func _ready():
 		wall_btn_switch.pressed.connect(_on_wall_switch_pressed)
 	if is_instance_valid(wall_btn_delete):
 		wall_btn_delete.pressed.connect(_on_wall_delete_pressed)
+
+	# Compute dynamic wall axes after tiles are ready
+	_recalculate_wall_axes()
 
 	# Restore any previously placed items from persistent store
 	_restore_persisted_items()
@@ -274,7 +282,7 @@ func _process(_delta: float) -> void:
 		var wall_local := wall_layer.to_local(get_global_mouse_position())
 		var wall_coords: Vector2i = wall_layer.local_to_map(wall_local)
 		var wall_used: Array[Vector2i] = wall_layer.get_used_cells()
-		if wall_coords in wall_used and wall_coords != HIDDEN_WALL_TILE_COORDINATE:
+		if wall_coords in wall_used and wall_coords != _hidden_wall_intersection:
 			if _marked_wall_tile_coords != wall_coords:
 				_clear_marked_wall_tile()
 				_mark_wall_tile(wall_coords)
@@ -834,9 +842,9 @@ func _on_check_pressed() -> void:
 
 # ====================== WALL ITEMS ======================
 func _detect_wall_side_from_coords(coords: Vector2i) -> String:
-	if coords.x == -4:
+	if coords.x == _left_wall_axis_x:
 		return "left"
-	if coords.y == -3:
+	if coords.y == _right_wall_axis_y:
 		return "right"
 	return ""
 
@@ -848,17 +856,17 @@ func _get_last_tile_for_wall(side: String) -> Vector2i:
 	if side == "left":
 		var max_y := -2147483648
 		for c in used:
-			if c == HIDDEN_WALL_TILE_COORDINATE:
+			if c == _hidden_wall_intersection:
 				continue
-			if c.x == -4 and c.y > max_y:
+			if c.x == _left_wall_axis_x and c.y > max_y:
 				max_y = c.y
 				best = c
 	elif side == "right":
 		var max_x := -2147483648
 		for c in used:
-			if c == HIDDEN_WALL_TILE_COORDINATE:
+			if c == _hidden_wall_intersection:
 				continue
-			if c.y == -3 and c.x > max_x:
+			if c.y == _right_wall_axis_y and c.x > max_x:
 				max_x = c.x
 				best = c
 	return best
@@ -873,14 +881,45 @@ func _get_wall_atlas_for(item_name: String, side: String) -> Vector2i:
 func _is_valid_wall_coord(coords: Vector2i) -> bool:
 	if not is_instance_valid(wall_layer):
 		return false
-	if coords == HIDDEN_WALL_TILE_COORDINATE:
+	if coords == _hidden_wall_intersection:
 		return false
 	var used: Array[Vector2i] = wall_layer.get_used_cells()
 	if not (coords in used):
 		return false
-	if not (coords.x == -4 or coords.y == -3):
+	if not (coords.x == _left_wall_axis_x or coords.y == _right_wall_axis_y):
 		return false
 	return true
+
+# Recalculate the wall axes (left vertical axis X and right horizontal axis Y) from the WallLayer used cells.
+func _recalculate_wall_axes() -> void:
+	if not is_instance_valid(wall_layer):
+		return
+	var used: Array[Vector2i] = wall_layer.get_used_cells()
+	if used.is_empty():
+		return
+	var x_counts: Dictionary = {}
+	var y_counts: Dictionary = {}
+	for c in used:
+		x_counts[c.x] = int(x_counts.get(c.x, 0)) + 1
+		y_counts[c.y] = int(y_counts.get(c.y, 0)) + 1
+	# Choose the most frequent X (vertical wall) and most frequent Y (horizontal wall)
+	var best_x := 0
+	var best_x_count := -1
+	for k in x_counts.keys():
+		var cnt: int = x_counts[k]
+		if cnt > best_x_count:
+			best_x_count = cnt
+			best_x = int(k)
+	var best_y := 0
+	var best_y_count := -1
+	for k2 in y_counts.keys():
+		var cnt2: int = y_counts[k2]
+		if cnt2 > best_y_count:
+			best_y_count = cnt2
+			best_y = int(k2)
+	_left_wall_axis_x = best_x
+	_right_wall_axis_y = best_y
+	_hidden_wall_intersection = Vector2i(_left_wall_axis_x, _right_wall_axis_y)
 
 func _place_wall_item_at(item_name: String, coords: Vector2i) -> bool:
 	if not (is_instance_valid(wall_items_layer) and _is_valid_wall_coord(coords)):

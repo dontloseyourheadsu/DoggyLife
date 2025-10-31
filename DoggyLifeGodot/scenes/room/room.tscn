@@ -203,17 +203,17 @@ sources/0 = SubResource("TileSetAtlasSource_wid0f")
 texture = ExtResource("9_7ep0u")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 16)
+0:0/0/texture_origin = Vector2i(0, 4)
 1:0/0 = 0
-1:0/0/texture_origin = Vector2i(0, 16)
+1:0/0/texture_origin = Vector2i(0, 4)
 0:1/0 = 0
-0:1/0/texture_origin = Vector2i(0, 16)
+0:1/0/texture_origin = Vector2i(0, 4)
 1:1/0 = 0
-1:1/0/texture_origin = Vector2i(0, 16)
+1:1/0/texture_origin = Vector2i(0, 4)
 0:2/0 = 0
-0:2/0/texture_origin = Vector2i(0, 16)
+0:2/0/texture_origin = Vector2i(0, 4)
 1:2/0 = 0
-1:2/0/texture_origin = Vector2i(0, 16)
+1:2/0/texture_origin = Vector2i(0, 4)
 
 [sub_resource type="TileSet" id="TileSet_e4auk"]
 tile_shape = 1
@@ -252,7 +252,7 @@ stretch_mode = 1
 z_index = 2
 y_sort_enabled = true
 position = Vector2(0, -9)
-tile_map_data = PackedByteArray("AAD+/wAAAgACAAAAAAD+////AgACAAAAAAD/////AgACAAAAAAAAAAAAAgACAAAAAAD//wEAAgACAAAAAAD//wIAAgACAAAAAAD+/wEAAgACAAAAAAD//wAAAgACAAAAAAAAAAEAAgACAAAAAAAAAAIAAgACAAAAAAAAAP//AgACAAAAAAABAP//AgACAAAAAAABAAAAAgACAAAAAAABAAEAAgACAAAAAAABAAIAAgACAAAAAAD+/wIAAgACAAAAAAA=")
+tile_map_data = PackedByteArray("AAD+/wAAAgACAAAAAAD+////AgACAAAAAAD/////AgACAAAAAAAAAAAAAgACAAAAAAD//wEAAgACAAAAAAD//wIAAgACAAAAAAD+/wEAAgACAAAAAAD//wAAAgACAAAAAAAAAAEAAgACAAAAAAAAAAIAAgACAAAAAAAAAP//AgACAAAAAAD+/wIAAgACAAAAAAD9////AgACAAAAAAD8////AgACAAAAAAD7////AgACAAAAAAD7/wAAAgACAAAAAAD7/wEAAgACAAAAAAD7/wIAAgACAAAAAAD7/wMAAgACAAAAAAD7/wQAAgACAAAAAAD9/wQAAgACAAAAAAD+/wQAAgACAAAAAAD9/wMAAgACAAAAAAD9/wIAAgACAAAAAAD8/wIAAgACAAAAAAD8/wEAAgACAAAAAAD8/wAAAgACAAAAAAD9/wEAAgACAAAAAAD8/wMAAgACAAAAAAD8/wQAAgACAAAAAAD+/wMAAgACAAAAAAD//wMAAgACAAAAAAAAAAMAAgACAAAAAAD//wQAAgACAAAAAAAAAAQAAgACAAAAAAD9/wAAAgACAAAAAAA=")
 tile_set = SubResource("TileSet_wid0f")
 script = ExtResource("2_tku2a")
 
@@ -275,13 +275,14 @@ script = ExtResource("8_asort")
 [node name="WallLayer" type="TileMapLayer" parent="Camera2D"]
 y_sort_enabled = true
 position = Vector2(0, -9)
-tile_map_data = PackedByteArray("AAD8/wEAAAACAAAAAAD8/wAAAAACAAAAAAD8////AAACAAAAAAD8//7/AAACAAAAAAD8//3/AAACAAAAAAD9//3/AAACAAAAAAD+//3/AAACAAAAAAD///3/AAACAAAAAAAAAP3/AAACAAAAAAA=")
+tile_map_data = PackedByteArray("AAD9//3/AAACAAAAAAD+//3/AAACAAAAAAD///3/AAACAAAAAAD8//3/AAACAAAAAAD7//3/AAACAAAAAAD6//3/AAACAAAAAAD5//3/AAACAAAAAAD5//7/AAACAAAAAAD5////AAACAAAAAAD5/wAAAAACAAAAAAD5/wEAAAACAAAAAAD5/wIAAAACAAAAAAD5/wMAAAACAAAAAAA=")
 tile_set = SubResource("TileSet_cy34l")
 script = ExtResource("7_68b7a")
 
 [node name="WallItemsLayer" type="TileMapLayer" parent="Camera2D"]
-z_index = -50
+z_index = 4
 y_sort_enabled = true
+position = Vector2(0, -9)
 tile_set = SubResource("TileSet_e4auk")
 
 [node name="FloorMouseDetector" type="TileMapLayer" parent="Camera2D"]
@@ -383,11 +384,12 @@ size_flags_vertical = 3
 theme_override_constants/v_separation = 15
 
 [node name="FloorItemsControls" type="Control" parent="Camera2D"]
+visible = false
 layout_mode = 3
 anchors_preset = 0
-offset_left = -86.0
+offset_left = -134.0
 offset_top = 48.0
-offset_right = 86.0
+offset_right = 38.0
 offset_bottom = 80.0
 
 [node name="RotateLeftButton" type="TextureButton" parent="Camera2D/FloorItemsControls"]
@@ -433,9 +435,9 @@ texture_normal = ExtResource("21_fuscm")
 visible = false
 layout_mode = 3
 anchors_preset = 0
-offset_left = -75.0
+offset_left = -123.0
 offset_top = 48.0
-offset_right = 75.0
+offset_right = 27.0
 offset_bottom = 80.0
 
 [node name="CancelButton" type="TextureButton" parent="Camera2D/WallItemsControls"]
