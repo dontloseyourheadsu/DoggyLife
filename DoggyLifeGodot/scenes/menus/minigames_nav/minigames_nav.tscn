@@ -111,4 +111,5 @@ stream = ExtResource("5_e2e0o")
 autoplay = true
 parameters/looping = true
 
+[connection signal="item_selected" from="MarginContainer/VBoxContainer/ScrollContainer/MinigamesList" to="." method="_on_minigames_list_item_selected"]
 [connection signal="pressed" from="BackButton" to="." method="_on_button_pressed"]
