@@ -21,7 +21,9 @@ static func load_player_data() -> PlayerData:
 	for i in range(3):
 		fresh.owned_items.append("floor-tile-%d" % i)
 		fresh.owned_items.append("wall-tile-%d" % i)
-	# Items: none by default
+	# Items: shelf and window by default
+	fresh.owned_items.append("shelf-sprite")
+	fresh.owned_items.append("window-sprite")
 	# Persist immediately so subsequent loads use the same defaults
 	PlayerData.save_player_data(fresh)
 	return fresh
