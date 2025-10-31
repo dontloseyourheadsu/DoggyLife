@@ -1,7 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://b3fnmffpoh008"]
+[gd_scene load_steps=11 format=3 uid="uid://b3fnmffpoh008"]
 
+[ext_resource type="Script" uid="uid://dreiew0dtuf5a" path="res://scenes/catch-the-ball/catch_ball_miningame.gd" id="1_reje2"]
 [ext_resource type="PackedScene" uid="uid://cv4hyjlxp00nu" path="res://scenes/catch-the-ball/dog-catch.tscn" id="1_xkf2s"]
 [ext_resource type="Script" uid="uid://celcfq1m1h5ng" path="res://scenes/catch-the-ball/dog_catch.gd" id="2_v0rxd"]
+[ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_grvyc"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_14p0o"]
 load_path = "res://.godot/imported/park-walk.png-f1ed9fbde0dc8713b1b8f7b319984cb3.ctex"
@@ -17,7 +19,12 @@ distance = -640.0
 normal = Vector2(-1, 0)
 distance = -640.0
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2wg0u"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0hggm"]
+
 [node name="CatchBallMiningame" type="Node2D"]
+script = ExtResource("1_reje2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
@@ -29,6 +36,7 @@ offset_bottom = 360.0
 texture = SubResource("CompressedTexture2D_14p0o")
 
 [node name="Dog" parent="Camera2D" instance=ExtResource("1_xkf2s")]
+visible = false
 position = Vector2(-1, 122)
 scale = Vector2(4, 4)
 script = ExtResource("2_v0rxd")
@@ -47,3 +55,53 @@ shape = SubResource("WorldBoundaryShape2D_v0rxd")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/RightWallLimit"]
 shape = SubResource("WorldBoundaryShape2D_grvyc")
+
+[node name="Container" parent="Camera2D" instance=ExtResource("3_grvyc")]
+offset_left = -251.0
+offset_top = -251.0
+offset_right = 249.0
+offset_bottom = 249.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Camera2D/Container"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Camera2D/Container/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "SELECT DOG"
+
+[node name="HSeparator" type="HSeparator" parent="Camera2D/Container/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_2wg0u")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera2D/Container/VBoxContainer"]
+custom_minimum_size = Vector2(300, 150)
+layout_mode = 2
+
+[node name="DogsList" type="ItemList" parent="Camera2D/Container/VBoxContainer/ScrollContainer"]
+custom_minimum_size = Vector2(300, 150)
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 12
+theme_override_constants/icon_margin = 12
+
+[node name="HSeparator2" type="HSeparator" parent="Camera2D/Container/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_0hggm")
+
+[connection signal="item_selected" from="Camera2D/Container/VBoxContainer/ScrollContainer/DogsList" to="." method="_on_dogs_list_item_selected"]
