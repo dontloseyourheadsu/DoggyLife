@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://c4ekdtotlna2x"]
+
+[ext_resource type="Texture2D" uid="uid://dtli5b62vl7pe" path="res://scenes/catch-the-ball/images/balls/golden-ball.png" id="1_v5gi3"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_v5gi3"]
+bounce = 0.5
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_y1otn"]
+
+[node name="GoldenBall" type="RigidBody2D"]
+physics_material_override = SubResource("PhysicsMaterial_v5gi3")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("1_v5gi3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(2.5, 2.5)
+shape = SubResource("CircleShape2D_y1otn")

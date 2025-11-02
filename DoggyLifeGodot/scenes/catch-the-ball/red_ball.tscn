@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://bk04kh2vchw7x"]
+
+[ext_resource type="Texture2D" uid="uid://cyq8absxk5hpl" path="res://scenes/catch-the-ball/images/balls/red-ball.png" id="1_qedwo"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_qedwo"]
+bounce = 0.75
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_6t025"]
+radius = 9.055386
+
+[node name="RedBall" type="RigidBody2D"]
+physics_material_override = SubResource("PhysicsMaterial_qedwo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(3, 3)
+shape = SubResource("CircleShape2D_6t025")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("1_qedwo")
