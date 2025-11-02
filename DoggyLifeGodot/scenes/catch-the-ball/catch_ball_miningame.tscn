@@ -1,9 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://b3fnmffpoh008"]
+[gd_scene load_steps=13 format=3 uid="uid://b3fnmffpoh008"]
 
 [ext_resource type="Script" uid="uid://dreiew0dtuf5a" path="res://scenes/catch-the-ball/catch_ball_miningame.gd" id="1_reje2"]
 [ext_resource type="PackedScene" uid="uid://cv4hyjlxp00nu" path="res://scenes/catch-the-ball/dog-catch.tscn" id="1_xkf2s"]
 [ext_resource type="Script" uid="uid://celcfq1m1h5ng" path="res://scenes/catch-the-ball/dog_catch.gd" id="2_v0rxd"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_grvyc"]
+[ext_resource type="PackedScene" uid="uid://bk04kh2vchw7x" path="res://scenes/catch-the-ball/red_ball.tscn" id="5_2wg0u"]
+[ext_resource type="PackedScene" uid="uid://c4ekdtotlna2x" path="res://scenes/catch-the-ball/golden_ball.tscn" id="6_0hggm"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_14p0o"]
 load_path = "res://.godot/imported/park-walk.png-f1ed9fbde0dc8713b1b8f7b319984cb3.ctex"
@@ -39,19 +41,26 @@ texture = SubResource("CompressedTexture2D_14p0o")
 visible = false
 position = Vector2(-1, 122)
 scale = Vector2(4, 4)
+collision_mask = 2
 script = ExtResource("2_v0rxd")
 
 [node name="GroundLimit" type="StaticBody2D" parent="Camera2D"]
+collision_layer = 2
+collision_mask = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/GroundLimit"]
 shape = SubResource("WorldBoundaryShape2D_xkf2s")
 
 [node name="LeftWallLimit" type="StaticBody2D" parent="Camera2D"]
+collision_layer = 2
+collision_mask = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/LeftWallLimit"]
 shape = SubResource("WorldBoundaryShape2D_v0rxd")
 
 [node name="RightWallLimit" type="StaticBody2D" parent="Camera2D"]
+collision_layer = 2
+collision_mask = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/RightWallLimit"]
 shape = SubResource("WorldBoundaryShape2D_grvyc")
@@ -103,5 +112,40 @@ theme_override_constants/icon_margin = 12
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_0hggm")
+
+[node name="NormalBallsContainer" type="Node2D" parent="Camera2D"]
+
+[node name="RedBall" parent="Camera2D/NormalBallsContainer" instance=ExtResource("5_2wg0u")]
+position = Vector2(181, -424)
+collision_layer = 4
+collision_mask = 2
+input_pickable = true
+freeze = true
+
+[node name="RedBall2" parent="Camera2D/NormalBallsContainer" instance=ExtResource("5_2wg0u")]
+position = Vector2(-269, -418)
+collision_layer = 4
+collision_mask = 2
+freeze = true
+
+[node name="RedBall3" parent="Camera2D/NormalBallsContainer" instance=ExtResource("5_2wg0u")]
+position = Vector2(-19, -426)
+collision_layer = 4
+collision_mask = 2
+freeze = true
+
+[node name="SpecialBallsContainer" type="Node2D" parent="Camera2D"]
+
+[node name="RightGoldenBall" parent="Camera2D/SpecialBallsContainer" instance=ExtResource("6_0hggm")]
+position = Vector2(671, 0)
+collision_layer = 4
+collision_mask = 2
+freeze = true
+
+[node name="GoldenBall" parent="Camera2D/SpecialBallsContainer" instance=ExtResource("6_0hggm")]
+position = Vector2(-666, 0)
+collision_layer = 4
+collision_mask = 2
+freeze = true
 
 [connection signal="item_selected" from="Camera2D/Container/VBoxContainer/ScrollContainer/DogsList" to="." method="_on_dogs_list_item_selected"]
