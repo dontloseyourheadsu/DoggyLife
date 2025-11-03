@@ -1,0 +1,87 @@
+[gd_scene load_steps=4 format=3 uid="uid://c68wx5in02pgh"]
+
+[ext_resource type="Script" uid="uid://b26e035psnxog" path="res://shared/scenes/score_summary.gd" id="1_6vot1"]
+[ext_resource type="Texture2D" uid="uid://dt13m0s4yg6dk" path="res://ui/containers/container-secondary.png" id="1_wqtau"]
+[ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="2_6vot1"]
+
+[node name="ScoreSummary" type="Node2D"]
+script = ExtResource("1_6vot1")
+
+[node name="ScoreDisplayContainer" type="TextureRect" parent="."]
+offset_left = -624.0
+offset_top = -346.0
+offset_right = -449.0
+offset_bottom = -274.0
+texture = ExtResource("1_wqtau")
+
+[node name="ScoreDisplay" type="Label" parent="ScoreDisplayContainer"]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 27.0
+offset_right = 142.0
+offset_bottom = 51.0
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ScoreSummaryContainer" parent="." instance=ExtResource("2_6vot1")]
+visible = false
+offset_left = -251.0
+offset_top = -252.0
+offset_right = 249.0
+offset_bottom = 248.0
+
+[node name="Title" type="Label" parent="ScoreSummaryContainer"]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 115.0
+offset_right = 356.0
+offset_bottom = 145.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "SUMMARY"
+
+[node name="ScoreDisplay" type="Label" parent="ScoreSummaryContainer"]
+layout_mode = 0
+offset_left = 91.0
+offset_top = 207.0
+offset_right = 251.0
+offset_bottom = 227.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 20
+text = "Score: 0"
+
+[node name="CoinsDisplay" type="Label" parent="ScoreSummaryContainer"]
+layout_mode = 0
+offset_left = 91.0
+offset_top = 242.0
+offset_right = 391.0
+offset_bottom = 262.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 20
+text = "Coins Earned: 0"
+
+[node name="GoHomeButton" type="TextureButton" parent="ScoreSummaryContainer"]
+layout_mode = 0
+offset_left = 171.0
+offset_top = 367.0
+offset_right = 203.0
+offset_bottom = 399.0
+scale = Vector2(5, 2)
+texture_normal = ExtResource("1_wqtau")
+
+[node name="Label" type="Label" parent="ScoreSummaryContainer/GoHomeButton"]
+layout_mode = 0
+offset_left = 6.5999985
+offset_top = 14.0
+offset_right = 102.6
+offset_bottom = 38.0
+scale = Vector2(0.2, 0.3)
+theme_override_font_sizes/font_size = 24
+text = "HOME"
+
+[connection signal="pressed" from="ScoreSummaryContainer/GoHomeButton" to="." method="_on_go_home_button_pressed"]
