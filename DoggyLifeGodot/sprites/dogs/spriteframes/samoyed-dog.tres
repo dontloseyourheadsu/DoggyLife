@@ -2,13 +2,17 @@
 
 [ext_resource type="Texture2D" uid="uid://cla0eac1sn6ha" path="res://sprites/dogs/images/samoyed-dog.png" id="1_5bp0m"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_k3hoe"]
-atlas = ExtResource("1_5bp0m")
-region = Rect2(0, 256, 32, 32)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_s4hso"]
 atlas = ExtResource("1_5bp0m")
 region = Rect2(32, 256, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bxm4j"]
+atlas = ExtResource("1_5bp0m")
+region = Rect2(64, 224, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k3hoe"]
+atlas = ExtResource("1_5bp0m")
+region = Rect2(0, 256, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jqyr1"]
 atlas = ExtResource("1_5bp0m")
@@ -25,10 +29,6 @@ region = Rect2(0, 224, 32, 32)
 [sub_resource type="AtlasTexture" id="AtlasTexture_jd23y"]
 atlas = ExtResource("1_5bp0m")
 region = Rect2(32, 224, 32, 32)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_bxm4j"]
-atlas = ExtResource("1_5bp0m")
-region = Rect2(64, 224, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_00cdk"]
 atlas = ExtResource("1_5bp0m")
@@ -148,6 +148,22 @@ region = Rect2(96, 0, 32, 32)
 
 [resource]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s4hso")
+}],
+"loop": true,
+"name": &"jump-left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bxm4j")
+}],
+"loop": true,
+"name": &"jump-right",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_k3hoe")
