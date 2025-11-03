@@ -1,5 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://bk04kh2vchw7x"]
+[gd_scene load_steps=5 format=3 uid="uid://bk04kh2vchw7x"]
 
+[ext_resource type="Script" uid="uid://doqu3ibebp30j" path="res://scenes/catch-the-ball/red_ball.gd" id="1_6t025"]
 [ext_resource type="Texture2D" uid="uid://cyq8absxk5hpl" path="res://scenes/catch-the-ball/images/balls/red-ball.png" id="1_qedwo"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_qedwo"]
@@ -10,6 +11,10 @@ radius = 9.055386
 
 [node name="RedBall" type="RigidBody2D"]
 physics_material_override = SubResource("PhysicsMaterial_qedwo")
+freeze = true
+contact_monitor = true
+max_contacts_reported = 1
+script = ExtResource("1_6t025")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(3, 3)
@@ -18,3 +23,7 @@ shape = SubResource("CircleShape2D_6t025")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(3, 3)
 texture = ExtResource("1_qedwo")
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
