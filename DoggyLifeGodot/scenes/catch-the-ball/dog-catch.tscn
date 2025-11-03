@@ -3,7 +3,7 @@
 [ext_resource type="SpriteFrames" uid="uid://drymo5cd0gf1j" path="res://sprites/dogs/spriteframes/samoyed-dog.tres" id="2_5cc20"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8vo8v"]
-radius = 12.515617
+radius = 10.518586
 
 [node name="DogCatch" type="CharacterBody2D"]
 z_index = 3
