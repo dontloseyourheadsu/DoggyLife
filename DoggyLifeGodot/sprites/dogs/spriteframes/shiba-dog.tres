@@ -2,6 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://dlqfpow41lpt7" path="res://sprites/dogs/images/shiba-dog.png" id="1_6y608"]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_107dx"]
+atlas = ExtResource("1_6y608")
+region = Rect2(64, 256, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5pum1"]
+atlas = ExtResource("1_6y608")
+region = Rect2(96, 224, 32, 32)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_jqyr1"]
 atlas = ExtResource("1_6y608")
 region = Rect2(0, 256, 32, 32)
@@ -9,10 +17,6 @@ region = Rect2(0, 256, 32, 32)
 [sub_resource type="AtlasTexture" id="AtlasTexture_8s86r"]
 atlas = ExtResource("1_6y608")
 region = Rect2(32, 256, 32, 32)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_107dx"]
-atlas = ExtResource("1_6y608")
-region = Rect2(64, 256, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jd23y"]
 atlas = ExtResource("1_6y608")
@@ -29,10 +33,6 @@ region = Rect2(32, 224, 32, 32)
 [sub_resource type="AtlasTexture" id="AtlasTexture_nyxdw"]
 atlas = ExtResource("1_6y608")
 region = Rect2(64, 224, 32, 32)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_5pum1"]
-atlas = ExtResource("1_6y608")
-region = Rect2(96, 224, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xnstp"]
 atlas = ExtResource("1_6y608")
@@ -148,6 +148,22 @@ region = Rect2(96, 0, 32, 32)
 
 [resource]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_107dx")
+}],
+"loop": true,
+"name": &"jump-left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5pum1")
+}],
+"loop": true,
+"name": &"jump-right",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_jqyr1")
