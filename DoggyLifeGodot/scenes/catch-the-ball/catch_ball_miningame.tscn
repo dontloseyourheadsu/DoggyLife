@@ -38,10 +38,11 @@ offset_right = 640.0
 offset_bottom = 360.0
 texture = SubResource("CompressedTexture2D_14p0o")
 
-[node name="Dog" parent="Camera2D" instance=ExtResource("1_xkf2s")]
+[node name="Dog" parent="Camera2D" groups=["catcher"] instance=ExtResource("1_xkf2s")]
 visible = false
 position = Vector2(-1, 122)
 scale = Vector2(4, 4)
+collision_layer = 2
 collision_mask = 2
 script = ExtResource("2_v0rxd")
 
@@ -87,16 +88,15 @@ collision_mask = 2
 [node name="SpecialBallsContainer" type="Node2D" parent="Camera2D"]
 
 [node name="RightGoldenBall" parent="Camera2D/SpecialBallsContainer" instance=ExtResource("6_0hggm")]
-position = Vector2(534, -440)
+position = Vector2(613, -154)
 collision_layer = 4
 collision_mask = 2
-freeze = true
+is_left_side = false
 
-[node name="GoldenBall" parent="Camera2D/SpecialBallsContainer" instance=ExtResource("6_0hggm")]
-position = Vector2(-489, -435)
+[node name="LeftGoldenBall" parent="Camera2D/SpecialBallsContainer" instance=ExtResource("6_0hggm")]
+position = Vector2(-612, -155)
 collision_layer = 4
 collision_mask = 2
-freeze = true
 
 [node name="ScoreDisplayContainer" type="TextureRect" parent="Camera2D"]
 offset_left = -624.0
