@@ -10,12 +10,40 @@ extends Node2D
 @onready var red_ball: RigidBody2D = $Camera2D/NormalBallsContainer/RedBall
 @onready var red_ball_2: RigidBody2D = $Camera2D/NormalBallsContainer/RedBall2
 @onready var red_ball_3: RigidBody2D = $Camera2D/NormalBallsContainer/RedBall3
+@onready var score_display: Label = $Camera2D/ScoreDisplayContainer/ScoreDisplay
 
 # Map item index -> dog key (e.g. "dog-samoyed")
 var _index_to_dog: Array[String] = []
+var score: int = 0
 
 func _ready() -> void:
 	_populate_owned_dogs_list()
+	_connect_ball_signals()
+
+func _connect_ball_signals() -> void:
+	# Connect all ball signals to the score handler
+	if red_ball:
+		red_ball.ball_caught.connect(_on_ball_caught)
+	if red_ball_2:
+		red_ball_2.ball_caught.connect(_on_ball_caught)
+	if red_ball_3:
+		red_ball_3.ball_caught.connect(_on_ball_caught)
+	
+	# Connect golden balls
+	var right_golden_ball = $Camera2D/SpecialBallsContainer/RightGoldenBall
+	var left_golden_ball = $Camera2D/SpecialBallsContainer/LeftGoldenBall
+	if right_golden_ball:
+		right_golden_ball.ball_caught.connect(_on_ball_caught)
+	if left_golden_ball:
+		left_golden_ball.ball_caught.connect(_on_ball_caught)
+
+func _on_ball_caught(points: int) -> void:
+	score += points
+	_update_score_display()
+
+func _update_score_display() -> void:
+	if score_display:
+		score_display.text = str(score)
 	
 
 func _populate_owned_dogs_list() -> void:
