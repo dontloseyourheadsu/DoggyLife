@@ -2,23 +2,28 @@ extends Node2D
 
 @onready var dogs_list: ItemList = $Camera2D/Container/VBoxContainer/ScrollContainer/DogsList
 @onready var selection_container: Control = $Camera2D/Container
-@onready var dog_body: Node = $Camera2D/Dog
+@onready var dog_body: CharacterBody2D = $Camera2D/Dog
 @onready var dog_anim: AnimatedSprite2D = $Camera2D/Dog/DogAnimations
 @onready var normal_balls_container: Node2D = $Camera2D/NormalBallsContainer
+@onready var special_balls_container: Node2D = $Camera2D/SpecialBallsContainer
 @onready var left_wall_limit: StaticBody2D = $Camera2D/LeftWallLimit
 @onready var right_wall_limit: StaticBody2D = $Camera2D/RightWallLimit
 @onready var red_ball: RigidBody2D = $Camera2D/NormalBallsContainer/RedBall
 @onready var red_ball_2: RigidBody2D = $Camera2D/NormalBallsContainer/RedBall2
 @onready var red_ball_3: RigidBody2D = $Camera2D/NormalBallsContainer/RedBall3
-@onready var score_display: Label = $Camera2D/ScoreDisplayContainer/ScoreDisplay
+@onready var score_summary: Node2D = $Camera2D/ScoreSummary
 
 # Map item index -> dog key (e.g. "dog-samoyed")
 var _index_to_dog: Array[String] = []
-var score: int = 0
+var game_active: bool = false
 
 func _ready() -> void:
 	_populate_owned_dogs_list()
 	_connect_ball_signals()
+	
+	# Connect to game_over signal from score_summary
+	if score_summary:
+		score_summary.game_over.connect(_on_game_over)
 
 func _connect_ball_signals() -> void:
 	# Connect all ball signals to the score handler
@@ -38,13 +43,42 @@ func _connect_ball_signals() -> void:
 		left_golden_ball.ball_caught.connect(_on_ball_caught)
 
 func _on_ball_caught(points: int) -> void:
-	score += points
-	_update_score_display()
+	# Only count points if the game is active
+	if game_active and score_summary:
+		score_summary.add_score(points)
 
-func _update_score_display() -> void:
-	if score_display:
-		score_display.text = str(score)
+func _on_game_over() -> void:
+	"""Called when the score_summary emits game_over signal"""
+	game_active = false
 	
+	# Disable dog controls
+	if dog_body:
+		dog_body.set_physics_process(false)
+	
+	# Stop all balls from being thrown/moving
+	_stop_all_balls()
+
+func _stop_all_balls() -> void:
+	"""Freeze all balls and stop their timers"""
+	# Stop normal balls
+	for ball in normal_balls_container.get_children():
+		if ball is RigidBody2D:
+			ball.freeze = true
+			ball.can_throw_ball = false
+			# Stop their timers
+			var timer = ball.get_node_or_null("Timer")
+			if timer:
+				timer.stop()
+	
+	# Stop special balls
+	for ball in special_balls_container.get_children():
+		if ball is RigidBody2D:
+			ball.freeze = true
+			ball.can_throw_ball = false
+			# Stop their timers
+			var timer = ball.get_node_or_null("Timer")
+			if timer:
+				timer.stop()
 
 func _populate_owned_dogs_list() -> void:
 	if dogs_list == null:
@@ -138,3 +172,8 @@ func _on_dogs_list_item_selected(index: int) -> void:
 	dog_body.visible = true
 	if selection_container != null:
 		selection_container.visible = false
+	
+	# Start the game now that a dog has been selected
+	game_active = true
+	if score_summary:
+		score_summary.start_game()

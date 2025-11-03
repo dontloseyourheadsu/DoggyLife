@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_grvyc"]
 [ext_resource type="PackedScene" uid="uid://bk04kh2vchw7x" path="res://scenes/catch-the-ball/red_ball.tscn" id="5_2wg0u"]
 [ext_resource type="PackedScene" uid="uid://c4ekdtotlna2x" path="res://scenes/catch-the-ball/golden_ball.tscn" id="6_0hggm"]
-[ext_resource type="Texture2D" uid="uid://dt13m0s4yg6dk" path="res://ui/containers/container-secondary.png" id="7_y1otn"]
+[ext_resource type="PackedScene" uid="uid://c68wx5in02pgh" path="res://shared/scenes/score_summary.tscn" id="6_y1otn"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_14p0o"]
 load_path = "res://.godot/imported/park-walk.png-f1ed9fbde0dc8713b1b8f7b319984cb3.ctex"
@@ -98,23 +98,8 @@ position = Vector2(-612, -155)
 collision_layer = 4
 collision_mask = 2
 
-[node name="ScoreDisplayContainer" type="TextureRect" parent="Camera2D"]
-offset_left = -624.0
-offset_top = -346.0
-offset_right = -449.0
-offset_bottom = -274.0
-texture = ExtResource("7_y1otn")
-
-[node name="ScoreDisplay" type="Label" parent="Camera2D/ScoreDisplayContainer"]
-layout_mode = 0
-offset_left = 70.0
-offset_top = 27.0
-offset_right = 142.0
-offset_bottom = 51.0
-theme_override_font_sizes/font_size = 24
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 1
+[node name="ScoreSummary" parent="Camera2D" instance=ExtResource("6_y1otn")]
+z_index = 1000
 
 [node name="Container" parent="Camera2D" instance=ExtResource("3_grvyc")]
 offset_left = -251.0

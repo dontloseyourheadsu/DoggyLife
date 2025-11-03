@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=37 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/room-dog.tscn" id="2_j33j0"]
@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://b4jdyfn36bvpa" path="res://ui/buttons/button-switch.png" id="20_fuscm"]
 [ext_resource type="Texture2D" uid="uid://b0j6j3njf0pxv" path="res://ui/buttons/button-delete.png" id="21_fuscm"]
 [ext_resource type="Texture2D" uid="uid://d3hbu5e0udebi" path="res://ui/buttons/button-play.png" id="24_26thi"]
+[ext_resource type="PackedScene" uid="uid://dmyjlacq8uf03" path="res://shared/scenes/coins_container_display.tscn" id="25_d2npv"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0i02g"]
 texture = ExtResource("3_lbx1e")
@@ -487,6 +488,13 @@ offset_left = -3.0
 offset_top = 9.0
 offset_right = 37.0
 offset_bottom = 49.0
+
+[node name="CoinsContainerDisplay" parent="Camera2D" instance=ExtResource("25_d2npv")]
+offset_left = -164.0
+offset_top = -138.0
+offset_right = 11.0
+offset_bottom = -66.0
+scale = Vector2(0.33, 0.33)
 
 [connection signal="ready" from="Camera2D" to="Camera2D" method="_on_ready"]
 [connection signal="pressed" from="Camera2D/OptionsContainer/PauseButton" to="." method="_on_pause_button_pressed"]
