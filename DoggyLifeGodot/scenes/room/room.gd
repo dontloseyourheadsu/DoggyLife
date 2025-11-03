@@ -112,9 +112,6 @@ var _hidden_wall_intersection: Vector2i = Vector2i(2147483647, 2147483647)
 var _placed_items: Dictionary = {}
 
 func _ready():
-	# Connect the pause button signal
-	if pause_button:
-		pause_button.pressed.connect(_on_pause_button_pressed)
 	# Connect floor controls
 	if is_instance_valid(btn_rotate_left):
 		btn_rotate_left.pressed.connect(_on_rotate_left_pressed)
