@@ -7,8 +7,13 @@ var initial_position: Vector2 = Vector2(0, 0)
 var _needs_reset: bool = false
 var can_throw_ball: bool = true
 
+# Signal to notify when caught by the dog
+signal ball_caught(points: int)
+
 func _ready() -> void:
 	initial_position = Vector2(0, global_position.y)
+	# Randomize difficulty level (1-5)
+	difficulty = randi_range(1, 5)
 	# Connect the timer timeout signal
 	$Timer.timeout.connect(_on_timer_timeout)
 	_throw_ball()
@@ -17,6 +22,10 @@ func _ready() -> void:
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("wall"):
 		# 2. Just set the flag. Don't try to change anything.
+		_needs_reset = true
+	elif body.is_in_group("catcher"):
+		# Dog caught the ball! Award 1 point
+		ball_caught.emit(1)
 		_needs_reset = true
 
 # 3. This is called automatically every physics frame
@@ -49,6 +58,12 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 		
 		# 8. Start the timer before throwing the ball again
 		call_deferred("_start_throw_timer")
+		
+		# 9. Randomize difficulty for next throw
+		call_deferred("_randomize_difficulty")
+
+func _randomize_difficulty() -> void:
+	difficulty = randi_range(1, 5)
 
 func _start_throw_timer() -> void:
 	# Set the wait time based on difficulty level
@@ -56,18 +71,24 @@ func _start_throw_timer() -> void:
 	var max_wait: float
 	
 	match difficulty:
-		3:
+		5:
 			min_wait = 3.0
 			max_wait = 5.0
-		2:
+		4:
 			min_wait = 4.0
 			max_wait = 6.0
+		3:
+			min_wait = 5.0
+			max_wait = 7.0
+		2:
+			min_wait = 6.0
+			max_wait = 8.0
 		1:
-			min_wait = 5.0
-			max_wait = 7.0
+			min_wait = 7.0
+			max_wait = 9.0
 		_:
-			min_wait = 5.0
-			max_wait = 7.0
+			min_wait = 7.0
+			max_wait = 9.0
 	
 	# Set a random wait time within the range
 	var wait_time: float = randf_range(min_wait, max_wait)
