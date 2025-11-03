@@ -24,4 +24,6 @@ shape = SubResource("CircleShape2D_6t025")
 scale = Vector2(3, 3)
 texture = ExtResource("1_qedwo")
 
+[node name="Timer" type="Timer" parent="."]
+
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
