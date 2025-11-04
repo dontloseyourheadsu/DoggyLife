@@ -1,9 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://81psg7ptirra"]
+[gd_scene load_steps=7 format=3 uid="uid://81psg7ptirra"]
 
 [ext_resource type="Script" uid="uid://bvbupe0ngrlle" path="res://scenes/room/popups/edit_popup.gd" id="1_1e46y"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_qs1y4"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="2_1e46y"]
-[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="3_54fjg"]
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="4_5y1oj"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0jbip"]
@@ -122,10 +121,5 @@ offset_bottom = 589.0
 scale = Vector2(2, 2)
 size_flags_vertical = 3
 texture_normal = ExtResource("4_5y1oj")
-
-[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("3_54fjg")
-autoplay = true
-parameters/looping = true
 
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]

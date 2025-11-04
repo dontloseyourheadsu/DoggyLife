@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://cjvn200fttr3n"]
+[gd_scene load_steps=11 format=3 uid="uid://cjvn200fttr3n"]
 
 [ext_resource type="Script" uid="uid://d3garcjnys56m" path="res://scenes/menus/shop/shop.gd" id="1_hpvc8"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="1_oui4f"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="3_6mgri"]
 [ext_resource type="Texture2D" uid="uid://c0854hc6282os" path="res://ui/buttons/button-couch.png" id="3_7xc3h"]
 [ext_resource type="Texture2D" uid="uid://c7dyhefwixg5o" path="res://ui/buttons/button-dog-face.png" id="4_6mgri"]
-[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="4_hpvc8"]
 [ext_resource type="PackedScene" uid="uid://dmyjlacq8uf03" path="res://shared/scenes/coins_container_display.tscn" id="4_m2rju"]
 [ext_resource type="Texture2D" uid="uid://dupl0giv52k7q" path="res://ui/buttons/button-floor-tile.png" id="5_hpvc8"]
 [ext_resource type="Texture2D" uid="uid://dt13m0s4yg6dk" path="res://ui/containers/container-secondary.png" id="8_m2rju"]
@@ -207,11 +206,6 @@ size_flags_vertical = 0
 theme_override_font_sizes/font_size = 24
 text = "999"
 horizontal_alignment = 2
-
-[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("4_hpvc8")
-autoplay = true
-parameters/looping = true
 
 [connection signal="pressed" from="Container/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="Container/TabNavigation/ItemsTabButton" to="." method="_on_items_tab_button_pressed"]
