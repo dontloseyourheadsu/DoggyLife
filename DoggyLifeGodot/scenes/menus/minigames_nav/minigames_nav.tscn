@@ -1,11 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://40ombcyqniqt"]
+[gd_scene load_steps=8 format=3 uid="uid://40ombcyqniqt"]
 
 [ext_resource type="Script" uid="uid://pqfbq14ft72c" path="res://scenes/menus/minigames_nav/minigames_nav.gd" id="1_0nguh"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_spkjx"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_x7iem"]
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="4_qbev7"]
 [ext_resource type="Texture2D" uid="uid://byosdnabw3x7k" path="res://sprites/balls/red-ball.png" id="4_suyt4"]
-[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_e2e0o"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
 
@@ -105,11 +104,6 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 size_flags_stretch_ratio = 0.38
 texture_normal = ExtResource("4_qbev7")
-
-[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("5_e2e0o")
-autoplay = true
-parameters/looping = true
 
 [connection signal="item_selected" from="MarginContainer/VBoxContainer/ScrollContainer/MinigamesList" to="." method="_on_minigames_list_item_selected"]
 [connection signal="pressed" from="BackButton" to="." method="_on_button_pressed"]

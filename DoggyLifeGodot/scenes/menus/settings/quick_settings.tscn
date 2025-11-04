@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3 uid="uid://2ffuhh1f5i6k"]
 
 [ext_resource type="Script" uid="uid://coi66xgg2n38r" path="res://scenes/menus/settings/quick_settings.gd" id="1_kxsdx"]
-[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="2_lafk5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="2_vnlla"]
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_2naqa"]
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="4_s1heo"]
+[ext_resource type="Texture2D" uid="uid://dt13m0s4yg6dk" path="res://ui/containers/container-secondary.png" id="5_ydafi"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
 
@@ -113,11 +113,27 @@ size_flags_vertical = 4
 size_flags_stretch_ratio = 0.38
 texture_normal = ExtResource("4_s1heo")
 
-[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("2_lafk5")
-autoplay = true
-parameters/looping = true
+[node name="SaveButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 581.0
+offset_top = 517.0
+offset_right = 613.0
+offset_bottom = 549.0
+scale = Vector2(4, 1.5)
+texture_normal = ExtResource("5_ydafi")
 
+[node name="Label" type="Label" parent="SaveButton"]
+layout_mode = 0
+offset_left = 7.950012
+offset_top = 12.000305
+offset_right = 71.95001
+offset_bottom = 28.000305
+scale = Vector2(0.25, 0.7)
+theme_override_font_sizes/font_size = 16
+text = "SAVE"
+
+[connection signal="drag_ended" from="MarginContainer/VBoxContainer/Volume" to="." method="_on_volume_drag_ended"]
 [connection signal="value_changed" from="MarginContainer/VBoxContainer/Volume" to="." method="_on_volume_value_changed"]
 [connection signal="toggled" from="MarginContainer/VBoxContainer/HBoxContainer/Mute" to="." method="_on_check_box_toggled"]
 [connection signal="pressed" from="BackButton" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="SaveButton" to="." method="_on_save_button_pressed"]

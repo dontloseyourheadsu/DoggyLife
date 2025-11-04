@@ -25,7 +25,6 @@ extends Node2D
 @onready var wall_btn_switch: BaseButton = $Camera2D/WallItemsControls/SwitchButton
 @onready var wall_btn_delete: BaseButton = $Camera2D/WallItemsControls/DeleteButton
 @onready var room_dog: Node = get_node("Camera2D/FloorLayer/White-dog")
-const AudioUtilsScript = preload("res://shared/scripts/audio_utils.gd")
 # Use global class_name TileSelectionStore (defined in tile_selection_store.gd)
 const DELIMITER_ATLAS_COORDINATES := Vector2i(39, 0)
 const HIDDEN_WALL_TILE_COORDINATE := Vector2i(-4, -3) # Legacy default; superseded by dynamic axes below
@@ -126,8 +125,7 @@ func _ready():
 	# Connect the shop button signal
 	if shop_button:
 		shop_button.pressed.connect(_on_shop_button_pressed)
-	# Apply saved audio settings on scene load
-	AudioUtilsScript.load_and_apply()
+
 	# Enable per-frame processing for drag and hover handling
 	set_process(true)
 	# Prepare the SelectedSprite so it doesn't block input and stays hidden until used
