@@ -1,11 +1,10 @@
-[gd_scene load_steps=37 format=4 uid="uid://dwlfn2l5as1kx"]
+[gd_scene load_steps=36 format=4 uid="uid://dwlfn2l5as1kx"]
 
 [ext_resource type="Script" uid="uid://bfpmeme0glgng" path="res://scenes/room/room.gd" id="1_cy34l"]
 [ext_resource type="PackedScene" uid="uid://ch4ywalnwhk3v" path="res://scenes/room/room-dog.tscn" id="2_j33j0"]
 [ext_resource type="Script" uid="uid://dyj3yynr8lg8n" path="res://scenes/room/tiles/floor_layer.gd" id="2_tku2a"]
 [ext_resource type="Texture2D" uid="uid://fhwsqqgw1t27" path="res://scenes/room/tiles/floor-tiles.png" id="3_lbx1e"]
 [ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="5_fntg6"]
-[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="5_qx3y5"]
 [ext_resource type="Texture2D" uid="uid://2j1lixeg62or" path="res://shared/images/stripes.png" id="6_et4wo"]
 [ext_resource type="Texture2D" uid="uid://c2g43srrg4k70" path="res://sprites/decoration/floor/floor-sprites.png" id="6_jp1e5"]
 [ext_resource type="Texture2D" uid="uid://4wxa2b4ntjwr" path="res://scenes/room/tiles/wall-tiles.png" id="6_lbx1e"]
@@ -292,11 +291,6 @@ z_index = 2
 y_sort_enabled = true
 position = Vector2(0, -59)
 tile_set = SubResource("TileSet_v5g04")
-
-[node name="MatchaGreenTea" type="AudioStreamPlayer" parent="Camera2D"]
-stream = ExtResource("5_qx3y5")
-autoplay = true
-parameters/looping = true
 
 [node name="OptionsContainer" type="Control" parent="Camera2D"]
 layout_mode = 3

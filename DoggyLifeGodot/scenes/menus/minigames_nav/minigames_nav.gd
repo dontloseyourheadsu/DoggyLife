@@ -14,8 +14,6 @@ func _on_button_pressed() -> void:
 func _on_minigames_list_item_selected(index: int) -> void:
 	var scene
 	
-	print_debug(index)
-	
 	# Select scene to play
 	if index == 0:
 		scene = load("res://scenes/catch-the-ball/catch_ball_miningame.tscn").instantiate()
