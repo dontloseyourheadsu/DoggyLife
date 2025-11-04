@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=9 format=3 uid="uid://cnld8djuw1qpf"]
+[gd_resource type="Theme" load_steps=13 format=3 uid="uid://cnld8djuw1qpf"]
 
 [ext_resource type="FontFile" uid="uid://ktpqor7f6673" path="res://fonts/PressStart2P-Regular.ttf" id="1_rjgu6"]
 
@@ -25,7 +25,15 @@ shadow_color = Color(0, 0, 0, 1)
 shadow_size = 8
 shadow_offset = Vector2(-3, 2)
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vu6l5"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ydht1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8gw6x"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_g21io"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7ceur"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rjgu6"]
 
@@ -50,7 +58,11 @@ Button/fonts/font = ExtResource("1_rjgu6")
 Button/styles/hover = SubResource("StyleBoxFlat_rjgu6")
 Button/styles/normal = SubResource("StyleBoxFlat_rjgu6")
 Button/styles/pressed = SubResource("StyleBoxFlat_vu6l5")
-CheckBox/styles/normal = SubResource("StyleBoxEmpty_ydht1")
+CheckBox/styles/focus = SubResource("StyleBoxEmpty_vu6l5")
+CheckBox/styles/hover = SubResource("StyleBoxEmpty_ydht1")
+CheckBox/styles/hover_pressed = SubResource("StyleBoxEmpty_8gw6x")
+CheckBox/styles/normal = SubResource("StyleBoxEmpty_g21io")
+CheckBox/styles/pressed = SubResource("StyleBoxEmpty_7ceur")
 ItemList/colors/font_color = Color(1, 1, 1, 1)
 ItemList/styles/panel = SubResource("StyleBoxEmpty_rjgu6")
 ScrollContainer/styles/panel = SubResource("StyleBoxFlat_ydht1")
