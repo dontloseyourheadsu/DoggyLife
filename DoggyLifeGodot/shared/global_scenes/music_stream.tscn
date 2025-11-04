@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://b00ttshb3pm1k"]
+
+[ext_resource type="AudioStream" uid="uid://bdrpodbxf1ukf" path="res://music/Matcha Green Tea.mp3" id="1_h5tvi"]
+[ext_resource type="Script" uid="uid://dy0n3nhy6ah2n" path="res://shared/global_scenes/music_stream.gd" id="2_2wtkm"]
+
+[node name="MusciStream" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_h5tvi")
+autoplay = true
+bus = &"Music"
+parameters/looping = false
+script = ExtResource("2_2wtkm")
