@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://0t4ddodo136m"]
+
+[ext_resource type="Script" uid="uid://cwyt0pgnb7eod" path="res://scenes/fish-capture/fishes/fish.gd" id="1_hiixh"]
+[ext_resource type="Texture2D" uid="uid://b2tpcbpy1mfsk" path="res://scenes/fish-capture/fishes/images/fresh_water/bass.png" id="2_j4jnu"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_j4jnu"]
+
+[node name="Fish" type="RigidBody2D"]
+gravity_scale = 0.0
+linear_damp = 2.0
+script = ExtResource("1_hiixh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(3, 3)
+shape = SubResource("CircleShape2D_j4jnu")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("2_j4jnu")
