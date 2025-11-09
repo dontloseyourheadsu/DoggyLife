@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b2tpcbpy1mfsk"
-path="res://.godot/imported/bass.png-7fef7f876ec54f4abead51e5f5105631.ctex"
+uid="uid://ftdxjtg1fhmb"
+path="res://.godot/imported/rusty_can_outline.png-9d9f71a0d3d4080f53c4b8903fb69d27.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/fresh_water/bass.png"
-dest_files=["res://.godot/imported/bass.png-7fef7f876ec54f4abead51e5f5105631.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/miscellaneous/rusty_can_outline.png"
+dest_files=["res://.godot/imported/rusty_can_outline.png-9d9f71a0d3d4080f53c4b8903fb69d27.ctex"]
 
 [params]
 

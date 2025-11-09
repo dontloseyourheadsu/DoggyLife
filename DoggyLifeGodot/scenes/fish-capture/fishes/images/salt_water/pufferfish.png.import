@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bhxph02urraqt"
-path="res://.godot/imported/clownfish_outline.png-371426964e7c96973af885ff03842492.ctex"
+uid="uid://chhbxcs2xibwp"
+path="res://.godot/imported/pufferfish.png-461e49c768a95d76919ff6b491230c2a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/clownfish_outline.png"
-dest_files=["res://.godot/imported/clownfish_outline.png-371426964e7c96973af885ff03842492.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/pufferfish.png"
+dest_files=["res://.godot/imported/pufferfish.png-461e49c768a95d76919ff6b491230c2a.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chhbxcs2xibwp"
-path="res://.godot/imported/pufferfish.png-ddb627d26dc5086d7c04b830262b374a.ctex"
+uid="uid://bq44px8y73te2"
+path="res://.godot/imported/angelfish_outline.png-d33aed78fa3b5537628747b528d4bf0a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/pufferfish.png"
-dest_files=["res://.godot/imported/pufferfish.png-ddb627d26dc5086d7c04b830262b374a.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/fresh_water/angelfish_outline.png"
+dest_files=["res://.godot/imported/angelfish_outline.png-d33aed78fa3b5537628747b528d4bf0a.ctex"]
 
 [params]
 

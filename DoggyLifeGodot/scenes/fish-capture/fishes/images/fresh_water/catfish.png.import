@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyuyxw8b7nlaj"
-path="res://.godot/imported/anchovy.png-a4fbed89d064c8cdb28e46b1bc455a95.ctex"
+uid="uid://bs1igtp1d0gn3"
+path="res://.godot/imported/catfish.png-146d7d3f6e02766ec8d27cce0b58b2a0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/anchovy.png"
-dest_files=["res://.godot/imported/anchovy.png-a4fbed89d064c8cdb28e46b1bc455a95.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/fresh_water/catfish.png"
+dest_files=["res://.godot/imported/catfish.png-146d7d3f6e02766ec8d27cce0b58b2a0.ctex"]
 
 [params]
 

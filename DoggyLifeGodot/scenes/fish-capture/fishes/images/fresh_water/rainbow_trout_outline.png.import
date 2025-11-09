@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djmreokatjk0a"
-path="res://.godot/imported/clownfish.png-e7c96618248f205ef6d12d9843d00787.ctex"
+uid="uid://h5c5q88mlenn"
+path="res://.godot/imported/rainbow_trout_outline.png-e2a8e478ad7d1beca2860adcbb99c90d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/clownfish.png"
-dest_files=["res://.godot/imported/clownfish.png-e7c96618248f205ef6d12d9843d00787.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/fresh_water/rainbow_trout_outline.png"
+dest_files=["res://.godot/imported/rainbow_trout_outline.png-e2a8e478ad7d1beca2860adcbb99c90d.ctex"]
 
 [params]
 

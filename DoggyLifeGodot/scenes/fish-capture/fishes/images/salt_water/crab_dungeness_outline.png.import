@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvfhgo4yfdqq2"
-path="res://.godot/imported/rusty_can.png-226196574ea3f790ffb6405b1bcd7140.ctex"
+uid="uid://bqh2b1flikwk4"
+path="res://.godot/imported/crab_dungeness_outline.png-cb4b5436c319b1f75a267a9687e17903.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/miscellaneous/rusty_can.png"
-dest_files=["res://.godot/imported/rusty_can.png-226196574ea3f790ffb6405b1bcd7140.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/crab_dungeness_outline.png"
+dest_files=["res://.godot/imported/crab_dungeness_outline.png-cb4b5436c319b1f75a267a9687e17903.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bs1igtp1d0gn3"
-path="res://.godot/imported/catfish.png-3b9e0e09404c2f925e44c5e4714fe7d8.ctex"
+uid="uid://kr6jk7bvtcq4"
+path="res://.godot/imported/bass_outline.png-fc3db7d1c950bf18e4c8784e4ab90f2b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/fresh_water/catfish.png"
-dest_files=["res://.godot/imported/catfish.png-3b9e0e09404c2f925e44c5e4714fe7d8.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/fresh_water/bass_outline.png"
+dest_files=["res://.godot/imported/bass_outline.png-fc3db7d1c950bf18e4c8784e4ab90f2b.ctex"]
 
 [params]
 

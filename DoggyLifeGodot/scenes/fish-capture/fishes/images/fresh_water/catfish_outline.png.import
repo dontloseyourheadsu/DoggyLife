@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bxu5b375b4muh"
-path="res://.godot/imported/crab_dungeness.png-f28db7532c6e2388c9db21a75d638733.ctex"
+uid="uid://r1qxi067idgg"
+path="res://.godot/imported/catfish_outline.png-d4fa49364aa81bc9c38338bb6417b75d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/crab_dungeness.png"
-dest_files=["res://.godot/imported/crab_dungeness.png-f28db7532c6e2388c9db21a75d638733.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/fresh_water/catfish_outline.png"
+dest_files=["res://.godot/imported/catfish_outline.png-d4fa49364aa81bc9c38338bb6417b75d.ctex"]
 
 [params]
 

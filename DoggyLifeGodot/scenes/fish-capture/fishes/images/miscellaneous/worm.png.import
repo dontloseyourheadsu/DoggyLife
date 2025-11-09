@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctcxnu7yyuup4"
-path="res://.godot/imported/pufferfish_outline.png-3d2ca8131e9efd43595fcd04f7c250c4.ctex"
+uid="uid://b342ck8u6plg0"
+path="res://.godot/imported/worm.png-658f9692a3668c01e06db287fccfffb4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/pufferfish_outline.png"
-dest_files=["res://.godot/imported/pufferfish_outline.png-3d2ca8131e9efd43595fcd04f7c250c4.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/miscellaneous/worm.png"
+dest_files=["res://.godot/imported/worm.png-658f9692a3668c01e06db287fccfffb4.ctex"]
 
 [params]
 

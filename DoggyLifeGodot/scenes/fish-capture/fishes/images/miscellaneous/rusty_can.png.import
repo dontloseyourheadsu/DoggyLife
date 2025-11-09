@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ba288yoe7u6pl"
-path="res://.godot/imported/worm_outline.png-07edb25f5f0dfa19d5042edcd5101228.ctex"
+uid="uid://bvfhgo4yfdqq2"
+path="res://.godot/imported/rusty_can.png-afc7647a5755b10a9720647efb94ef72.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/miscellaneous/worm_outline.png"
-dest_files=["res://.godot/imported/worm_outline.png-07edb25f5f0dfa19d5042edcd5101228.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/miscellaneous/rusty_can.png"
+dest_files=["res://.godot/imported/rusty_can.png-afc7647a5755b10a9720647efb94ef72.ctex"]
 
 [params]
 

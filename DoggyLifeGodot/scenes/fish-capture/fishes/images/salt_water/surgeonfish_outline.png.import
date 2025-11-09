@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ftdxjtg1fhmb"
-path="res://.godot/imported/rusty_can_outline.png-f1a3301c88307d71db3ad62026d77a41.ctex"
+uid="uid://bavnnjd8ljaeq"
+path="res://.godot/imported/surgeonfish_outline.png-9f91c26739475ccf893efc29e2c3274c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/miscellaneous/rusty_can_outline.png"
-dest_files=["res://.godot/imported/rusty_can_outline.png-f1a3301c88307d71db3ad62026d77a41.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/surgeonfish_outline.png"
+dest_files=["res://.godot/imported/surgeonfish_outline.png-9f91c26739475ccf893efc29e2c3274c.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b342ck8u6plg0"
-path="res://.godot/imported/worm.png-626d30b1cf5839de8b08f3f79dae0c43.ctex"
+uid="uid://bhxph02urraqt"
+path="res://.godot/imported/clownfish_outline.png-7383de69ed647d693baac3e2528ad93b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/miscellaneous/worm.png"
-dest_files=["res://.godot/imported/worm.png-626d30b1cf5839de8b08f3f79dae0c43.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/clownfish_outline.png"
+dest_files=["res://.godot/imported/clownfish_outline.png-7383de69ed647d693baac3e2528ad93b.ctex"]
 
 [params]
 

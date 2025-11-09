@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://boascqnmt33p0"
-path="res://.godot/imported/anchovy_outline.png-3d6a503d09767f821b0b13895a66d231.ctex"
+uid="uid://ba288yoe7u6pl"
+path="res://.godot/imported/worm_outline.png-03d6d94bc2f8e22b5d51efb24ec454d8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/anchovy_outline.png"
-dest_files=["res://.godot/imported/anchovy_outline.png-3d6a503d09767f821b0b13895a66d231.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/miscellaneous/worm_outline.png"
+dest_files=["res://.godot/imported/worm_outline.png-03d6d94bc2f8e22b5d51efb24ec454d8.ctex"]
 
 [params]
 

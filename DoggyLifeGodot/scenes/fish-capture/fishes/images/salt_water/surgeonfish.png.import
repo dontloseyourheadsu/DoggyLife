@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://f42mca2whsmy"
-path="res://.godot/imported/surgeonfish.png-7eba0a1d064e273dd85a64800ab38f78.ctex"
+path="res://.godot/imported/surgeonfish.png-f0cd7922e9d1877c39b07b688a18eae9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/salt_water/surgeonfish.png"
-dest_files=["res://.godot/imported/surgeonfish.png-7eba0a1d064e273dd85a64800ab38f78.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/surgeonfish.png"
+dest_files=["res://.godot/imported/surgeonfish.png-f0cd7922e9d1877c39b07b688a18eae9.ctex"]
 
 [params]
 

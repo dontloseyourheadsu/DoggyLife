@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bq44px8y73te2"
-path="res://.godot/imported/angelfish_outline.png-1ab6ca4da2fb6982f8ce192aca13547c.ctex"
+uid="uid://b2tpcbpy1mfsk"
+path="res://.godot/imported/bass.png-8dfd76bb68aafca1ef4541a935fa4d97.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/fresh_water/angelfish_outline.png"
-dest_files=["res://.godot/imported/angelfish_outline.png-1ab6ca4da2fb6982f8ce192aca13547c.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/fresh_water/bass.png"
+dest_files=["res://.godot/imported/bass.png-8dfd76bb68aafca1ef4541a935fa4d97.ctex"]
 
 [params]
 

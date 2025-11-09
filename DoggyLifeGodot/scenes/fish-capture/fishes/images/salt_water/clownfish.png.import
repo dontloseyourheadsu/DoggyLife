@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bj6khevl4y86b"
-path="res://.godot/imported/goldfish.png-e9f15d3f370331b363035820ce104727.ctex"
+uid="uid://djmreokatjk0a"
+path="res://.godot/imported/clownfish.png-99553845c0afe83dc0427e0f1d0cc410.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/fresh_water/goldfish.png"
-dest_files=["res://.godot/imported/goldfish.png-e9f15d3f370331b363035820ce104727.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/clownfish.png"
+dest_files=["res://.godot/imported/clownfish.png-99553845c0afe83dc0427e0f1d0cc410.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://h5c5q88mlenn"
-path="res://.godot/imported/rainbow_trout_outline.png-5e10434e92c2389b1cbcae16a13a26b6.ctex"
+uid="uid://boascqnmt33p0"
+path="res://.godot/imported/anchovy_outline.png-cb4c63468da10af9618c40e912f6264d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/fish-capture/images/fishes/fresh_water/rainbow_trout_outline.png"
-dest_files=["res://.godot/imported/rainbow_trout_outline.png-5e10434e92c2389b1cbcae16a13a26b6.ctex"]
+source_file="res://scenes/fish-capture/fishes/images/salt_water/anchovy_outline.png"
+dest_files=["res://.godot/imported/anchovy_outline.png-cb4c63468da10af9618c40e912f6264d.ctex"]
 
 [params]
 
