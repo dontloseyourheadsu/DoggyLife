@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3 uid="uid://dbu640i2i35jo"]
+
+[ext_resource type="Texture2D" uid="uid://cdvvknomqaei1" path="res://scenes/fish-capture/images/fisher/fishing-person.png" id="1_p5ari"]
+[ext_resource type="Script" uid="uid://cai2c31rbo3j8" path="res://scenes/fish-capture/fisher/fisher.gd" id="1_vvg8g"]
+[ext_resource type="Texture2D" uid="uid://cuda38jhh3px3" path="res://scenes/fish-capture/images/fisher/fishing-person-arm.png" id="2_idfit"]
+[ext_resource type="Texture2D" uid="uid://byosdnabw3x7k" path="res://sprites/balls/red-ball.png" id="4_vfpe6"]
+[ext_resource type="Script" path="res://scenes/fish-capture/fisher/ball.gd" id="5_ballsc"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tng5a"]
+radius = 1.0
+
+[node name="Fisher" type="Sprite2D"]
+texture = ExtResource("1_p5ari")
+script = ExtResource("1_vvg8g")
+
+[node name="Arm" type="Sprite2D" parent="."]
+position = Vector2(-1, 0)
+rotation = -1.5707964
+texture = ExtResource("2_idfit")
+
+[node name="Ball" type="RigidBody2D" parent="."]
+position = Vector2(-0.5, -3)
+script = ExtResource("5_ballsc")
+
+[node name="Sprite2D" type="Sprite2D" parent="Ball"]
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("4_vfpe6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ball"]
+shape = SubResource("CircleShape2D_tng5a")
