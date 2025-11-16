@@ -1,10 +1,26 @@
-[gd_scene load_steps=6 format=3 uid="uid://tmccxlj83fna"]
+[gd_scene load_steps=13 format=3 uid="uid://tmccxlj83fna"]
 
 [ext_resource type="Script" uid="uid://0887ir3clhju" path="res://scenes/fish-capture/fish_capture.gd" id="1_l2q34"]
 [ext_resource type="Texture2D" uid="uid://bp6h26o3lgh65" path="res://scenes/fish-capture/images/backgrounds/fishing-spot-back.png" id="2_cvcl0"]
 [ext_resource type="Texture2D" uid="uid://cegj0fqqgpb8a" path="res://scenes/fish-capture/images/backgrounds/fishing-spot-water.png" id="3_187sg"]
 [ext_resource type="PackedScene" uid="uid://0t4ddodo136m" path="res://scenes/fish-capture/fishes/fish.tscn" id="3_n70py"]
 [ext_resource type="PackedScene" uid="uid://dbu640i2i35jo" path="res://scenes/fish-capture/fisher/fisher.tscn" id="5_aeaur"]
+[ext_resource type="PackedScene" uid="uid://d2ulr7hevw22q" path="res://scenes/fish-capture/dog-fisher.tscn" id="6_2q0ah"]
+[ext_resource type="Script" uid="uid://coep1helu5ya8" path="res://scenes/fish-capture/fisher/ball.gd" id="6_grgtc"]
+[ext_resource type="Texture2D" uid="uid://byosdnabw3x7k" path="res://sprites/balls/red-ball.png" id="7_6e4cr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_p054a"]
+radius = 8.062258
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2q0ah"]
+size = Vector2(78, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_grgtc"]
+size = Vector2(844, 262)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_grgtc"]
+normal = Vector2(-1, 0)
+distance = -844.0
 
 [node name="FishCapture" type="Node2D"]
 script = ExtResource("1_l2q34")
@@ -20,13 +36,49 @@ texture = ExtResource("2_cvcl0")
 
 [node name="Fish" parent="Camera2D" instance=ExtResource("3_n70py")]
 
+[node name="Fisher" parent="Camera2D" instance=ExtResource("5_aeaur")]
+position = Vector2(-264, -15.000001)
+scale = Vector2(6, 6)
+
+[node name="Ball" type="RigidBody2D" parent="Camera2D"]
+z_index = 100
+position = Vector2(-267, -35)
+freeze = true
+script = ExtResource("6_grgtc")
+
+[node name="Sprite2D" type="Sprite2D" parent="Camera2D/Ball"]
+texture = ExtResource("7_6e4cr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/Ball"]
+shape = SubResource("CircleShape2D_p054a")
+
+[node name="Dog" parent="Camera2D" instance=ExtResource("6_2q0ah")]
+position = Vector2(-260, 14)
+scale = Vector2(2, 2)
+
+[node name="Floor" type="StaticBody2D" parent="Camera2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/Floor"]
+position = Vector2(-254, 43)
+shape = SubResource("RectangleShape2D_2q0ah")
+
 [node name="Water" type="TextureRect" parent="Camera2D"]
+z_index = 10
 offset_left = -640.0
 offset_top = -360.0
 offset_right = 640.0
 offset_bottom = 360.0
 texture = ExtResource("3_187sg")
 
-[node name="Fisher" parent="Camera2D" instance=ExtResource("5_aeaur")]
-position = Vector2(-264, -15.000001)
-scale = Vector2(6, 6)
+[node name="WaterZone" type="Area2D" parent="Camera2D"]
+position = Vector2(112, 223)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/WaterZone"]
+position = Vector2(109, 6)
+shape = SubResource("RectangleShape2D_grgtc")
+
+[node name="RightWorldBoundary" type="StaticBody2D" parent="Camera2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/RightWorldBoundary"]
+position = Vector2(-205, -1)
+shape = SubResource("WorldBoundaryShape2D_grgtc")
