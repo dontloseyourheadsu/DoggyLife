@@ -4,6 +4,7 @@ extends Node2D
 @onready var background: TextureRect = $Camera2D/Background
 @onready var fisher: Sprite2D = $Camera2D/Fisher
 @onready var ball: RigidBody2D = $Camera2D/Ball
+@onready var dog: CharacterBody2D = $Camera2D/Dog
 
 # Fisher is scaled 6x, so forces need to be smaller for visible arc
 const THROW_FORCE: Vector2 = Vector2(500, -100) # Adjusted for 6x scale
@@ -43,6 +44,9 @@ func _on_left_click() -> void:
 		# Reset fisher arm animation
 		if fisher.has_method("reset_arm"):
 			fisher.call("reset_arm")
+		# Reset dog position and state
+		if is_instance_valid(dog) and dog.has_method("reset_dog"):
+			dog.call("reset_dog")
 	else:
 		# Trigger fisher arm animation, then throw ball
 		if fisher.has_method("trigger_throw"):
@@ -55,3 +59,6 @@ func _on_fisher_throw_completed() -> void:
 	# Fisher arm animation complete, now throw the ball
 	if is_instance_valid(ball) and ball.has_method("request_throw"):
 		ball.call("request_throw", THROW_FORCE)
+	# Also trigger the dog to walk and fall into water (no chasing the ball)
+	if is_instance_valid(dog) and dog.has_method("trigger_fall_to_water"):
+		dog.call("trigger_fall_to_water")
