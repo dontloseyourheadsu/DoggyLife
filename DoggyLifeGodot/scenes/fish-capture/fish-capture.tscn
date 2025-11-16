@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://tmccxlj83fna"]
+[gd_scene load_steps=13 format=3 uid="uid://tmccxlj83fna"]
 
 [ext_resource type="Script" uid="uid://0887ir3clhju" path="res://scenes/fish-capture/fish_capture.gd" id="1_l2q34"]
 [ext_resource type="Texture2D" uid="uid://bp6h26o3lgh65" path="res://scenes/fish-capture/images/backgrounds/fishing-spot-back.png" id="2_cvcl0"]
@@ -15,6 +15,13 @@ radius = 8.062258
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2q0ah"]
 size = Vector2(78, 20)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_grgtc"]
+size = Vector2(844, 262)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_grgtc"]
+normal = Vector2(-1, 0)
+distance = -844.0
+
 [node name="FishCapture" type="Node2D"]
 script = ExtResource("1_l2q34")
 
@@ -28,13 +35,6 @@ offset_bottom = 360.0
 texture = ExtResource("2_cvcl0")
 
 [node name="Fish" parent="Camera2D" instance=ExtResource("3_n70py")]
-
-[node name="Water" type="TextureRect" parent="Camera2D"]
-offset_left = -640.0
-offset_top = -360.0
-offset_right = 640.0
-offset_bottom = 360.0
-texture = ExtResource("3_187sg")
 
 [node name="Fisher" parent="Camera2D" instance=ExtResource("5_aeaur")]
 position = Vector2(-264, -15.000001)
@@ -56,8 +56,29 @@ shape = SubResource("CircleShape2D_p054a")
 position = Vector2(-260, 14)
 scale = Vector2(2, 2)
 
-[node name="StaticBody2D" type="StaticBody2D" parent="Camera2D"]
+[node name="Floor" type="StaticBody2D" parent="Camera2D"]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/StaticBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/Floor"]
 position = Vector2(-254, 43)
 shape = SubResource("RectangleShape2D_2q0ah")
+
+[node name="Water" type="TextureRect" parent="Camera2D"]
+z_index = 10
+offset_left = -640.0
+offset_top = -360.0
+offset_right = 640.0
+offset_bottom = 360.0
+texture = ExtResource("3_187sg")
+
+[node name="WaterZone" type="Area2D" parent="Camera2D"]
+position = Vector2(112, 223)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/WaterZone"]
+position = Vector2(109, 6)
+shape = SubResource("RectangleShape2D_grgtc")
+
+[node name="RightWorldBoundary" type="StaticBody2D" parent="Camera2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/RightWorldBoundary"]
+position = Vector2(-205, -1)
+shape = SubResource("WorldBoundaryShape2D_grgtc")
