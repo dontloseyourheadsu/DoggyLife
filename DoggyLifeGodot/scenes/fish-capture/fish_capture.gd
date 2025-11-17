@@ -6,9 +6,16 @@ extends Node2D
 @onready var fisher: Sprite2D = $Camera2D/Fisher
 @onready var ball: RigidBody2D = $Camera2D/Ball
 @onready var dog: CharacterBody2D = $Camera2D/Dog
+@onready var throw_force_bar: TextureProgressBar = $Camera2D/ThrowForce
 
-# Fisher is scaled 6x, so forces need to be smaller for visible arc
-const THROW_FORCE: Vector2 = Vector2(500, -100) # Adjusted for 6x scale
+# Throw force calculation based on progress bar
+const MIN_THROW_FORCE: Vector2 = Vector2(100, -50) # Minimum throw force (close distance)
+const BASE_VERTICAL_FORCE: float = -100.0 # Base upward force for arc
+var max_horizontal_force: float = 0.0 # Calculated based on water zone width
+
+# Progress bar settings
+const FORCE_BUILD_SPEED: float = 50.0 # How fast the bar fills per second
+var is_charging: bool = false
 
 @export var num_fish: int = 10 # Number of fish to spawn
 @export var min_fish_speed: float = 80.0 # Minimum fish swim speed
@@ -19,11 +26,53 @@ const THROW_FORCE: Vector2 = Vector2(500, -100) # Adjusted for 6x scale
 const FISH_SCENE: String = "res://scenes/fish-capture/fishes/fish.tscn"
 
 func _ready() -> void:
+	_calculate_max_throw_force()
 	_spawn_fish()
+	throw_force_bar.value = throw_force_bar.min_value
+
+func _process(delta: float) -> void:
+	if is_charging:
+		# Build up throw force
+		throw_force_bar.value = min(throw_force_bar.value + FORCE_BUILD_SPEED * delta, throw_force_bar.max_value)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_on_left_click()
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_on_left_click_pressed()
+		else:
+			_on_left_click_released()
+
+func _calculate_max_throw_force() -> void:
+	# Calculate the maximum throw force needed to reach the end of the water zone
+	if not is_instance_valid(water_zone):
+		push_error("WaterZone not found for force calculation")
+		max_horizontal_force = 500.0 # Fallback
+		return
+	
+	var collision_shape = water_zone.get_node("CollisionShape2D")
+	if not collision_shape or not collision_shape.shape:
+		push_error("WaterZone CollisionShape2D not found")
+		max_horizontal_force = 500.0 # Fallback
+		return
+	
+	var shape = collision_shape.shape as RectangleShape2D
+	if not shape:
+		push_error("WaterZone shape is not a RectangleShape2D")
+		max_horizontal_force = 500.0 # Fallback
+		return
+	
+	# Calculate horizontal distance from ball to end of water zone
+	var zone_pos = water_zone.global_position
+	var shape_offset = collision_shape.position
+	var shape_size = shape.size
+	
+	var water_zone_right = zone_pos.x + shape_offset.x + shape_size.x / 2.0
+	var ball_start_x = ball.global_position.x
+	var distance_to_end = water_zone_right - ball_start_x
+	
+	# Set max force to cover this distance (empirically tuned for physics)
+	# Adjust this multiplier if needed based on testing
+	max_horizontal_force = distance_to_end * 0.8
 
 func _calculate_swim_bounds() -> Rect2:
 	# Get WaterZone's actual collision shape bounds
@@ -96,32 +145,58 @@ func _spawn_fish() -> void:
 		)
 		fish_instance.global_position = pos
 
-func _on_left_click() -> void:
+func _on_left_click_pressed() -> void:
+	# Start charging the throw or reset if already thrown
 	if not is_instance_valid(ball) or not is_instance_valid(fisher):
 		return
-	# Toggle behavior: if ball not thrown, throw with fisher animation; else reset.
+	
 	if ball.has_method("is_thrown") and ball.call("is_thrown"):
-		# Reset ball
+		# Ball already thrown - reset everything
 		if ball.has_method("request_reset"):
 			ball.call("request_reset")
-		# Reset fisher arm animation
 		if fisher.has_method("reset_arm"):
 			fisher.call("reset_arm")
-		# Reset dog position and state
 		if is_instance_valid(dog) and dog.has_method("reset_dog"):
 			dog.call("reset_dog")
+		throw_force_bar.value = throw_force_bar.min_value
+		is_charging = false
 	else:
-		# Trigger fisher arm animation, then throw ball
-		if fisher.has_method("trigger_throw"):
-			fisher.call("trigger_throw", THROW_FORCE)
-			# Connect to throw_completed signal to actually throw the ball
-			if not fisher.is_connected("throw_completed", _on_fisher_throw_completed):
-				fisher.connect("throw_completed", _on_fisher_throw_completed)
+		# Start charging
+		is_charging = true
+		throw_force_bar.value = throw_force_bar.min_value
+
+func _on_left_click_released() -> void:
+	# Release the throw with current force
+	if not is_charging:
+		return
+	
+	is_charging = false
+	
+	if not is_instance_valid(ball) or not is_instance_valid(fisher):
+		return
+	
+	# Calculate throw force based on progress bar value
+	var force_percentage = (throw_force_bar.value - throw_force_bar.min_value) / (throw_force_bar.max_value - throw_force_bar.min_value)
+	var horizontal_force = lerp(MIN_THROW_FORCE.x, max_horizontal_force, force_percentage)
+	var vertical_force = BASE_VERTICAL_FORCE # Keep vertical force constant for consistent arc
+	
+	var throw_force = Vector2(horizontal_force, vertical_force)
+	
+	# Trigger fisher arm animation, then throw ball
+	if fisher.has_method("trigger_throw"):
+		fisher.call("trigger_throw", throw_force)
+		# Store throw force for when animation completes
+		_pending_throw_force = throw_force
+		# Connect to throw_completed signal to actually throw the ball
+		if not fisher.is_connected("throw_completed", _on_fisher_throw_completed):
+			fisher.connect("throw_completed", _on_fisher_throw_completed)
+
+var _pending_throw_force: Vector2 = Vector2.ZERO
 
 func _on_fisher_throw_completed() -> void:
-	# Fisher arm animation complete, now throw the ball
+	# Fisher arm animation complete, now throw the ball with stored force
 	if is_instance_valid(ball) and ball.has_method("request_throw"):
-		ball.call("request_throw", THROW_FORCE)
+		ball.call("request_throw", _pending_throw_force)
 	# Also trigger the dog to walk and fall into water (no chasing the ball)
 	if is_instance_valid(dog) and dog.has_method("trigger_fall_to_water"):
 		dog.call("trigger_fall_to_water")
