@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://tmccxlj83fna"]
+[gd_scene load_steps=16 format=3 uid="uid://tmccxlj83fna"]
 
 [ext_resource type="Script" uid="uid://0887ir3clhju" path="res://scenes/fish-capture/fish_capture.gd" id="1_l2q34"]
 [ext_resource type="Texture2D" uid="uid://bp6h26o3lgh65" path="res://scenes/fish-capture/images/backgrounds/fishing-spot-back.png" id="2_cvcl0"]
@@ -7,6 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://d2ulr7hevw22q" path="res://scenes/fish-capture/dog-fisher.tscn" id="6_2q0ah"]
 [ext_resource type="Script" uid="uid://coep1helu5ya8" path="res://scenes/fish-capture/fisher/ball.gd" id="6_grgtc"]
 [ext_resource type="Texture2D" uid="uid://byosdnabw3x7k" path="res://sprites/balls/red-ball.png" id="7_6e4cr"]
+[ext_resource type="Texture2D" uid="uid://cmjj5dfq4qpk4" path="res://ui/icons/loadbar-back.png" id="8_p054a"]
+[ext_resource type="Texture2D" uid="uid://bkru7fkodkkv8" path="res://ui/icons/loadbar.png" id="9_d2hyk"]
+[ext_resource type="Texture2D" uid="uid://i8dijsarw1yr" path="res://ui/icons/loadbar-progress.png" id="10_mnwdw"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_p054a"]
 radius = 8.062258
@@ -91,3 +94,14 @@ position = Vector2(-199, 221)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/LeftBoundary"]
 position = Vector2(-16, -1)
 shape = SubResource("RectangleShape2D_6e4cr")
+
+[node name="ThrowForce" type="TextureProgressBar" parent="Camera2D"]
+offset_left = -317.0
+offset_top = -120.0
+offset_right = -285.0
+offset_bottom = -104.0
+scale = Vector2(3, 3)
+value = 10.0
+texture_under = ExtResource("8_p054a")
+texture_over = ExtResource("9_d2hyk")
+texture_progress = ExtResource("10_mnwdw")
