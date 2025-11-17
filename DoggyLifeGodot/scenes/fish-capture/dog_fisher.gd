@@ -10,6 +10,8 @@ enum State {
 }
 
 @onready var dog_animations: AnimatedSprite2D = $DogAnimations
+@onready var string_line: Line2D = $StringLine
+@onready var string_tip: Polygon2D = $StringTip
 
 var current_state: State = State.IDLE
 var initial_position: Vector2 = Vector2.ZERO
@@ -34,6 +36,25 @@ const PASSIVE_WAVE_FREQUENCY: float = 7.0
 var wave_time: float = 0.0
 var surface_y: float = 0.0 # The y-position where dog swims at surface
 
+# String (pixel rope) parameters
+const STRING_LENGTH_PIXELS: float = 64.0
+const STRING_SEGMENTS: int = 14
+## Low constant water ripple (slower and subtler)
+const WATER_WAVE_FREQ: float = 0.25 # Hz, gentle constant frequency
+const WATER_CURVE_AMPLITUDE: float = 1.0 # pixels of lateral curve
+const WATER_ENVELOPE_POWER: float = 1.0
+
+## Damped spring controlling rope angle based on dog horizontal velocity
+const ROPE_MAX_ANGLE_DEG: float = 24.0
+const ROPE_VELOCITY_TO_ANGLE: float = 1.6 # scale of velocity->angle mapping
+const ROPE_SPRING: float = 6.0
+const ROPE_DAMPING: float = 6.5
+const ROPE_MAX_ANGULAR_SPEED: float = 1.4 # rad/s cap for slow return
+
+var water_time: float = 0.0
+var rope_angle: float = 0.0
+var rope_ang_vel: float = 0.0
+
 func _ready() -> void:
 	initial_position = global_position
 	# Find the water zone in the scene
@@ -41,6 +62,13 @@ func _ready() -> void:
 	# Set initial animation
 	if dog_animations:
 		dog_animations.play("sit-right")
+	# Initialize string once
+	_update_string(0.0)
+	# Hide rope/tip unless swimming
+	if is_instance_valid(string_line):
+		string_line.visible = false
+	if is_instance_valid(string_tip):
+		string_tip.visible = false
 
 func _physics_process(delta: float) -> void:
 	match current_state:
@@ -48,6 +76,13 @@ func _physics_process(delta: float) -> void:
 			_process_idle_state(delta)
 		State.SWIMMING:
 			_process_swimming_state(delta)
+
+	# Update rope angle dynamics (lags behind dog movement, then dampens)
+	_update_rope_angle(delta)
+	water_time += delta
+
+	# Always update string after movement so it stays attached to the dog center
+	_update_string(delta)
 	
 	move_and_slide()
 
@@ -129,6 +164,11 @@ func _enter_swimming_state() -> void:
 
 	# Immediately switch to static swim pose
 	_set_swim_pose()
+	# Show rope and tip when swimming
+	if is_instance_valid(string_line):
+		string_line.visible = true
+	if is_instance_valid(string_tip):
+		string_tip.visible = true
 	
 	print("Dog entered swimming state")
 
@@ -137,6 +177,11 @@ func _enter_idle_state() -> void:
 	velocity = Vector2.ZERO
 	if dog_animations:
 		dog_animations.play("sit-right")
+	# Hide rope and tip outside of swimming
+	if is_instance_valid(string_line):
+		string_line.visible = false
+	if is_instance_valid(string_tip):
+		string_tip.visible = false
 	print("Dog entered idle state")
 
 func _is_in_water_zone() -> bool:
@@ -240,3 +285,48 @@ func reset_dog() -> void:
 	global_position = initial_position
 	velocity = Vector2.ZERO
 	_enter_idle_state()
+
+# --- Pixel string helpers ---
+func _update_string(delta: float) -> void:
+	if not is_instance_valid(string_line):
+		return
+
+	# Base from damped spring angle (bottom swings most)
+	var base: Vector2 = Vector2(0, STRING_LENGTH_PIXELS).rotated(rope_angle)
+	var normal: Vector2 = base.orthogonal().normalized()
+
+	var points := PackedVector2Array()
+	points.resize(STRING_SEGMENTS + 1)
+	for i in range(STRING_SEGMENTS + 1):
+		var t: float = float(i) / float(STRING_SEGMENTS)
+		# Position along the straight rope
+		var p: Vector2 = base * t
+		# Gentle constant-frequency water ripple (no per-segment frequency/phase differences)
+		var env: float = pow(t, WATER_ENVELOPE_POWER)
+		var lateral: float = WATER_CURVE_AMPLITUDE * env * sin(water_time * TAU * WATER_WAVE_FREQ)
+		p += normal * lateral
+		# Pixel snap for crispness
+		points[i] = Vector2(round(p.x), round(p.y))
+
+	string_line.points = points
+	# Always keep rope anchored at the Dog node origin
+	string_line.position = Vector2.ZERO
+	# Place 2x2 tip square at the bottom point
+	if is_instance_valid(string_tip):
+		var tip_pos: Vector2 = points[STRING_SEGMENTS]
+		string_tip.position = Vector2(round(tip_pos.x), round(tip_pos.y))
+
+func _update_rope_angle(delta: float) -> void:
+	# Map dog horizontal velocity to a target rope angle when swimming; otherwise target 0
+	var target_angle: float = 0.0
+	if current_state == State.SWIMMING:
+		var vel_ratio: float = 0.0
+		if SWIM_SPEED != 0.0:
+			vel_ratio = clamp(velocity.x / SWIM_SPEED, -1.0, 1.0)
+		target_angle = deg_to_rad(ROPE_MAX_ANGLE_DEG) * vel_ratio * ROPE_VELOCITY_TO_ANGLE
+	# Damped spring: theta'' = -k(theta - target) - c*theta'
+	var acc: float = - ROPE_SPRING * (rope_angle - target_angle) - ROPE_DAMPING * rope_ang_vel
+	rope_ang_vel += acc * delta
+	# Cap angular speed to enforce slow, heavy water feel
+	rope_ang_vel = clamp(rope_ang_vel, -ROPE_MAX_ANGULAR_SPEED, ROPE_MAX_ANGULAR_SPEED)
+	rope_angle += rope_ang_vel * delta
