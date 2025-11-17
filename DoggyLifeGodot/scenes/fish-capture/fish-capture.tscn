@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://tmccxlj83fna"]
+[gd_scene load_steps=14 format=3 uid="uid://tmccxlj83fna"]
 
 [ext_resource type="Script" uid="uid://0887ir3clhju" path="res://scenes/fish-capture/fish_capture.gd" id="1_l2q34"]
 [ext_resource type="Texture2D" uid="uid://bp6h26o3lgh65" path="res://scenes/fish-capture/images/backgrounds/fishing-spot-back.png" id="2_cvcl0"]
@@ -21,6 +21,9 @@ size = Vector2(844, 262)
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_grgtc"]
 normal = Vector2(-1, 0)
 distance = -844.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6e4cr"]
+size = Vector2(26, 284)
 
 [node name="FishCapture" type="Node2D"]
 script = ExtResource("1_l2q34")
@@ -82,3 +85,10 @@ shape = SubResource("RectangleShape2D_grgtc")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/RightWorldBoundary"]
 position = Vector2(-205, -1)
 shape = SubResource("WorldBoundaryShape2D_grgtc")
+
+[node name="LeftBoundary" type="StaticBody2D" parent="Camera2D"]
+position = Vector2(-199, 221)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Camera2D/LeftBoundary"]
+position = Vector2(-16, -1)
+shape = SubResource("RectangleShape2D_6e4cr")
