@@ -200,3 +200,33 @@ func _on_fisher_throw_completed() -> void:
 	# Also trigger the dog to walk and fall into water (no chasing the ball)
 	if is_instance_valid(dog) and dog.has_method("trigger_fall_to_water"):
 		dog.call("trigger_fall_to_water")
+
+## Fish bite system utilities
+
+## Get all fish currently biting the bait
+func get_biting_fish() -> Array:
+	var biting_fish: Array = []
+	
+	if not is_instance_valid(fish_container):
+		return biting_fish
+	
+	for fish in fish_container.get_children():
+		if fish.has_method("is_biting") and fish.call("is_biting"):
+			biting_fish.append(fish)
+	
+	return biting_fish
+
+## Release all fish from the bait
+func release_all_fish() -> void:
+	var biting_fish = get_biting_fish()
+	
+	for fish in biting_fish:
+		if fish.has_method("release_from_bait"):
+			fish.call("release_from_bait")
+	
+	if biting_fish.size() > 0:
+		print("Released ", biting_fish.size(), " fish from bait")
+
+## Check if any fish is biting
+func has_fish_biting() -> bool:
+	return get_biting_fish().size() > 0
