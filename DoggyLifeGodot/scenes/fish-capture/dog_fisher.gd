@@ -84,6 +84,9 @@ func _physics_process(delta: float) -> void:
 	# Always update string after movement so it stays attached to the dog center
 	_update_string(delta)
 	
+	# Update bait color based on fish biting
+	_update_bait_color()
+	
 	move_and_slide()
 
 func _process_idle_state(delta: float) -> void:
@@ -107,7 +110,7 @@ func _process_idle_state(delta: float) -> void:
 	else:
 		# Stay idle
 		velocity = Vector2.ZERO
-		if dog_animations:
+		if dog_animations and dog_animations.animation != "sit-right":
 			dog_animations.play("sit-right")
 
 func _process_swimming_state(delta: float) -> void:
@@ -175,7 +178,7 @@ func _enter_swimming_state() -> void:
 func _enter_idle_state() -> void:
 	current_state = State.IDLE
 	velocity = Vector2.ZERO
-	if dog_animations:
+	if dog_animations and dog_animations.animation != "sit-right":
 		dog_animations.play("sit-right")
 	# Hide rope and tip outside of swimming
 	if is_instance_valid(string_line):
@@ -285,6 +288,65 @@ func reset_dog() -> void:
 	global_position = initial_position
 	velocity = Vector2.ZERO
 	_enter_idle_state()
+
+## Get the bait (StringTip) node for fish detection
+func get_bait() -> Node2D:
+	return string_tip
+
+## Check if any fish is currently biting the bait
+func has_fish_biting() -> bool:
+	if not is_instance_valid(string_tip):
+		return false
+	
+	# Check all fish in scene
+	var scene_root = get_tree().current_scene
+	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	if not fish_container:
+		return false
+	
+	for fish in fish_container.get_children():
+		if fish.has_method("is_biting") and fish.call("is_biting"):
+			return true
+	
+	return false
+
+## Update bait color to show if fish is biting
+func _update_bait_color() -> void:
+	if not is_instance_valid(string_tip):
+		return
+	
+	# Change color to bright yellow/gold when fish is biting
+	if has_fish_biting():
+		string_tip.color = Color(1.0, 0.85, 0.0, 1.0) # Gold color
+		# Stop all other fish from pursuing
+		_stop_all_pursuing_fish()
+	elif _has_fish_pursuing():
+		string_tip.color = Color(0.8, 0.8, 0.3, 1.0) # Yellow-ish when fish approaching
+	else:
+		string_tip.color = Color(0.6, 0.6, 0.6, 1.0) # Default gray
+
+func _has_fish_pursuing() -> bool:
+	var scene_root = get_tree().current_scene
+	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	if not fish_container:
+		return false
+	
+	for fish in fish_container.get_children():
+		if fish.has_method("is_pursuing") and fish.call("is_pursuing"):
+			return true
+	
+	return false
+
+func _stop_all_pursuing_fish() -> void:
+	var scene_root = get_tree().current_scene
+	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	if not fish_container:
+		return
+	
+	for fish in fish_container.get_children():
+		if fish.has_method("is_biting") and not fish.call("is_biting"):
+			if fish.has_method("stop_pursuing"):
+				fish.call("stop_pursuing")
 
 # --- Pixel string helpers ---
 func _update_string(delta: float) -> void:
