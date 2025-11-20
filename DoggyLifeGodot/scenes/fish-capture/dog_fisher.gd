@@ -63,7 +63,7 @@ func _ready() -> void:
 	if dog_animations:
 		dog_animations.play("sit-right")
 	# Initialize string once
-	_update_string(0.0)
+	_update_string()
 	# Hide rope/tip unless swimming
 	if is_instance_valid(string_line):
 		string_line.visible = false
@@ -82,7 +82,7 @@ func _physics_process(delta: float) -> void:
 	water_time += delta
 
 	# Always update string after movement so it stays attached to the dog center
-	_update_string(delta)
+	_update_string()
 	
 	# Update bait color based on fish biting
 	_update_bait_color()
@@ -349,7 +349,7 @@ func _stop_all_pursuing_fish() -> void:
 				fish.call("stop_pursuing")
 
 # --- Pixel string helpers ---
-func _update_string(delta: float) -> void:
+func _update_string() -> void:
 	if not is_instance_valid(string_line):
 		return
 
