@@ -25,6 +25,10 @@ var is_charging: bool = false
 @export var fish_swim_lower_percentage: float = 0.6 # Fish swim in lower 60% of water zone (leaving top 40% for dog)
 const FISH_SCENE: String = "res://scenes/fish-capture/fishes/fish.tscn"
 
+# Local (scene-scoped) capture stats
+var _caught_fish_total: int = 0
+var _caught_fish_counts: Dictionary = {}
+
 func _ready() -> void:
 	_calculate_max_throw_force()
 	_spawn_fish()
@@ -34,6 +38,8 @@ func _process(delta: float) -> void:
 	if is_charging:
 		# Build up throw force
 		throw_force_bar.value = min(throw_force_bar.value + FORCE_BUILD_SPEED * delta, throw_force_bar.max_value)
+	# Allow dog to auto-catch easy-capture (dead) fish near the string tip
+	_check_dog_catch_easy_fish()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -108,6 +114,22 @@ func _calculate_swim_bounds() -> Rect2:
 	
 	return Rect2(fish_top_left, fish_size)
 
+func _get_water_surface_y() -> float:
+	# Top of the full WaterZone rectangle (water surface)
+	if not is_instance_valid(water_zone):
+		return 0.0
+	var collision_shape = water_zone.get_node("CollisionShape2D")
+	if not collision_shape or not collision_shape.shape:
+		return 0.0
+	var shape = collision_shape.shape as RectangleShape2D
+	if not shape:
+		return 0.0
+	var zone_pos = water_zone.global_position
+	var shape_offset = collision_shape.position
+	var shape_size = shape.size
+	var full_top_left = zone_pos + shape_offset - shape_size / 2.0
+	return full_top_left.y
+
 func _spawn_fish() -> void:
 	var swim_rect: Rect2 = _calculate_swim_bounds()
 	
@@ -122,6 +144,7 @@ func _spawn_fish() -> void:
 		return
 	
 	# Spawn multiple fish
+	var surface_y := _get_water_surface_y()
 	for i in range(num_fish):
 		var fish_instance: RigidBody2D = fish_scene.instantiate()
 		fish_container.add_child(fish_instance)
@@ -137,6 +160,8 @@ func _spawn_fish() -> void:
 		
 		# Set swim bounds to WaterZone area
 		fish_instance.swim_bounds = swim_rect
+		# Provide water surface so fish can float there when needed
+		fish_instance.water_surface_y = surface_y
 		
 		# Place fish initially inside bounds with random position
 		var pos = Vector2(
@@ -200,6 +225,71 @@ func _on_fisher_throw_completed() -> void:
 	# Also trigger the dog to walk and fall into water (no chasing the ball)
 	if is_instance_valid(dog) and dog.has_method("trigger_fall_to_water"):
 		dog.call("trigger_fall_to_water")
+
+func _check_dog_catch_easy_fish() -> void:
+	# Only capture fish that are in easy-capture state AND close to the dog/tip.
+	if not is_instance_valid(dog) or not is_instance_valid(fish_container):
+		return
+	var tip := dog.get_node_or_null("StringTip") as Node2D
+	if tip == null or not tip.visible:
+		return
+	var dog_pos := dog.global_position
+	var tip_pos := tip.global_position
+	var capture_radius := 140.0 # enlarged radius; still refined by AABB overlap below
+	for f in fish_container.get_children():
+		if f and f.has_method("is_easy_capture") and f.call("is_easy_capture"):
+			# Use min distance between dog and tip to allow slight offset
+			var d: float = min(dog_pos.distance_to(f.global_position), tip_pos.distance_to(f.global_position))
+			var should_capture := d <= capture_radius
+
+			# Additional AABB overlap test for physical contact (dog rectangle vs fish circle)
+			if not should_capture:
+				var dog_cs := dog.get_node_or_null("CollisionShape2D")
+				var fish_cs := f.get_node_or_null("CollisionShape2D")
+				if dog_cs and fish_cs and dog_cs.shape and fish_cs.shape:
+					if dog_cs.shape is RectangleShape2D:
+						var rect_shape: RectangleShape2D = dog_cs.shape
+						var dog_scale: Vector2 = dog_cs.scale * dog.scale
+						# When the dog sprite is flipped horizontally/vertically its scale components can be negative.
+						# Construct a rect then normalize with .abs() to guarantee positive size and avoid Rect2 negative size warnings.
+						var rect_size: Vector2 = rect_shape.size * dog_scale
+						var dog_rect := Rect2(dog.global_position - rect_size * 0.5, rect_size).abs()
+						var fish_radius := 16.0
+						if fish_cs.shape is CircleShape2D:
+							var circle_shape: CircleShape2D = fish_cs.shape
+							# Use abs() in case fish is flipped producing negative scale.x
+							fish_radius = abs(circle_shape.radius * fish_cs.scale.x)
+						var fish_rect := Rect2(f.global_position - Vector2(fish_radius, fish_radius), Vector2(fish_radius * 2.0, fish_radius * 2.0)).abs()
+						if dog_rect.intersects(fish_rect):
+							should_capture = true
+
+			if should_capture:
+				var species_key := "unknown"
+				if f.has_method("get_species_key"):
+					species_key = f.call("get_species_key")
+				if species_key != "":
+						# Local tracking only (mini-game scoped)
+						if not _caught_fish_counts.has(species_key):
+							_caught_fish_counts[species_key] = 0
+						_caught_fish_counts[species_key] += 1
+						_caught_fish_total += 1
+				# Robust disappearance: hide first, disable collisions, then queue_free()
+				var cs2 := f.get_node_or_null("CollisionShape2D")
+				if cs2:
+					cs2.disabled = true
+				var spr2 := f.get_node_or_null("Sprite2D")
+				if spr2:
+					spr2.visible = false
+				f.freeze = true
+				print("[Catch] Easy fish captured: ", species_key, " dist=", d)
+				f.queue_free()
+
+
+func get_caught_fish_total() -> int:
+	return _caught_fish_total
+
+func get_caught_fish_counts() -> Dictionary:
+	return _caught_fish_counts
 
 ## Fish bite system utilities
 
