@@ -32,7 +32,9 @@ var _caught_fish_counts: Dictionary = {}
 func _ready() -> void:
 	_calculate_max_throw_force()
 	_spawn_fish()
+	# Initialize throw force bar hidden until player starts charging
 	throw_force_bar.value = throw_force_bar.min_value
+	throw_force_bar.visible = false
 
 func _process(delta: float) -> void:
 	if is_charging:
@@ -185,10 +187,12 @@ func _on_left_click_pressed() -> void:
 			dog.call("reset_dog")
 		throw_force_bar.value = throw_force_bar.min_value
 		is_charging = false
+		throw_force_bar.visible = false
 	else:
 		# Start charging
 		is_charging = true
 		throw_force_bar.value = throw_force_bar.min_value
+		throw_force_bar.visible = true
 
 func _on_left_click_released() -> void:
 	# Release the throw with current force
@@ -196,6 +200,8 @@ func _on_left_click_released() -> void:
 		return
 	
 	is_charging = false
+	# Hide the bar immediately after releasing (throw will happen post animation)
+	throw_force_bar.visible = false
 	
 	if not is_instance_valid(ball) or not is_instance_valid(fisher):
 		return
