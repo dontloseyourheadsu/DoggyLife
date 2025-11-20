@@ -6,6 +6,7 @@ extends RigidBody2D
 var initial_position: Vector2 = Vector2(0, 0)
 var _needs_reset: bool = false
 var _pending_force: Vector2 = Vector2.ZERO
+var _first_hit_applied: bool = false
 
 # Water physics
 var _in_water: bool = false
@@ -20,6 +21,9 @@ func _ready() -> void:
 	# EXACTLY like red_ball: store global_position
 	initial_position = global_position
 	freeze = true
+	# Enable contact monitoring for first-hit detection
+	contact_monitor = true
+	max_contacts_reported = 8
 	
 	# Connect to water zone signals
 	var water_zone = get_node_or_null("../../WaterZone")
@@ -31,6 +35,7 @@ func request_throw(force: Vector2) -> void:
 	if not freeze:
 		return
 	_pending_force = force
+	_first_hit_applied = false
 	# Call deferred to throw on next frame
 	call_deferred("_throw_ball")
 
@@ -41,6 +46,7 @@ func request_reset() -> void:
 	_in_water = false
 	_is_floating = false
 	_float_timer = 0.0
+	_first_hit_applied = false
 
 func is_thrown() -> bool:
 	return not freeze
@@ -49,6 +55,16 @@ func _process(delta: float) -> void:
 	# Track float time when in water and floating
 	if _in_water and _is_floating and not freeze:
 		_float_timer += delta
+
+	# Fallback collision scan (some contacts might not appear inside _integrate_forces first frame)
+	if not freeze and not _first_hit_applied:
+		var bodies := get_colliding_bodies()
+		for b in bodies:
+			if b and b.has_method("mark_easy_capture"):
+				print('[Ball] First fish hit (process) -> marking easy capture: ', b.name)
+				b.call_deferred("mark_easy_capture")
+				_first_hit_applied = true
+				break
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	# EXACTLY like red_ball pattern
@@ -78,6 +94,19 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 			else:
 				# After float time, gradually sink
 				state.apply_central_force(Vector2(0, SINK_FORCE))
+
+	# Detect first collision with a fish this throw and mark it easy-capture
+	if not freeze and not _first_hit_applied:
+		var contact_count := state.get_contact_count()
+		for i in range(contact_count):
+			var collider := state.get_contact_collider_object(i)
+			if collider and collider is Node:
+				# Only act on fish that expose the API
+				if collider.has_method("mark_easy_capture"):
+					print('[Ball] First fish hit (integrate) -> marking easy capture: ', collider.name)
+					collider.call_deferred("mark_easy_capture")
+					_first_hit_applied = true
+					break
 
 func _on_water_entered(body: Node2D) -> void:
 	if body == self:
