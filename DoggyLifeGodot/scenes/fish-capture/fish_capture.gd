@@ -25,6 +25,10 @@ var is_charging: bool = false
 @export var fish_swim_lower_percentage: float = 0.6 # Fish swim in lower 60% of water zone (leaving top 40% for dog)
 const FISH_SCENE: String = "res://scenes/fish-capture/fishes/fish.tscn"
 
+# Local (scene-scoped) capture stats
+var _caught_fish_total: int = 0
+var _caught_fish_counts: Dictionary = {}
+
 func _ready() -> void:
 	_calculate_max_throw_force()
 	_spawn_fish()
@@ -246,13 +250,16 @@ func _check_dog_catch_easy_fish() -> void:
 					if dog_cs.shape is RectangleShape2D:
 						var rect_shape: RectangleShape2D = dog_cs.shape
 						var dog_scale: Vector2 = dog_cs.scale * dog.scale
-						var dog_half: Vector2 = rect_shape.size * 0.5 * dog_scale
-						var dog_rect := Rect2(dog.global_position - dog_half, rect_shape.size * dog_scale)
+						# When the dog sprite is flipped horizontally/vertically its scale components can be negative.
+						# Construct a rect then normalize with .abs() to guarantee positive size and avoid Rect2 negative size warnings.
+						var rect_size: Vector2 = rect_shape.size * dog_scale
+						var dog_rect := Rect2(dog.global_position - rect_size * 0.5, rect_size).abs()
 						var fish_radius := 16.0
 						if fish_cs.shape is CircleShape2D:
 							var circle_shape: CircleShape2D = fish_cs.shape
-							fish_radius = circle_shape.radius * fish_cs.scale.x
-						var fish_rect := Rect2(f.global_position - Vector2(fish_radius, fish_radius), Vector2(fish_radius * 2.0, fish_radius * 2.0))
+							# Use abs() in case fish is flipped producing negative scale.x
+							fish_radius = abs(circle_shape.radius * fish_cs.scale.x)
+						var fish_rect := Rect2(f.global_position - Vector2(fish_radius, fish_radius), Vector2(fish_radius * 2.0, fish_radius * 2.0)).abs()
 						if dog_rect.intersects(fish_rect):
 							should_capture = true
 
@@ -261,7 +268,11 @@ func _check_dog_catch_easy_fish() -> void:
 				if f.has_method("get_species_key"):
 					species_key = f.call("get_species_key")
 				if species_key != "":
-					PlayerData.add_caught_fish(species_key, 1)
+						# Local tracking only (mini-game scoped)
+						if not _caught_fish_counts.has(species_key):
+							_caught_fish_counts[species_key] = 0
+						_caught_fish_counts[species_key] += 1
+						_caught_fish_total += 1
 				# Robust disappearance: hide first, disable collisions, then queue_free()
 				var cs2 := f.get_node_or_null("CollisionShape2D")
 				if cs2:
@@ -272,6 +283,13 @@ func _check_dog_catch_easy_fish() -> void:
 				f.freeze = true
 				print("[Catch] Easy fish captured: ", species_key, " dist=", d)
 				f.queue_free()
+
+
+func get_caught_fish_total() -> int:
+	return _caught_fish_total
+
+func get_caught_fish_counts() -> Dictionary:
+	return _caught_fish_counts
 
 ## Fish bite system utilities
 
