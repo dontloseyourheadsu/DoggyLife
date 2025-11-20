@@ -6,6 +6,7 @@ extends RigidBody2D
 @export var speed: float = 60.0
 @export var swim_bounds: Rect2 = Rect2(Vector2.ZERO, Vector2.ZERO) # Set by parent scene
 @export var change_dir_interval: float = 3.5
+@export var water_surface_y: float = 0.0 # Provided by spawner: Y position of actual water surface
 
 var _time_accum: float = 0.0
 var _direction: Vector2 = Vector2.RIGHT
@@ -22,6 +23,9 @@ const MIN_DETECTION_DISTANCE: float = 50.0 # Minimum distance for guaranteed det
 const BITE_REACH_DISTANCE: float = 15.0 # How close to get before actually biting
 const PURSUIT_SPEED_MULTIPLIER: float = 1.3 # Swim faster when chasing bait
 
+# Easy-capture state (first fish hit by ball)
+var _easy_capture: bool = false
+
 func _ready() -> void:
 	# Pick an initial random direction
 	randomize()
@@ -32,6 +36,22 @@ func _ready() -> void:
 	_find_bait()
 
 func _physics_process(delta: float) -> void:
+	# Easy-capture behavior: float to surface and stop
+	if _easy_capture:
+		var target_surface_y := water_surface_y if water_surface_y != 0.0 else swim_bounds.position.y
+		# Move upward until reaching surface; then stop and sleep
+		if global_position.y > target_surface_y + 2.0:
+			# Ascend straight up, kill horizontal movement
+			linear_velocity = Vector2(0, -55.0) # a bit faster so player notices
+			return
+		else:
+			# At surface: freeze fully
+			linear_velocity = Vector2.ZERO
+			freeze = true
+			gravity_scale = 0.0
+			set_deferred("sleeping", true)
+			return
+
 	# If biting, stay attached to bait
 	if _is_biting and is_instance_valid(_bait_target):
 		_stick_to_bait()
@@ -39,7 +59,7 @@ func _physics_process(delta: float) -> void:
 	
 	# If pursuing bait, swim towards it
 	if _is_pursuing_bait and is_instance_valid(_bait_target):
-		_pursue_bait(delta)
+		_pursue_bait()
 		return
 	
 	# Normal swimming behavior
@@ -207,7 +227,7 @@ func _start_pursuing_bait() -> void:
 	
 	print("👀 ", species_name, " (", rarity_name, ") noticed the bait and is swimming towards it!")
 
-func _pursue_bait(delta: float) -> void:
+func _pursue_bait() -> void:
 	if not is_instance_valid(_bait_target):
 		_stop_pursuing()
 		return
@@ -305,4 +325,34 @@ func is_pursuing() -> bool:
 
 ## Stop this fish from pursuing (called when another fish catches bait)
 func stop_pursuing() -> void:
-	_stop_pursuing()
+	_is_pursuing_bait = false
+
+# --- Easy-capture public helpers -------------------------------------------
+func mark_easy_capture() -> void:
+	if _easy_capture:
+		return
+	# Stop AI/bite/pursuit and float up
+	_is_biting = false
+	_is_pursuing_bait = false
+	_easy_capture = true
+	# Neutralize current movement immediately
+	linear_velocity = Vector2.ZERO
+	gravity_scale = 0.0
+	speed = 0.0
+	set_deferred("sleeping", false)
+	# Flip to a neutral pose (optional: could rotate or change sprite modulate)
+	_direction = Vector2.ZERO
+	var sprite := get_node_or_null("Sprite2D")
+	if sprite:
+		sprite.flip_h = false
+	print('[EasyCapture] Fish marked. pos=', global_position, ' surface_y=', water_surface_y)
+
+func is_easy_capture() -> bool:
+	return _easy_capture
+
+func get_species_key() -> String:
+	return _current_texture_path
+
+func is_catchable() -> bool:
+	# Fish can be caught if it's either marked easy-capture or currently biting the bait.
+	return _easy_capture or _is_biting
