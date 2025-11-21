@@ -7,6 +7,9 @@ extends Node2D
 @onready var ball: RigidBody2D = $Camera2D/Ball
 @onready var dog: CharacterBody2D = $Camera2D/Dog
 @onready var throw_force_bar: TextureProgressBar = $Camera2D/ThrowForce
+@onready var fight_force_bar: TextureProgressBar = $Camera2D/FightForce
+@onready var fight_bar_indicator: TextureRect = $Camera2D/FightForce/CountBar
+@onready var escaping_fish_tex: TextureRect = $Camera2D/FightForce/EscapingFish
 
 # Throw force calculation based on progress bar
 const MIN_THROW_FORCE: Vector2 = Vector2(100, -50) # Minimum throw force (close distance)
@@ -29,10 +32,28 @@ const FISH_SCENE: String = "res://scenes/fish-capture/fishes/fish.tscn"
 var _caught_fish_total: int = 0
 var _caught_fish_counts: Dictionary = {}
 
+# Fight (fish struggle) system state
+const FIGHT_MAX_STEPS: int = 100
+const FIGHT_GAIN_STEPS_PER_SEC: float = 5.0
+const FIGHT_LOSS_STEPS_PER_SEC: float = 5.0
+const FIGHT_OUTSIDE_LOSS_DELAY: float = 0.5
+const FIGHT_INDICATOR_MOVE_SPEED: float = 90.0 # player controlled indicator speed (pixels/sec)
+const FIGHT_FISH_BASE_SPEED: float = 80.0 # escaping fish vertical speed
+const FIGHT_FISH_ESCAPE_THRESHOLD: int = -5
+
+var fight_active: bool = false
+var fight_current_steps: float = 0.0
+var fight_outside_timer: float = 0.0
+var _fight_target_fish: RigidBody2D = null # actual fish biting
+var _fight_fish_direction: float = 1.0 # 1 down, -1 up
+
+
 func _ready() -> void:
 	_calculate_max_throw_force()
 	_spawn_fish()
+	# Initialize throw force bar hidden until player starts charging
 	throw_force_bar.value = throw_force_bar.min_value
+	throw_force_bar.visible = false
 
 func _process(delta: float) -> void:
 	if is_charging:
@@ -40,6 +61,15 @@ func _process(delta: float) -> void:
 		throw_force_bar.value = min(throw_force_bar.value + FORCE_BUILD_SPEED * delta, throw_force_bar.max_value)
 	# Allow dog to auto-catch easy-capture (dead) fish near the string tip
 	_check_dog_catch_easy_fish()
+
+	# Fight phase handling
+	if not fight_active:
+		# Start fight if any fish is biting
+		var biting = get_biting_fish()
+		if biting.size() > 0:
+			_start_fight(biting[0])
+	else:
+		_update_fight(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -185,10 +215,12 @@ func _on_left_click_pressed() -> void:
 			dog.call("reset_dog")
 		throw_force_bar.value = throw_force_bar.min_value
 		is_charging = false
+		throw_force_bar.visible = false
 	else:
 		# Start charging
 		is_charging = true
 		throw_force_bar.value = throw_force_bar.min_value
+		throw_force_bar.visible = true
 
 func _on_left_click_released() -> void:
 	# Release the throw with current force
@@ -196,6 +228,8 @@ func _on_left_click_released() -> void:
 		return
 	
 	is_charging = false
+	# Hide the bar immediately after releasing (throw will happen post animation)
+	throw_force_bar.visible = false
 	
 	if not is_instance_valid(ball) or not is_instance_valid(fisher):
 		return
@@ -225,6 +259,119 @@ func _on_fisher_throw_completed() -> void:
 	# Also trigger the dog to walk and fall into water (no chasing the ball)
 	if is_instance_valid(dog) and dog.has_method("trigger_fall_to_water"):
 		dog.call("trigger_fall_to_water")
+
+	# Cancel any active fight (ball throw resets context)
+	_end_fight(true)
+
+## ---------------- Fight (struggle) system ----------------
+func _start_fight(fish: RigidBody2D) -> void:
+	if not is_instance_valid(fight_force_bar):
+		return
+	fight_active = true
+	_fight_target_fish = fish
+	fight_current_steps = 0.0
+	fight_outside_timer = 0.0
+	_fight_fish_direction = 1.0
+	# Show UI
+	fight_force_bar.visible = true
+	fight_force_bar.min_value = FIGHT_FISH_ESCAPE_THRESHOLD
+	fight_force_bar.max_value = FIGHT_MAX_STEPS
+	fight_force_bar.value = fight_current_steps
+	# Align indicator & escaping fish starting positions centered
+	if is_instance_valid(fight_bar_indicator) and is_instance_valid(escaping_fish_tex):
+		var center_y = fight_force_bar.global_position.y
+		fight_bar_indicator.global_position.y = center_y
+		escaping_fish_tex.global_position.y = center_y
+	print("[Fight] Started with fish", fish)
+
+func _update_fight(delta: float) -> void:
+	if not fight_active:
+		return
+	# Validate fish still biting; if not, end
+	if not is_instance_valid(_fight_target_fish) or not _fight_target_fish.has_method("is_biting") or not _fight_target_fish.call("is_biting"):
+		_end_fight(true)
+		return
+
+	# Player control (indicator moves with ui_up/ui_down)
+	if is_instance_valid(fight_bar_indicator):
+		var move_dir: float = 0.0
+		if Input.is_action_pressed("ui_up"):
+			move_dir -= 1.0
+		if Input.is_action_pressed("ui_down"):
+			move_dir += 1.0
+		fight_bar_indicator.global_position.y += move_dir * FIGHT_INDICATOR_MOVE_SPEED * delta
+
+	# Escaping fish vertical movement inside the bar trying to avoid indicator
+	if is_instance_valid(escaping_fish_tex):
+		var distance = abs(escaping_fish_tex.global_position.y - fight_bar_indicator.global_position.y)
+		# If overlapping (within 6 px) choose a direction away
+		if distance < 6.0:
+			_fight_fish_direction = sign(escaping_fish_tex.global_position.y - fight_bar_indicator.global_position.y)
+			if _fight_fish_direction == 0:
+				_fight_fish_direction = 1.0 if randf() > 0.5 else -1.0
+		# Move fish
+		escaping_fish_tex.global_position.y += _fight_fish_direction * FIGHT_FISH_BASE_SPEED * delta
+		# Clamp fish within visible bar area (approx +/- 40 px from center)
+		var center_y = fight_force_bar.global_position.y
+		escaping_fish_tex.global_position.y = clamp(escaping_fish_tex.global_position.y, center_y - 40.0, center_y + 40.0)
+		# Bounce if hitting limits
+		if escaping_fish_tex.global_position.y <= center_y - 40.0 or escaping_fish_tex.global_position.y >= center_y + 40.0:
+			_fight_fish_direction *= -1.0
+
+	# Determine overlap (capture zone) - fish within 10 px of indicator
+	var in_zone: bool = is_instance_valid(escaping_fish_tex) and is_instance_valid(fight_bar_indicator) and abs(escaping_fish_tex.global_position.y - fight_bar_indicator.global_position.y) <= 10.0
+
+	if in_zone:
+		fight_current_steps += FIGHT_GAIN_STEPS_PER_SEC * delta
+		fight_outside_timer = 0.0
+	else:
+		fight_outside_timer += delta
+		if fight_outside_timer >= FIGHT_OUTSIDE_LOSS_DELAY:
+			fight_current_steps -= FIGHT_LOSS_STEPS_PER_SEC * delta
+
+	fight_current_steps = clamp(fight_current_steps, FIGHT_FISH_ESCAPE_THRESHOLD, FIGHT_MAX_STEPS)
+	if is_instance_valid(fight_force_bar):
+		fight_force_bar.value = fight_current_steps
+
+	# Capture success
+	if fight_current_steps >= FIGHT_MAX_STEPS:
+		# Mark fish captured: remove fish from scene
+		if is_instance_valid(_fight_target_fish):
+			var species_key := "unknown"
+			if _fight_target_fish.has_method("get_species_key"):
+				species_key = _fight_target_fish.call("get_species_key")
+			if species_key != "":
+				if not _caught_fish_counts.has(species_key):
+					_caught_fish_counts[species_key] = 0
+				_caught_fish_counts[species_key] += 1
+				_caught_fish_total += 1
+			_fight_target_fish.queue_free()
+		print("[Fight] Fish captured!")
+		_end_fight(false)
+		return
+
+	# Escape failure
+	if fight_current_steps <= FIGHT_FISH_ESCAPE_THRESHOLD:
+		if is_instance_valid(_fight_target_fish) and _fight_target_fish.has_method("release_from_bait"):
+			_fight_target_fish.call("release_from_bait")
+		print("[Fight] Fish escaped.")
+		_end_fight(true)
+
+func _end_fight(released: bool) -> void:
+	if not fight_active:
+		return
+	fight_active = false
+	_fight_target_fish = null
+	fight_force_bar.visible = false
+	fight_force_bar.value = 0
+	fight_current_steps = 0
+	fight_outside_timer = 0
+	# Reset UI positions to center for next time
+	if is_instance_valid(fight_bar_indicator) and is_instance_valid(escaping_fish_tex):
+		var center_y = fight_force_bar.global_position.y
+		fight_bar_indicator.global_position.y = center_y
+		escaping_fish_tex.global_position.y = center_y
+	print("[Fight] Ended released=", released)
 
 func _check_dog_catch_easy_fish() -> void:
 	# Only capture fish that are in easy-capture state AND close to the dog/tip.
