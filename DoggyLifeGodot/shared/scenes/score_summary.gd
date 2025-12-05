@@ -2,14 +2,18 @@ extends Node2D
 
 @export var points_per_coin: int = 5 # How many points = 1 coin
 @export var time_limit: float = 20.0 # Time limit in seconds
+@export var auto_calculate_coins: bool = true # If true, coins = score / points_per_coin
 
 @onready var score_display: Label = $ScoreDisplayContainer/ScoreDisplay
 @onready var score_summary_container: Control = $ScoreSummaryContainer
 @onready var summary_score_label: Label = $ScoreSummaryContainer/ScoreDisplay
 @onready var summary_coins_label: Label = $ScoreSummaryContainer/CoinsDisplay
+@onready var caught_items_grid: GridContainer = $ScoreSummaryContainer/CaughtItemsScroll/CaughtItemsGrid
+@onready var time_display: Label = $TimeDisplayContainer/TimeDisplay
 
 var score: int = 0
 var coins_earned: int = 0
+var _game_timer: Timer
 
 signal game_over() # Emitted when time is up
 
@@ -20,6 +24,11 @@ func _ready() -> void:
 	
 	# Initialize score display
 	_update_score_display()
+	set_process(false)
+
+func _process(_delta: float) -> void:
+	if is_instance_valid(_game_timer) and not _game_timer.is_stopped():
+		_update_time_display()
 
 func start_game() -> void:
 	"""Call this from the minigame to start the timer"""
@@ -27,19 +36,49 @@ func start_game() -> void:
 	coins_earned = 0
 	_update_score_display()
 	
+	# Clear caught items
+	if caught_items_grid:
+		for child in caught_items_grid.get_children():
+			child.queue_free()
+	
 	# Create and start a timer for the time limit
-	var timer := Timer.new()
-	timer.name = "GameTimer"
-	timer.wait_time = time_limit
-	timer.one_shot = true
-	timer.timeout.connect(_on_game_timer_timeout)
-	add_child(timer)
-	timer.start()
+	if is_instance_valid(_game_timer):
+		_game_timer.queue_free()
+	
+	_game_timer = Timer.new()
+	_game_timer.name = "GameTimer"
+	_game_timer.wait_time = time_limit
+	_game_timer.one_shot = true
+	_game_timer.timeout.connect(_on_game_timer_timeout)
+	add_child(_game_timer)
+	_game_timer.start()
+	
+	set_process(true)
+	_update_time_display()
+
+func _update_time_display() -> void:
+	if time_display and is_instance_valid(_game_timer):
+		var time_left = int(_game_timer.time_left)
+		var minutes = time_left / 60
+		var seconds = time_left % 60
+		time_display.text = "%02d:%02d" % [minutes, seconds]
 
 func add_score(points: int) -> void:
 	"""Call this from the minigame whenever points are scored"""
 	score += points
 	_update_score_display()
+
+func add_coins(amount: int) -> void:
+	coins_earned += amount
+
+func add_caught_item(texture: Texture2D) -> void:
+	if caught_items_grid:
+		var tex_rect := TextureRect.new()
+		tex_rect.texture = texture
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.custom_minimum_size = Vector2(32, 32)
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		caught_items_grid.add_child(tex_rect)
 
 func _update_score_display() -> void:
 	if score_display:
@@ -47,13 +86,15 @@ func _update_score_display() -> void:
 
 func _on_game_timer_timeout() -> void:
 	"""Called when the time limit is reached"""
+	set_process(false)
 	_calculate_coins()
 	_show_summary()
 	game_over.emit()
 
 func _calculate_coins() -> void:
 	"""Convert score to coins based on points_per_coin ratio"""
-	coins_earned = score / points_per_coin
+	if auto_calculate_coins:
+		coins_earned = score / points_per_coin
 
 func _show_summary() -> void:
 	"""Display the score summary container"""
