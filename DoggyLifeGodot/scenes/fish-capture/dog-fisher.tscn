@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://d2ulr7hevw22q"]
+[gd_scene load_steps=4 format=3 uid="uid://ccxfw1prtf0pr"]
 
 [ext_resource type="SpriteFrames" uid="uid://drymo5cd0gf1j" path="res://sprites/dogs/spriteframes/samoyed-dog.tres" id="1_6u7qu"]
 [ext_resource type="Script" uid="uid://dfbd7b3cnmibq" path="res://scenes/fish-capture/dog_fisher.gd" id="1_x7qcm"]
