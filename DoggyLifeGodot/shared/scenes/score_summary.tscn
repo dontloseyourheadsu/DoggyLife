@@ -25,6 +25,24 @@ text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
+[node name="TimeDisplayContainer" type="TextureRect" parent="."]
+offset_left = 449.0
+offset_top = -346.0
+offset_right = 624.0
+offset_bottom = -274.0
+texture = ExtResource("1_wqtau")
+
+[node name="TimeDisplay" type="Label" parent="TimeDisplayContainer"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 27.0
+offset_right = 142.0
+offset_bottom = 51.0
+theme_override_font_sizes/font_size = 24
+text = "00:00"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="ScoreSummaryContainer" parent="." instance=ExtResource("2_6vot1")]
 visible = false
 offset_left = -251.0
@@ -43,12 +61,23 @@ size_flags_vertical = 0
 theme_override_font_sizes/font_size = 30
 text = "SUMMARY"
 
+[node name="CaughtItemsScroll" type="ScrollContainer" parent="ScoreSummaryContainer"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 150.0
+offset_right = 450.0
+offset_bottom = 210.0
+
+[node name="CaughtItemsGrid" type="GridContainer" parent="ScoreSummaryContainer/CaughtItemsScroll"]
+layout_mode = 2
+columns = 10
+
 [node name="ScoreDisplay" type="Label" parent="ScoreSummaryContainer"]
 layout_mode = 0
 offset_left = 91.0
-offset_top = 207.0
+offset_top = 220.0
 offset_right = 251.0
-offset_bottom = 227.0
+offset_bottom = 240.0
 size_flags_horizontal = 4
 size_flags_vertical = 0
 theme_override_font_sizes/font_size = 20
@@ -57,7 +86,9 @@ text = "Score: 0"
 [node name="CoinsDisplay" type="Label" parent="ScoreSummaryContainer"]
 layout_mode = 0
 offset_left = 91.0
-offset_top = 242.0
+offset_top = 255.0
+offset_right = 391.0
+offset_bottom = 275.0
 offset_right = 391.0
 offset_bottom = 262.0
 size_flags_horizontal = 4

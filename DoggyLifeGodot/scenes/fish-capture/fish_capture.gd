@@ -1,5 +1,7 @@
 extends Node2D
 
+const FishRarityData = preload("res://scenes/fish-capture/fishes/fish_rarity_data.gd")
+
 @onready var fish_container: Node2D = $Camera2D/Fishes
 @onready var water_zone: Area2D = $Camera2D/WaterZone
 @onready var background: TextureRect = $Camera2D/Background
@@ -10,6 +12,7 @@ extends Node2D
 @onready var fight_force_bar: TextureProgressBar = $Camera2D/FightForce
 @onready var fight_bar_indicator: TextureRect = $Camera2D/FightForce/CountBar
 @onready var escaping_fish_tex: TextureRect = $Camera2D/FightForce/EscapingFish
+@onready var score_summary: Node2D = $ScoreSummary
 
 # Throw force calculation based on progress bar
 const MIN_THROW_FORCE: Vector2 = Vector2(100, -50) # Minimum throw force (close distance)
@@ -34,18 +37,20 @@ var _caught_fish_counts: Dictionary = {}
 
 # Fight (fish struggle) system state
 const FIGHT_MAX_STEPS: int = 100
-const FIGHT_GAIN_STEPS_PER_SEC: float = 5.0
-const FIGHT_LOSS_STEPS_PER_SEC: float = 5.0
+const FIGHT_GAIN_STEPS_PER_SEC: float = 30.0
+const FIGHT_LOSS_STEPS_PER_SEC: float = 30.0
 const FIGHT_OUTSIDE_LOSS_DELAY: float = 0.5
-const FIGHT_INDICATOR_MOVE_SPEED: float = 90.0 # player controlled indicator speed (pixels/sec)
-const FIGHT_FISH_BASE_SPEED: float = 80.0 # escaping fish vertical speed
-const FIGHT_FISH_ESCAPE_THRESHOLD: int = -5
+const FIGHT_INDICATOR_MOVE_SPEED: float = 50.0 # player controlled indicator speed (pixels/sec)
+const FIGHT_FISH_BASE_SPEED: float = 30.0 # escaping fish speed
+const FIGHT_FISH_ESCAPE_THRESHOLD: int = 0
+const FIGHT_BAR_OFFSET_Y: float = 30.0 # Offset for visual alignment
 
 var fight_active: bool = false
 var fight_current_steps: float = 0.0
 var fight_outside_timer: float = 0.0
 var _fight_target_fish: RigidBody2D = null # actual fish biting
 var _fight_fish_direction: float = 1.0 # 1 down, -1 up
+var _fight_percentage_label: Label = null
 
 
 func _ready() -> void:
@@ -54,6 +59,25 @@ func _ready() -> void:
 	# Initialize throw force bar hidden until player starts charging
 	throw_force_bar.value = throw_force_bar.min_value
 	throw_force_bar.visible = false
+	
+	# Create percentage label for fight
+	_fight_percentage_label = Label.new()
+	_fight_percentage_label.visible = false
+	# Add to Camera2D so it moves with camera, but not rotated with bar
+	$Camera2D.add_child(_fight_percentage_label)
+	
+	if score_summary:
+		score_summary.time_limit = 60.0 # 1 minute
+		score_summary.auto_calculate_coins = false
+		score_summary.game_over.connect(_on_game_over)
+		score_summary.start_game()
+
+func _on_game_over() -> void:
+	# Disable interactions
+	set_process_unhandled_input(false)
+	set_process(false)
+	# Stop fight
+	_end_fight(true)
 
 func _process(delta: float) -> void:
 	if is_charging:
@@ -206,16 +230,8 @@ func _on_left_click_pressed() -> void:
 		return
 	
 	if ball.has_method("is_thrown") and ball.call("is_thrown"):
-		# Ball already thrown - reset everything
-		if ball.has_method("request_reset"):
-			ball.call("request_reset")
-		if fisher.has_method("reset_arm"):
-			fisher.call("reset_arm")
-		if is_instance_valid(dog) and dog.has_method("reset_dog"):
-			dog.call("reset_dog")
-		throw_force_bar.value = throw_force_bar.min_value
-		is_charging = false
-		throw_force_bar.visible = false
+		# Ball already thrown - do nothing (prevent reset)
+		return
 	else:
 		# Start charging
 		is_charging = true
@@ -276,12 +292,18 @@ func _start_fight(fish: RigidBody2D) -> void:
 	fight_force_bar.visible = true
 	fight_force_bar.min_value = FIGHT_FISH_ESCAPE_THRESHOLD
 	fight_force_bar.max_value = FIGHT_MAX_STEPS
+	fight_current_steps = FIGHT_MAX_STEPS * 0.25 # Start at 25%
 	fight_force_bar.value = fight_current_steps
-	# Align indicator & escaping fish starting positions centered
+	if is_instance_valid(_fight_percentage_label):
+		_fight_percentage_label.visible = true
+	
+		# Align indicator & escaping fish starting positions centered
 	if is_instance_valid(fight_bar_indicator) and is_instance_valid(escaping_fish_tex):
-		var center_y = fight_force_bar.global_position.y
-		fight_bar_indicator.global_position.y = center_y
-		escaping_fish_tex.global_position.y = center_y
+		var track_len = _get_fight_track_length()
+		var center_x = track_len / 2.0
+		# Set local X position (along the bar)
+		fight_bar_indicator.position.x = center_x - (fight_bar_indicator.size.x * fight_bar_indicator.scale.x) / 2.0
+		escaping_fish_tex.position.x = center_x - (escaping_fish_tex.size.x * escaping_fish_tex.scale.x) / 2.0
 	print("[Fight] Started with fish", fish)
 
 func _update_fight(delta: float) -> void:
@@ -292,34 +314,81 @@ func _update_fight(delta: float) -> void:
 		_end_fight(true)
 		return
 
-	# Player control (indicator moves with ui_up/ui_down)
+	# Get fish rarity for difficulty scaling
+	var rarity = FishRarityData.Rarity.COMMON
+	if _fight_target_fish.has_method("get_species_key"):
+		var key = _fight_target_fish.call("get_species_key")
+		rarity = FishRarityData.get_fish_rarity(key)
+	
+	# Difficulty multipliers based on rarity
+	var speed_mult: float = 1.0
+	var erratic_mult: float = 1.0
+	match rarity:
+		FishRarityData.Rarity.COMMON:
+			speed_mult = 1.0
+			erratic_mult = 1.0
+		FishRarityData.Rarity.UNCOMMON:
+			speed_mult = 1.3
+			erratic_mult = 1.5
+		FishRarityData.Rarity.RARE:
+			speed_mult = 1.6
+			erratic_mult = 2.5
+		FishRarityData.Rarity.EXTRA_RARE:
+			speed_mult = 2.0
+			erratic_mult = 4.0
+
+	var track_len = _get_fight_track_length()
+
+	# Player control (indicator moves with gravity/input)
 	if is_instance_valid(fight_bar_indicator):
-		var move_dir: float = 0.0
-		if Input.is_action_pressed("ui_up"):
-			move_dir -= 1.0
-		if Input.is_action_pressed("ui_down"):
-			move_dir += 1.0
-		fight_bar_indicator.global_position.y += move_dir * FIGHT_INDICATOR_MOVE_SPEED * delta
+		# Gravity pulls down (Local X decreases), holding Space/Right Click pulls up (Local X increases)
+		# Wait! Rotated -90 deg:
+		# Local X+ is Global Y- (UP)
+		# Local X- is Global Y+ (DOWN)
+		# So Gravity should DECREASE X. Input should INCREASE X.
+		var move_dir: float = -1.0 # Default falling down (decreasing X)
+		if Input.is_action_pressed("ui_accept") or Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+			move_dir = 1.0 # Move up (increasing X)
+			
+		fight_bar_indicator.position.x += move_dir * FIGHT_INDICATOR_MOVE_SPEED * delta
+		
+		# Clamp indicator to bar bounds (Local X)
+		var ind_w = fight_bar_indicator.size.x * fight_bar_indicator.scale.x
+		fight_bar_indicator.position.x = clamp(fight_bar_indicator.position.x, 0.0, track_len - ind_w)
 
-	# Escaping fish vertical movement inside the bar trying to avoid indicator
+	# Escaping fish movement
 	if is_instance_valid(escaping_fish_tex):
-		var distance = abs(escaping_fish_tex.global_position.y - fight_bar_indicator.global_position.y)
-		# If overlapping (within 6 px) choose a direction away
-		if distance < 6.0:
-			_fight_fish_direction = sign(escaping_fish_tex.global_position.y - fight_bar_indicator.global_position.y)
-			if _fight_fish_direction == 0:
-				_fight_fish_direction = 1.0 if randf() > 0.5 else -1.0
-		# Move fish
-		escaping_fish_tex.global_position.y += _fight_fish_direction * FIGHT_FISH_BASE_SPEED * delta
-		# Clamp fish within visible bar area (approx +/- 40 px from center)
-		var center_y = fight_force_bar.global_position.y
-		escaping_fish_tex.global_position.y = clamp(escaping_fish_tex.global_position.y, center_y - 40.0, center_y + 40.0)
-		# Bounce if hitting limits
-		if escaping_fish_tex.global_position.y <= center_y - 40.0 or escaping_fish_tex.global_position.y >= center_y + 40.0:
-			_fight_fish_direction *= -1.0
+		# Random direction changes
+		if randf() < 0.02 * erratic_mult:
+			_fight_fish_direction = 1.0 if randf() > 0.5 else -1.0
+			
+		# Move fish (Local X)
+		escaping_fish_tex.position.x += _fight_fish_direction * FIGHT_FISH_BASE_SPEED * speed_mult * delta
+		
+		# Clamp fish within visible bar area
+		# If fish is rotated 90 degrees, its "width" along the track is its height
+		var fish_w = escaping_fish_tex.size.x * escaping_fish_tex.scale.x
+		if abs(escaping_fish_tex.rotation_degrees) > 80 and abs(escaping_fish_tex.rotation_degrees) < 100:
+			fish_w = escaping_fish_tex.size.y * escaping_fish_tex.scale.y
+		elif abs(escaping_fish_tex.rotation) > 1.4 and abs(escaping_fish_tex.rotation) < 1.7:
+			fish_w = escaping_fish_tex.size.y * escaping_fish_tex.scale.y
+			
+		var min_x = 0.0
+		var max_x = track_len - fish_w
+		
+		if escaping_fish_tex.position.x <= min_x:
+			escaping_fish_tex.position.x = min_x
+			_fight_fish_direction = 1.0 # Bounce up (increase X)
+		elif escaping_fish_tex.position.x >= max_x:
+			escaping_fish_tex.position.x = max_x
+			_fight_fish_direction = -1.0 # Bounce down (decrease X)
 
-	# Determine overlap (capture zone) - fish within 10 px of indicator
-	var in_zone: bool = is_instance_valid(escaping_fish_tex) and is_instance_valid(fight_bar_indicator) and abs(escaping_fish_tex.global_position.y - fight_bar_indicator.global_position.y) <= 10.0
+	# Determine overlap (capture zone) - check if global rects intersect
+	var in_zone: bool = false
+	if is_instance_valid(escaping_fish_tex) and is_instance_valid(fight_bar_indicator):
+		var fish_rect = escaping_fish_tex.get_global_rect()
+		var ind_rect = fight_bar_indicator.get_global_rect()
+		in_zone = fish_rect.intersects(ind_rect)
 
 	if in_zone:
 		fight_current_steps += FIGHT_GAIN_STEPS_PER_SEC * delta
@@ -329,9 +398,17 @@ func _update_fight(delta: float) -> void:
 		if fight_outside_timer >= FIGHT_OUTSIDE_LOSS_DELAY:
 			fight_current_steps -= FIGHT_LOSS_STEPS_PER_SEC * delta
 
-	fight_current_steps = clamp(fight_current_steps, FIGHT_FISH_ESCAPE_THRESHOLD, FIGHT_MAX_STEPS)
+	fight_current_steps = clamp(fight_current_steps, float(FIGHT_FISH_ESCAPE_THRESHOLD), float(FIGHT_MAX_STEPS))
 	if is_instance_valid(fight_force_bar):
 		fight_force_bar.value = fight_current_steps
+
+	# Update percentage label
+	if is_instance_valid(_fight_percentage_label):
+		var pct = clamp(int((fight_current_steps / float(FIGHT_MAX_STEPS)) * 100), 0, 100)
+		_fight_percentage_label.text = str(pct) + "%"
+		if is_instance_valid(fight_force_bar):
+			# Position to the right of the bar
+			_fight_percentage_label.global_position = fight_force_bar.global_position + Vector2(50, 0)
 
 	# Capture success
 	if fight_current_steps >= FIGHT_MAX_STEPS:
@@ -345,6 +422,21 @@ func _update_fight(delta: float) -> void:
 					_caught_fish_counts[species_key] = 0
 				_caught_fish_counts[species_key] += 1
 				_caught_fish_total += 1
+			
+			# Award points and coins
+			# rarity is already calculated above
+			var points = FishRarityData.get_fish_points(rarity)
+			var coins = max(1, int(float(points) / 10.0))
+			
+			if score_summary:
+				score_summary.add_score(points)
+				score_summary.add_coins(coins)
+				
+				# Add item to summary list
+				var sprite = _fight_target_fish.get_node_or_null("Sprite2D")
+				if sprite and sprite.texture:
+					score_summary.add_caught_item(sprite.texture)
+
 			_fight_target_fish.queue_free()
 		print("[Fight] Fish captured!")
 		_end_fight(false)
@@ -357,6 +449,16 @@ func _update_fight(delta: float) -> void:
 		print("[Fight] Fish escaped.")
 		_end_fight(true)
 
+func _get_fight_track_length() -> float:
+	if not is_instance_valid(fight_force_bar):
+		return 100.0
+	var tex = fight_force_bar.texture_under
+	if not tex:
+		return 100.0
+	# Return the width of the texture (which is the length of the bar)
+	return float(tex.get_width())
+
+
 func _end_fight(released: bool) -> void:
 	if not fight_active:
 		return
@@ -364,6 +466,8 @@ func _end_fight(released: bool) -> void:
 	_fight_target_fish = null
 	fight_force_bar.visible = false
 	fight_force_bar.value = 0
+	if is_instance_valid(_fight_percentage_label):
+		_fight_percentage_label.visible = false
 	fight_current_steps = 0
 	fight_outside_timer = 0
 	# Reset UI positions to center for next time
@@ -420,6 +524,21 @@ func _check_dog_catch_easy_fish() -> void:
 							_caught_fish_counts[species_key] = 0
 						_caught_fish_counts[species_key] += 1
 						_caught_fish_total += 1
+				
+				# Award points and coins
+				var rarity = FishRarityData.get_fish_rarity(species_key)
+				var points = FishRarityData.get_fish_points(rarity)
+				var coins = max(1, int(float(points) / 10.0))
+				
+				if score_summary:
+					score_summary.add_score(points)
+					score_summary.add_coins(coins)
+					
+					# Add item to summary list
+					var sprite = f.get_node_or_null("Sprite2D")
+					if sprite and sprite.texture:
+						score_summary.add_caught_item(sprite.texture)
+
 				# Robust disappearance: hide first, disable collisions, then queue_free()
 				var cs2 := f.get_node_or_null("CollisionShape2D")
 				if cs2:

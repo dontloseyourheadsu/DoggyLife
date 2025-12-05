@@ -23,6 +23,12 @@ const MIN_DETECTION_DISTANCE: float = 50.0 # Minimum distance for guaranteed det
 const BITE_REACH_DISTANCE: float = 15.0 # How close to get before actually biting
 const PURSUIT_SPEED_MULTIPLIER: float = 1.3 # Swim faster when chasing bait
 
+# Fleeing system
+var _is_fleeing: bool = false
+var _flee_timer: float = 0.0
+const FLEE_DURATION: float = 2.0
+const FLEE_SPEED_MULTIPLIER: float = 2.5
+
 # Easy-capture state (first fish hit by ball)
 var _easy_capture: bool = false
 
@@ -51,6 +57,18 @@ func _physics_process(delta: float) -> void:
 			gravity_scale = 0.0
 			set_deferred("sleeping", true)
 			return
+
+	# Fleeing behavior
+	if _is_fleeing:
+		_flee_timer -= delta
+		if _flee_timer <= 0.0:
+			_is_fleeing = false
+			_direction = _random_direction()
+			_update_velocity()
+		else:
+			# Continue moving in flee direction
+			pass
+		return
 
 	# If biting, stay attached to bait
 	if _is_biting and is_instance_valid(_bait_target):
@@ -167,8 +185,8 @@ func _find_node_by_name(node: Node, node_name: String) -> Node:
 	return null
 
 func _check_if_notices_bait() -> void:
-	# Don't check if already pursuing/biting or no bait available
-	if _is_biting or _is_pursuing_bait or not is_instance_valid(_bait_target):
+	# Don't check if already pursuing/biting/fleeing or no bait available
+	if _is_biting or _is_pursuing_bait or _is_fleeing or not is_instance_valid(_bait_target):
 		return
 	
 	# Check if bait is visible (dog is swimming)
@@ -306,14 +324,32 @@ func release_from_bait() -> void:
 		return
 	
 	_is_biting = false
+	_is_pursuing_bait = false
+	
+	# Start fleeing
+	_is_fleeing = true
+	_flee_timer = FLEE_DURATION
+	
+	# Determine flee direction (away from bait)
+	if is_instance_valid(_bait_target):
+		var away = global_position - _bait_target.global_position
+		_direction = away.normalized()
+	else:
+		_direction = _random_direction()
+	
+	# Apply flee velocity
+	linear_velocity = _direction * speed * FLEE_SPEED_MULTIPLIER
+	
+	# Update sprite facing
+	var sprite := get_node_or_null("Sprite2D")
+	if sprite:
+		sprite.flip_h = _direction.x < 0
 	
 	# Resume normal swimming
 	freeze = false
 	gravity_scale = 0.0
-	_direction = _random_direction()
-	_update_velocity()
 	
-	print("Fish released from bait")
+	print("Fish released from bait and fleeing!")
 
 ## Check if this fish is currently biting
 func is_biting() -> bool:

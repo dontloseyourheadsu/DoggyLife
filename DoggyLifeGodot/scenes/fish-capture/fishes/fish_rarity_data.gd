@@ -19,6 +19,14 @@ const RARITY_BITE_PROBABILITY: Dictionary = {
 	Rarity.EXTRA_RARE: 0.10 # 10% base chance
 }
 
+## Points value for each rarity
+const RARITY_POINTS: Dictionary = {
+	Rarity.COMMON: 10,
+	Rarity.UNCOMMON: 20,
+	Rarity.RARE: 50,
+	Rarity.EXTRA_RARE: 100
+}
+
 ## Fish species organized by rarity
 ## Key: species filename (without .png extension)
 ## Value: Rarity enum
@@ -73,3 +81,8 @@ static func get_rarity_name(rarity: Rarity) -> String:
 			return "Extra Rare"
 		_:
 			return "Unknown"
+
+static func get_fish_points(rarity: Rarity) -> int:
+	if RARITY_POINTS.has(rarity):
+		return RARITY_POINTS[rarity]
+	return 10 # Default
