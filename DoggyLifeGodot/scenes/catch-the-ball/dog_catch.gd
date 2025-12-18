@@ -15,6 +15,10 @@ var facing_right: bool = true
 
 @onready var anim_sprite: AnimatedSprite2D = $DogAnimations
 
+# Mobile controls
+var mobile_input_x: float = 0.0
+var mobile_jump: bool = false
+
 func _physics_process(delta):
 	# 1. Add gravity
 	# We only add gravity if the character is not on the floor.
@@ -23,11 +27,17 @@ func _physics_process(delta):
 
 	# 2. Handle Jumping
 	# This checks for a jump input and if the character is on the ground.
-	if Input.is_action_just_pressed("jump") and is_on_floor():
+	if (Input.is_action_just_pressed("jump") or mobile_jump) and is_on_floor():
 		velocity.y = JUMP_VELOCITY
+		mobile_jump = false # Reset jump trigger
 
 	# 3. Handle Left/Right Input
 	var direction = Input.get_axis("left_move", "right_move")
+	
+	# Override with mobile input if present
+	if mobile_input_x != 0.0:
+		direction = mobile_input_x
+	
 	if direction:
 		velocity.x = direction * SPEED
 		# Update facing direction
