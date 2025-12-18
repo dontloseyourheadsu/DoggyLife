@@ -195,33 +195,42 @@ func _on_drag_preview_gui_input(event: InputEvent, tile_name: String, texture: T
 	# Prevent starting a drag if this item was already placed/confirmed
 	if is_item_placed(tile_name):
 		return
+	
+	var is_start = false
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and not event.is_echo():
-			# Begin drag directly from provided texture
-			_mouse_press_began_in_drag_area = true
-			_dragging_floor_item = is_floor
-			_selected_texture = texture
-			_preview_rotation = 0
-			if is_instance_valid(selected_sprite):
-				selected_sprite.texture = _selected_texture
-				selected_sprite.visible = true
-				selected_sprite.self_modulate.a = 0.6
-				# Position with offsets:
-				# - Horizontal: 50% width for floor, 85% width for wall
-				# - Vertical:   25% height for floor, 85% height for wall
-				var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(_selected_texture.get_width())
-				var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(_selected_texture.get_height())
-				var offset_x := display_width * (0.5 if is_floor else 0.85)
-				var offset_y := display_height * (0.25 if is_floor else 0.85)
-				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
-			selected_sprite_path = tile_name
-		elif not event.pressed:
-			# Release ends tracking and clears selection
-			_mouse_press_began_in_drag_area = false
-			_dragging_floor_item = false
-			_clear_selected_sprite()
-			_remove_marked_tile_overlay()
-			_clear_marked_wall_tile()
+			is_start = true
+	elif event is InputEventScreenTouch:
+		if event.pressed:
+			is_start = true
+			
+	if is_start:
+		# Begin drag directly from provided texture
+		_mouse_press_began_in_drag_area = true
+		_dragging_floor_item = is_floor
+		_selected_texture = texture
+		_preview_rotation = 0
+		if is_instance_valid(selected_sprite):
+			selected_sprite.texture = _selected_texture
+			selected_sprite.visible = true
+			selected_sprite.self_modulate.a = 0.6
+			# Position with offsets:
+			# - Horizontal: 50% width for floor, 85% width for wall
+			# - Vertical:   25% height for floor, 85% height for wall
+			var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(_selected_texture.get_width())
+			var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(_selected_texture.get_height())
+			var offset_x := display_width * (0.5 if is_floor else 0.85)
+			var offset_y := display_height * (0.25 if is_floor else 0.85)
+			selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
+		selected_sprite_path = tile_name
+
+func _end_drag() -> void:
+	# Release ends tracking and clears selection
+	_mouse_press_began_in_drag_area = false
+	_dragging_floor_item = false
+	_clear_selected_sprite()
+	_remove_marked_tile_overlay()
+	_clear_marked_wall_tile()
 
 func _clear_selected_sprite() -> void:
 	if is_instance_valid(selected_sprite):
@@ -238,7 +247,7 @@ func _process(_delta: float) -> void:
 			_last_hovered_tile = tile_coords
 
 	# Mark hovered floor tile(s) with green overlay if dragging a floor item
-	var dragging_floor := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and _dragging_floor_item
+	var dragging_floor := _mouse_press_began_in_drag_area and _dragging_floor_item
 	if dragging_floor and is_instance_valid(floor_mouse_detector) and is_instance_valid(floor_layer) and is_instance_valid(floor_hologram_layer):
 		var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
 		var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
@@ -272,7 +281,7 @@ func _process(_delta: float) -> void:
 		_remove_marked_tile_overlay()
 
 	# Mark hovered wall tile with green tint if dragging a wall item
-	var dragging_wall := _mouse_press_began_in_drag_area and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not _dragging_floor_item
+	var dragging_wall := _mouse_press_began_in_drag_area and not _dragging_floor_item
 	if dragging_wall and is_instance_valid(wall_layer):
 		var wall_local := wall_layer.to_local(get_global_mouse_position())
 		var wall_coords: Vector2i = wall_layer.local_to_map(wall_local)
@@ -289,16 +298,15 @@ func _process(_delta: float) -> void:
 	# While the left button remains pressed and the press began in the drag area,
 	# keep the selected sprite following the mouse.
 	if _mouse_press_began_in_drag_area:
-		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-			# Follow mouse with the selected sprite while pressed; keep last offset behavior
-			if is_instance_valid(selected_sprite) and selected_sprite.visible:
-				# Infer floor vs wall by selected_sprite_path if available; default to floor offset
-				var is_floor := _dragging_floor_item
-				var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(selected_sprite.texture.get_width())
-				var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(selected_sprite.texture.get_height())
-				var offset_x := display_width * (0.5 if is_floor else 0.85)
-				var offset_y := display_height * (0.25 if is_floor else 0.85)
-				selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
+		# Follow mouse with the selected sprite while pressed; keep last offset behavior
+		if is_instance_valid(selected_sprite) and selected_sprite.visible:
+			# Infer floor vs wall by selected_sprite_path if available; default to floor offset
+			var is_floor := _dragging_floor_item
+			var display_width := selected_sprite.size.x if selected_sprite.size.x > 0.0 else float(selected_sprite.texture.get_width())
+			var display_height := selected_sprite.size.y if selected_sprite.size.y > 0.0 else float(selected_sprite.texture.get_height())
+			var offset_x := display_width * (0.5 if is_floor else 0.85)
+			var offset_y := display_height * (0.25 if is_floor else 0.85)
+			selected_sprite.position = get_global_mouse_position() - Vector2(offset_x, offset_y)
 
 		else:
 			# If the button is no longer pressed, stop temporary sprite (placement handled in _input)
@@ -309,8 +317,22 @@ func _process(_delta: float) -> void:
 			_clear_marked_wall_tile()
 
 func _input(event: InputEvent) -> void:
+	var is_press = false
+	var is_release = false
+	
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and not event.is_echo():
+			is_press = true
+		elif not event.pressed and not event.is_echo():
+			is_release = true
+	elif event is InputEventScreenTouch:
+		if event.pressed:
+			is_press = true
+		else:
+			is_release = true
+
 	# Start re-dragging if clicking on the tracked item (press)
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and not event.is_echo():
+	if is_press:
 		# If no edit in progress, allow selecting already placed floor item by clicking it
 		if not _editing_active and not _wall_editing_active:
 			# Check floor items first
@@ -409,7 +431,7 @@ func _input(event: InputEvent) -> void:
 			_command_dog_to_mouse(event.position)
 
 	# Place item exactly when the left mouse button is released anywhere
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and not event.is_echo():
+	if is_release:
 		if _mouse_press_began_in_drag_area and _dragging_floor_item and is_instance_valid(floor_mouse_detector):
 			var local_pos := floor_mouse_detector.to_local(get_global_mouse_position())
 			var tile_coords: Vector2i = floor_mouse_detector.local_to_map(local_pos)
@@ -428,6 +450,26 @@ func _input(event: InputEvent) -> void:
 						_start_tracking_item(selected_sprite_path, tile_coords, _preview_rotation, _selected_texture, true)
 					else:
 						_stop_tracking_and_hide_controls()
+			
+			# Always clear drag state on release
+			_mouse_press_began_in_drag_area = false
+			_editing_is_dragging = false
+			_dragging_floor_item = false
+			
+			# If we are NOT tracking (editing), we should clear selection.
+			if not _editing_active:
+				_clear_selected_sprite()
+			else:
+				# If we ARE tracking, we might want to hide the sprite or update it?
+				# _start_tracking_item sets up the UI.
+				# The sprite is usually hidden when tracking starts?
+				# Let's check _start_tracking_item. It doesn't hide selected_sprite.
+				# But usually selected_sprite is the "drag preview".
+				# Once placed, the tilemap shows the item. The preview should be hidden.
+				_clear_selected_sprite()
+				
+			_remove_marked_tile_overlay()
+
 		elif _mouse_press_began_in_drag_area and not _dragging_floor_item and is_instance_valid(wall_layer):
 			var wall_local := wall_layer.to_local(get_global_mouse_position())
 			var wall_coords: Vector2i = wall_layer.local_to_map(wall_local)

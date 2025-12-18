@@ -55,6 +55,9 @@ var water_time: float = 0.0
 var rope_angle: float = 0.0
 var rope_ang_vel: float = 0.0
 
+# Mobile controls
+var mobile_input_x: float = 0.0
+
 func _ready() -> void:
 	initial_position = global_position
 	# Find the water zone in the scene
@@ -126,6 +129,10 @@ func _process_swimming_state(delta: float) -> void:
 		input_direction = -1.0
 	elif Input.is_action_pressed("right_move"):
 		input_direction = 1.0
+	
+	# Override with mobile input
+	if mobile_input_x != 0.0:
+		input_direction = mobile_input_x
 	
 	# Set horizontal velocity
 	velocity.x = input_direction * SWIM_SPEED

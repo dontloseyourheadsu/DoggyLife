@@ -52,6 +52,7 @@ var _fight_target_fish: RigidBody2D = null # actual fish biting
 var _fight_fish_direction: float = 1.0 # 1 down, -1 up
 var _fight_percentage_label: Label = null
 
+var _active_touches: Dictionary = {}
 
 func _ready() -> void:
 	_calculate_max_throw_force()
@@ -78,6 +79,10 @@ func _on_game_over() -> void:
 	set_process(false)
 	# Stop fight
 	_end_fight(true)
+	
+	_active_touches.clear()
+	if dog:
+		dog.mobile_input_x = 0.0
 
 func _process(delta: float) -> void:
 	if is_charging:
@@ -95,7 +100,44 @@ func _process(delta: float) -> void:
 	else:
 		_update_fight(delta)
 
+func _update_mobile_input() -> void:
+	if not dog: return
+	
+	var left = false
+	var right = false
+	var viewport_width = get_viewport_rect().size.x
+	
+	for index in _active_touches:
+		var pos = _active_touches[index]
+		var ratio = pos.x / viewport_width
+		
+		if ratio <= 0.25:
+			left = true
+		elif ratio >= 0.75:
+			right = true
+			
+	if left and right:
+		dog.mobile_input_x = 0.0
+	elif left:
+		dog.mobile_input_x = -1.0
+	elif right:
+		dog.mobile_input_x = 1.0
+	else:
+		dog.mobile_input_x = 0.0
+
 func _unhandled_input(event: InputEvent) -> void:
+	# Mobile controls
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_active_touches[event.index] = event.position
+			_update_mobile_input()
+		else:
+			_active_touches.erase(event.index)
+			_update_mobile_input()
+	elif event is InputEventScreenDrag:
+		_active_touches[event.index] = event.position
+		_update_mobile_input()
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			_on_left_click_pressed()

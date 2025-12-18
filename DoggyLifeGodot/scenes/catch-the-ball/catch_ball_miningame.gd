@@ -16,6 +16,7 @@ extends Node2D
 # Map item index -> dog key (e.g. "dog-samoyed")
 var _index_to_dog: Array[String] = []
 var game_active: bool = false
+var _active_touches: Dictionary = {}
 
 func _ready() -> void:
 	_populate_owned_dogs_list()
@@ -24,6 +25,58 @@ func _ready() -> void:
 	# Connect to game_over signal from score_summary
 	if score_summary:
 		score_summary.game_over.connect(_on_game_over)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not game_active:
+		return
+	
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_active_touches[event.index] = event.position
+			_handle_touch_start(event.position)
+		else:
+			_active_touches.erase(event.index)
+			_update_mobile_input()
+			
+	elif event is InputEventScreenDrag:
+		_active_touches[event.index] = event.position
+		_update_mobile_input()
+
+func _handle_touch_start(pos: Vector2) -> void:
+	var viewport_width = get_viewport_rect().size.x
+	var ratio = pos.x / viewport_width
+	
+	# Center 50% (0.25 to 0.75) is jump
+	if ratio > 0.25 and ratio < 0.75:
+		if dog_body:
+			dog_body.mobile_jump = true
+	
+	_update_mobile_input()
+
+func _update_mobile_input() -> void:
+	if not dog_body: return
+	
+	var left = false
+	var right = false
+	var viewport_width = get_viewport_rect().size.x
+	
+	for index in _active_touches:
+		var pos = _active_touches[index]
+		var ratio = pos.x / viewport_width
+		
+		if ratio <= 0.25:
+			left = true
+		elif ratio >= 0.75:
+			right = true
+			
+	if left and right:
+		dog_body.mobile_input_x = 0.0
+	elif left:
+		dog_body.mobile_input_x = -1.0
+	elif right:
+		dog_body.mobile_input_x = 1.0
+	else:
+		dog_body.mobile_input_x = 0.0
 
 func _connect_ball_signals() -> void:
 	# Connect all ball signals to the score handler
@@ -50,6 +103,9 @@ func _on_ball_caught(points: int) -> void:
 func _on_game_over() -> void:
 	"""Called when the score_summary emits game_over signal"""
 	game_active = false
+	_active_touches.clear()
+	if dog_body:
+		dog_body.mobile_input_x = 0.0
 	
 	# Disable dog controls
 	if dog_body:
