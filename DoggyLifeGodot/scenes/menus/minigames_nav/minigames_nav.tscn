@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://c0y7xab8g7wps" path="res://shared/scenes/container.tscn" id="3_x7iem"]
 [ext_resource type="Texture2D" uid="uid://bvs6aepyikq8m" path="res://ui/buttons/button-arrow-left.png" id="4_qbev7"]
 [ext_resource type="Texture2D" uid="uid://byosdnabw3x7k" path="res://sprites/balls/red-ball.png" id="4_suyt4"]
+[ext_resource type="Texture2D" uid="uid://bj6khevl4y86b" path="res://scenes/fish-capture/fishes/images/fresh_water/goldfish.png" id="5_goldfish"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vnlla"]
 
@@ -84,9 +85,11 @@ layout_mode = 2
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 12
 theme_override_constants/icon_margin = 12
-item_count = 1
+item_count = 2
 item_0/text = "Catch the Ball"
 item_0/icon = ExtResource("4_suyt4")
+item_1/text = "Fish Capture"
+item_1/icon = ExtResource("5_goldfish")
 
 [node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
