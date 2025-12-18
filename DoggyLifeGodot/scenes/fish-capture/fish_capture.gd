@@ -53,6 +53,7 @@ var _fight_fish_direction: float = 1.0 # 1 down, -1 up
 var _fight_percentage_label: Label = null
 
 var _active_touches: Dictionary = {}
+var mobile_fight_input: bool = false
 
 func _ready() -> void:
 	_calculate_max_throw_force()
@@ -105,6 +106,7 @@ func _update_mobile_input() -> void:
 	
 	var left = false
 	var right = false
+	var center = false
 	var viewport_width = get_viewport_rect().size.x
 	
 	for index in _active_touches:
@@ -115,6 +117,8 @@ func _update_mobile_input() -> void:
 			left = true
 		elif ratio >= 0.75:
 			right = true
+		else:
+			center = true
 			
 	if left and right:
 		dog.mobile_input_x = 0.0
@@ -124,6 +128,8 @@ func _update_mobile_input() -> void:
 		dog.mobile_input_x = 1.0
 	else:
 		dog.mobile_input_x = 0.0
+		
+	mobile_fight_input = center
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Mobile controls
@@ -389,7 +395,7 @@ func _update_fight(delta: float) -> void:
 		# Local X- is Global Y+ (DOWN)
 		# So Gravity should DECREASE X. Input should INCREASE X.
 		var move_dir: float = -1.0 # Default falling down (decreasing X)
-		if Input.is_action_pressed("ui_accept") or Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		if Input.is_action_pressed("ui_accept") or Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or mobile_fight_input:
 			move_dir = 1.0 # Move up (increasing X)
 			
 		fight_bar_indicator.position.x += move_dir * FIGHT_INDICATOR_MOVE_SPEED * delta
