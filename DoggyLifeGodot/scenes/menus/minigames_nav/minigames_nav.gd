@@ -17,6 +17,8 @@ func _on_minigames_list_item_selected(index: int) -> void:
 	# Select scene to play
 	if index == 0:
 		scene = load("res://scenes/catch-the-ball/catch_ball_miningame.tscn").instantiate()
+	elif index == 1:
+		scene = load("res://scenes/fish-capture/fish-capture.tscn").instantiate()
 	else:
 		return
 	

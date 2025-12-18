@@ -169,11 +169,33 @@ func set_random_species() -> void:
 
 func _find_bait() -> void:
 	# Search for the bait (StringTip) in the scene
-	var scene_root = get_tree().current_scene
-	if scene_root:
-		_bait_target = _find_node_by_name(scene_root, "StringTip")
-		if _bait_target:
-			print("Fish found bait: ", _bait_target.name)
+	# First try to find the Dog node which contains the StringTip
+	var dog_node = null
+	
+	# Try to find Dog as a sibling of Fishes container (common structure)
+	# Fishes is usually in Camera2D, Dog is also in Camera2D
+	var fishes_container = get_parent()
+	if fishes_container:
+		var camera_node = fishes_container.get_parent()
+		if camera_node and camera_node.has_node("Dog"):
+			dog_node = camera_node.get_node("Dog")
+	
+	# If not found, try searching from root
+	if not dog_node:
+		var scene_root = get_tree().current_scene
+		if scene_root:
+			dog_node = _find_node_by_name(scene_root, "Dog")
+	
+	if dog_node and dog_node.has_node("StringTip"):
+		_bait_target = dog_node.get_node("StringTip")
+		print("Fish found bait: ", _bait_target.name)
+	else:
+		# Fallback to searching entire tree for StringTip
+		var scene_root = get_tree().current_scene
+		if scene_root:
+			_bait_target = _find_node_by_name(scene_root, "StringTip")
+			if _bait_target:
+				print("Fish found bait via fallback search: ", _bait_target.name)
 
 func _find_node_by_name(node: Node, node_name: String) -> Node:
 	if node.name == node_name:
@@ -221,8 +243,7 @@ func _check_if_notices_bait() -> void:
 
 func _is_bait_occupied() -> bool:
 	# Check if any other fish in scene is already biting
-	var scene_root = get_tree().current_scene
-	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	var fish_container = get_parent()
 	if not fish_container:
 		return false
 	
