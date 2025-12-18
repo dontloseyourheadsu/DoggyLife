@@ -254,6 +254,12 @@ func _is_ball_thrown() -> bool:
 	return false
 
 func _find_water_zone() -> void:
+	# Try to find WaterZone as a sibling first (common case)
+	if get_parent().has_node("WaterZone"):
+		water_zone = get_parent().get_node("WaterZone")
+		print("Found WaterZone as sibling")
+		return
+
 	# Search for water zone in the scene tree
 	var scene_root = get_tree().current_scene
 	if not scene_root:
@@ -299,8 +305,12 @@ func has_fish_biting() -> bool:
 		return false
 	
 	# Check all fish in scene
-	var scene_root = get_tree().current_scene
-	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	var fish_container = get_parent().get_node_or_null("Fishes")
+	if not fish_container:
+		var scene_root = get_tree().current_scene
+		if scene_root:
+			fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	
 	if not fish_container:
 		return false
 	
@@ -326,8 +336,12 @@ func _update_bait_color() -> void:
 		string_tip.color = Color(0.6, 0.6, 0.6, 1.0) # Default gray
 
 func _has_fish_pursuing() -> bool:
-	var scene_root = get_tree().current_scene
-	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	var fish_container = get_parent().get_node_or_null("Fishes")
+	if not fish_container:
+		var scene_root = get_tree().current_scene
+		if scene_root:
+			fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	
 	if not fish_container:
 		return false
 	
@@ -338,8 +352,12 @@ func _has_fish_pursuing() -> bool:
 	return false
 
 func _stop_all_pursuing_fish() -> void:
-	var scene_root = get_tree().current_scene
-	var fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	var fish_container = get_parent().get_node_or_null("Fishes")
+	if not fish_container:
+		var scene_root = get_tree().current_scene
+		if scene_root:
+			fish_container = scene_root.get_node_or_null("Camera2D/Fishes")
+	
 	if not fish_container:
 		return
 	
