@@ -135,7 +135,7 @@ func _physics_process(delta: float) -> void:
 			_update_sprite_animation()
 			move_and_slide()
 
-			if get_slide_collision_count() > 0:
+			if is_on_wall():
 				_command_active = false
 				go_to_canceled.emit(_command_target)
 				_handle_collision()
@@ -146,7 +146,7 @@ func _physics_process(delta: float) -> void:
 		_update_sprite_animation()
 		move_and_slide()
 		
-		if get_slide_collision_count() > 0:
+		if is_on_wall():
 			_handle_collision()
 	else:
 		velocity.x = 0.0
@@ -257,9 +257,16 @@ func _start_walking_away_from_collision():
 	var new_dir = Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
 	
 	# If we collided, walk away from the obstacle normal
-	if get_slide_collision_count() > 0:
-		var normal: Vector3 = get_slide_collision(0).get_normal()
-		var normal_xz: Vector3 = Vector3(normal.x, 0.0, normal.z)
+	var wall_normal := Vector3.ZERO
+	for i in range(get_slide_collision_count()):
+		var collision = get_slide_collision(i)
+		var normal = collision.get_normal()
+		if abs(normal.y) < 0.707:
+			wall_normal = normal
+			break
+			
+	if not wall_normal.is_zero_approx():
+		var normal_xz: Vector3 = Vector3(wall_normal.x, 0.0, wall_normal.z)
 		if not normal_xz.is_zero_approx():
 			# Add random angle offset so dog doesn't bounce straight back
 			var angle = randf_range(-PI / 3.0, PI / 3.0)
@@ -298,12 +305,19 @@ func _on_movement_timer_timeout():
 		return
 
 	var action_choice = randi() % 100
-	if action_choice < 45:
-		_start_sitting()
-	elif action_choice < 95:
-		_start_walking()
+	if current_state == DogState.SITTING:
+		# Prevent consecutive sitting. Choose between walking (90%) and scratching (10%)
+		if action_choice < 90:
+			_start_walking()
+		else:
+			_start_scratching()
 	else:
-		_start_scratching()
+		if action_choice < 45:
+			_start_sitting()
+		elif action_choice < 95:
+			_start_walking()
+		else:
+			_start_scratching()
 	
 	movement_timer.wait_time = randf_range(0.8, 3.0)
 	movement_timer.start()
