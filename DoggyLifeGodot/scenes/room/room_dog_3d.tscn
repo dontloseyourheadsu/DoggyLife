@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://dmj25y3ddoggy"]
+[gd_scene format=3 uid="uid://dmj25y3ddoggy"]
 
 [ext_resource type="Script" path="res://scenes/room/room_dog_3d.gd" id="1_script"]
 [ext_resource type="SpriteFrames" uid="uid://drymo5cd0gf1j" path="res://sprites/dogs/spriteframes/samoyed-dog.tres" id="2_frames"]
@@ -15,11 +15,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 shape = SubResource("CylinderShape3D_dog")
 
 [node name="DogAnimations3D" type="AnimatedSprite3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 pixel_size = 0.015
+billboard = 1
 shaded = true
 alpha_cut = 1
 texture_filter = 0
 sprite_frames = ExtResource("2_frames")
 animation = &"walk-front"
+offset = Vector2(0, 16)
 metadata/_edit_group_ = true
