@@ -34,6 +34,29 @@ signal go_to_started(target_position: Vector3)
 signal go_to_arrived(target_position: Vector3)
 signal go_to_canceled(target_position: Vector3)
 
+# Dog Selected Signal
+signal dog_selected(dog_node: CharacterBody3D)
+
+# Dog Care / Survival Stats (0.0 to 100.0)
+var dog_name: String = "Sammy"
+var dog_breed: String = "Samoyed"
+
+var stat_hunger: float = 80.0
+var stat_thirst: float = 85.0
+var stat_hygiene: float = 90.0
+var stat_energy: float = 100.0
+var stat_affection: float = 75.0
+
+# Decay/Recovery rates per second
+const HUNGER_DECAY_RATE = 0.08
+const THIRST_DECAY_RATE = 0.12
+const HYGIENE_DECAY_RATE = 0.04
+const ENERGY_DECAY_RATE_WALKING = 0.6
+const ENERGY_RECOVERY_RATE_SITTING = 1.0
+const AFFECTION_DECAY_RATE = 0.03
+
+var is_exhausted: bool = false
+
 # Mapping from dog name to SpriteFrames path
 const DOG_SPRITEFRAMES_MAP: Dictionary = {
 	"dog-samoyed": "res://sprites/dogs/spriteframes/samoyed-dog.tres",
@@ -63,8 +86,24 @@ func _ready():
 	animation_timer.wait_time = 0.8
 	animation_timer.timeout.connect(_on_animation_timer_timeout)
 	
+	# Randomize initial stats
+	stat_hunger = randf_range(60.0, 90.0)
+	stat_thirst = randf_range(60.0, 90.0)
+	stat_hygiene = randf_range(70.0, 95.0)
+	stat_energy = randf_range(80.0, 100.0)
+	stat_affection = randf_range(60.0, 85.0)
+
+	# Connect pickable input events
+	input_ray_pickable = true
+	input_event.connect(_on_input_event)
+
 	# Start with a random sitting animation
 	_start_sitting()
+
+func _on_input_event(_camera: Node, event: InputEvent, _event_position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		get_viewport().set_input_as_handled()
+		dog_selected.emit(self)
 
 func _apply_owned_dog_spriteframes() -> void:
 	if not animated_dog_sprite:
@@ -83,11 +122,24 @@ func _apply_owned_dog_spriteframes() -> void:
 		owned_dogs.append("dog-samoyed")
 	
 	# Pick a random owned dog
-	var dog_name: String = owned_dogs[randi() % owned_dogs.size()]
-	var path: String = DOG_SPRITEFRAMES_MAP[dog_name]
+	var dog_key: String = owned_dogs[randi() % owned_dogs.size()]
+	var path: String = DOG_SPRITEFRAMES_MAP[dog_key]
 	var res: Resource = load(path)
 	if res is SpriteFrames:
 		animated_dog_sprite.sprite_frames = res
+		match dog_key:
+			"dog-samoyed":
+				dog_breed = "Samoyed"
+				dog_name = "Sammy"
+			"dog-beagle":
+				dog_breed = "Beagle"
+				dog_name = "Buddy"
+			"dog-shiba":
+				dog_breed = "Shiba Inu"
+				dog_name = "Hiro"
+			"dog-spaniel":
+				dog_breed = "Cocker Spaniel"
+				dog_name = "Charlie"
 	else:
 		push_warning("Failed to load dog SpriteFrames: %s" % path)
 
@@ -107,6 +159,24 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 	else:
 		velocity.y = 0.0
+
+	# Update survival stats dynamically
+	stat_hunger = clamp(stat_hunger - HUNGER_DECAY_RATE * delta, 0.0, 100.0)
+	stat_thirst = clamp(stat_thirst - THIRST_DECAY_RATE * delta, 0.0, 100.0)
+	stat_hygiene = clamp(stat_hygiene - HYGIENE_DECAY_RATE * delta, 0.0, 100.0)
+	stat_affection = clamp(stat_affection - AFFECTION_DECAY_RATE * delta, 0.0, 100.0)
+
+	if current_state == DogState.WALKING and is_moving:
+		stat_energy = clamp(stat_energy - ENERGY_DECAY_RATE_WALKING * delta, 0.0, 100.0)
+		if stat_energy <= 0.0:
+			is_exhausted = true
+			_command_active = false
+			_chase_target = null
+			_start_sitting()
+	else:
+		stat_energy = clamp(stat_energy + ENERGY_RECOVERY_RATE_SITTING * delta, 0.0, 100.0)
+		if is_exhausted and stat_energy >= 30.0:
+			is_exhausted = false
 
 	if _chase_target:
 		if not is_instance_valid(_chase_target):
@@ -323,6 +393,9 @@ func _start_scratching():
 	velocity.z = 0.0
 	scratch_count += 1
 	
+	# Lose hygiene immediately from scratching!
+	stat_hygiene = clamp(stat_hygiene - 3.0, 0.0, 100.0)
+	
 	# Select scratching animation based on last face direction
 	if last_face_dir == "left":
 		play_anim("scratch-left")
@@ -341,6 +414,12 @@ func _start_scratching():
 
 func _on_movement_timer_timeout():
 	if _command_active or _chase_target:
+		return
+
+	if is_exhausted:
+		_start_sitting()
+		movement_timer.wait_time = randf_range(0.8, 3.0)
+		movement_timer.start()
 		return
 
 	var action_choice = randi() % 100
@@ -367,6 +446,8 @@ func _on_animation_timer_timeout():
 # =============== Public API ===============
 func go_to_global_position(target: Vector3) -> void:
 	"""Command the dog to walk towards the given global 3D position on XZ plane."""
+	if is_exhausted:
+		return
 	_chase_target = null
 	_command_target = target
 	_command_active = true
@@ -380,6 +461,8 @@ func go_to_global_position(target: Vector3) -> void:
 
 func chase_ball(ball: RigidBody3D) -> void:
 	"""Command the dog to chase the thrown 3D ball."""
+	if is_exhausted:
+		return
 	_chase_target = ball
 	_command_active = false
 	_command_target = Vector3.INF
