@@ -22,10 +22,10 @@ uv1_scale = Vector3(20, 20, 20)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
-size = Vector2(20, 20)
+size = Vector2(12, 12)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(20, 0.2, 20)
+size = Vector3(12, 0.2, 12)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
 albedo_color = Color(0.215686, 0.266667, 0.352941, 1)
@@ -33,13 +33,13 @@ roughness = 0.95
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall"]
 material = SubResource("StandardMaterial3D_wall")
-size = Vector3(20, 4, 0.2)
+size = Vector3(12, 4, 0.2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
-size = Vector3(20, 4, 0.2)
+size = Vector3(12, 4, 0.2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
-size = Vector3(0.2, 4, 20)
+size = Vector3(0.2, 4, 12)
 
 [node name="Room3D" type="Node3D"]
 script = ExtResource("1_script")
@@ -72,7 +72,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 shape = SubResource("BoxShape3D_floor")
 
 [node name="NorthWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -6)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="NorthWall"]
 mesh = SubResource("BoxMesh_wall")
@@ -81,19 +81,19 @@ mesh = SubResource("BoxMesh_wall")
 shape = SubResource("BoxShape3D_wall")
 
 [node name="SouthWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="SouthWall"]
 shape = SubResource("BoxShape3D_wall")
 
 [node name="EastWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="EastWall"]
 shape = SubResource("BoxShape3D_side_wall")
 
 [node name="WestWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WestWall"]
 shape = SubResource("BoxShape3D_side_wall")
@@ -102,12 +102,12 @@ shape = SubResource("BoxShape3D_side_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 
 [node name="RoomCamera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
-transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 4.5, 6)
+transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 2.5, 3.5)
 fov = 55.0
 size = 6.0
 script = ExtResource("2_camera_script")
 target = NodePath("../RoomDog3D")
-offset = Vector3(0, 4.0, 5.0)
+offset = Vector3(0, 2.5, 3.5)
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -136,7 +136,7 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_constants/shadow_outline_size = 2
 theme_override_font_sizes/font_size = 18
 text = "2.5D Room Preview (Cult of the Lamb style)
-Left Click on floor: Command dog to walk | Let go: Dog wanders autonomously"
+Left Click: Command dog | Right Click: Throw ball | Let go: Dog wanders autonomously"
 horizontal_alignment = 1
 vertical_alignment = 1
 

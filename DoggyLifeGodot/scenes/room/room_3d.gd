@@ -27,9 +27,9 @@ func _handle_click(mouse_pos: Vector2) -> void:
 		if t >= 0.0:
 			var target_pos = origin + t * normal
 			
-			# Constrain dog targets to be inside the boundary walls (-10 to 10 grid)
-			target_pos.x = clamp(target_pos.x, -9.5, 9.5)
-			target_pos.z = clamp(target_pos.z, -9.5, 9.5)
+			# Constrain dog targets to be inside the smaller boundary walls (-6 to 6 grid)
+			target_pos.x = clamp(target_pos.x, -5.5, 5.5)
+			target_pos.z = clamp(target_pos.z, -5.5, 5.5)
 			
 			# Command the dog to walk to the target position
 			if room_dog and room_dog.has_method("go_to_global_position"):
