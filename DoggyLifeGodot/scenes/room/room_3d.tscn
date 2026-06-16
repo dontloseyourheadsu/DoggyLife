@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://b125d3droom3d"]
+[gd_scene format=3 uid="uid://b125d3droom3d"]
 
 [ext_resource type="Script" path="res://scenes/room/room_3d.gd" id="1_script"]
 [ext_resource type="Script" path="res://scenes/room/room_camera_3d.gd" id="2_camera_script"]
@@ -6,18 +6,18 @@
 
 [sub_resource type="Environment" id="Environment_cozy"]
 background_mode = 1
-background_color = Color(0.0823529, 0.0862745, 0.0980392, 1)
+background_color = Color(0.117647, 0.121569, 0.137255, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.180392, 0.188235, 0.219608, 1)
-ambient_light_energy = 0.8
+ambient_light_color = Color(0.439216, 0.45098, 0.501961, 1)
+ambient_light_energy = 1.3
 tonemap_mode = 2
 ssao_enabled = true
 glow_enabled = true
-glow_bloom = 0.1
+glow_bloom = 0.15
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.239216, 0.168627, 0.117647, 1)
-roughness = 0.85
+albedo_color = Color(0.439216, 0.341176, 0.258824, 1)
+roughness = 0.8
 uv1_scale = Vector3(20, 20, 20)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
@@ -28,8 +28,8 @@ size = Vector2(20, 20)
 size = Vector3(20, 0.2, 20)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
-albedo_color = Color(0.12549, 0.164706, 0.239216, 1)
-roughness = 0.9
+albedo_color = Color(0.215686, 0.266667, 0.352941, 1)
+roughness = 0.95
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall"]
 material = SubResource("StandardMaterial3D_wall")
@@ -49,15 +49,15 @@ environment = SubResource("Environment_cozy")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 8, 0)
-light_color = Color(1, 0.94902, 0.878431, 1)
-light_energy = 0.6
+light_color = Color(1, 0.95, 0.9, 1)
+light_energy = 1.3
 shadow_enabled = true
 shadow_bias = 0.03
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-light_color = Color(1, 0.898039, 0.737255, 1)
-light_energy = 1.2
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 1.8
 omni_range = 15.0
 shadow_enabled = true
 shadow_bias = 0.05
@@ -140,19 +140,4 @@ Left Click on floor: Command dog to walk | Let go: Dog wanders autonomously"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BackButton" type="Button" parent="UI/SafePanel"]
-custom_minimum_size = Vector2(200, 50)
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_left = 0.5
-anchor_top = 1.0
-offset_left = -100.0
-offset_top = -80.0
-offset_right = 100.0
-offset_bottom = -30.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 16
-text = "Back to 2D Room"
+
