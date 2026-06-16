@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/room/ball_3d.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cyq8absxk5hpl" path="res://scenes/catch-the-ball/images/balls/red-ball.png" id="2_texture"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bounce"]
+bounce = 0.75
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ball"]
+radius = 0.15
+
+[node name="Ball3D" type="RigidBody3D"]
+physics_material_override = SubResource("PhysicsMaterial_bounce")
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_ball")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+pixel_size = 0.015
+billboard = 1
+shaded = true
+texture = ExtResource("2_texture")

@@ -27,6 +27,7 @@ const MAX_SCRATCHES = 2
 var _command_active: bool = false
 var _command_target: Vector3 = Vector3.INF
 const _ARRIVAL_EPS := 0.25
+var _chase_target: RigidBody3D = null
 
 # Signals for command progress
 signal go_to_started(target_position: Vector3)
@@ -107,7 +108,45 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 
-	if _command_active:
+	if _chase_target:
+		if not is_instance_valid(_chase_target):
+			_chase_target = null
+			is_moving = false
+			velocity.x = 0.0
+			velocity.z = 0.0
+			_start_sitting()
+			if movement_timer:
+				movement_timer.wait_time = randf_range(0.8, 3.0)
+				movement_timer.start()
+		else:
+			var target_xz: Vector3 = Vector3(_chase_target.global_position.x, global_position.y, _chase_target.global_position.z)
+			var to_target: Vector3 = target_xz - global_position
+			
+			var to_target_3d: Vector3 = _chase_target.global_position - global_position
+			if to_target_3d.length() <= 0.6:
+				# Pick up the ball!
+				if is_instance_valid(_chase_target):
+					_chase_target.queue_free()
+				_chase_target = null
+				is_moving = false
+				velocity.x = 0.0
+				velocity.z = 0.0
+				_start_sitting()
+				
+				# Resume autonomous timer cycle
+				if movement_timer:
+					movement_timer.wait_time = randf_range(0.8, 3.0)
+					movement_timer.start()
+			else:
+				var dir: Vector3 = to_target.normalized()
+				is_moving = true
+				current_direction = dir
+				velocity.x = dir.x * (movement_speed * 1.5) # Run faster when chasing!
+				velocity.z = dir.z * (movement_speed * 1.5)
+
+				_update_sprite_animation()
+				move_and_slide()
+	elif _command_active:
 		# Calculate direction on XZ plane only
 		var target_xz: Vector3 = Vector3(_command_target.x, global_position.y, _command_target.z)
 		var to_target: Vector3 = target_xz - global_position
@@ -301,7 +340,7 @@ func _start_scratching():
 		_start_walking_away_from_collision()
 
 func _on_movement_timer_timeout():
-	if _command_active:
+	if _command_active or _chase_target:
 		return
 
 	var action_choice = randi() % 100
@@ -328,6 +367,7 @@ func _on_animation_timer_timeout():
 # =============== Public API ===============
 func go_to_global_position(target: Vector3) -> void:
 	"""Command the dog to walk towards the given global 3D position on XZ plane."""
+	_chase_target = null
 	_command_target = target
 	_command_active = true
 	current_state = DogState.WALKING
@@ -338,6 +378,19 @@ func go_to_global_position(target: Vector3) -> void:
 		animation_timer.stop()
 	go_to_started.emit(target)
 
+func chase_ball(ball: RigidBody3D) -> void:
+	"""Command the dog to chase the thrown 3D ball."""
+	_chase_target = ball
+	_command_active = false
+	_command_target = Vector3.INF
+	current_state = DogState.WALKING
+	is_moving = true
+	if movement_timer:
+		movement_timer.stop()
+	if animation_timer:
+		animation_timer.stop()
+
 func cancel_command() -> void:
 	_command_active = false
 	_command_target = Vector3.INF
+	_chase_target = null
