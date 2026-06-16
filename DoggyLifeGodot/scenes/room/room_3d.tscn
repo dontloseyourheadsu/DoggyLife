@@ -1,0 +1,158 @@
+[gd_scene load_steps=12 format=3 uid="uid://b125d3droom3d"]
+
+[ext_resource type="Script" path="res://scenes/room/room_3d.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/room/room_camera_3d.gd" id="2_camera_script"]
+[ext_resource type="PackedScene" uid="uid://dmj25y3ddoggy" path="res://scenes/room/room_dog_3d.tscn" id="3_dog_scene"]
+
+[sub_resource type="Environment" id="Environment_cozy"]
+background_mode = 1
+background_color = Color(0.0823529, 0.0862745, 0.0980392, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.180392, 0.188235, 0.219608, 1)
+ambient_light_energy = 0.8
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+glow_bloom = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.239216, 0.168627, 0.117647, 1)
+roughness = 0.85
+uv1_scale = Vector3(20, 20, 20)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector2(20, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
+albedo_color = Color(0.12549, 0.164706, 0.239216, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+material = SubResource("StandardMaterial3D_wall")
+size = Vector3(20, 4, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(20, 4, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
+size = Vector3(0.2, 4, 20)
+
+[node name="Room3D" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_cozy")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 8, 0)
+light_color = Color(1, 0.94902, 0.878431, 1)
+light_energy = 0.6
+shadow_enabled = true
+shadow_bias = 0.03
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+light_color = Color(1, 0.898039, 0.737255, 1)
+light_energy = 1.2
+omni_range = 15.0
+shadow_enabled = true
+shadow_bias = 0.05
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_floor")
+
+[node name="NorthWall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -10)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NorthWall"]
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NorthWall"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="SouthWall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 10)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SouthWall"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="EastWall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EastWall"]
+shape = SubResource("BoxShape3D_side_wall")
+
+[node name="WestWall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WestWall"]
+shape = SubResource("BoxShape3D_side_wall")
+
+[node name="RoomDog3D" parent="." instance=ExtResource("3_dog_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+
+[node name="RoomCamera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 4.5, 6)
+fov = 55.0
+size = 6.0
+script = ExtResource("2_camera_script")
+target = NodePath("../RoomDog3D")
+offset = Vector3(0, 4.0, 5.0)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="SafePanel" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Instructions" type="Label" parent="UI/SafePanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 18
+text = "2.5D Room Preview (Cult of the Lamb style)
+Left Click on floor: Command dog to walk | Let go: Dog wanders autonomously"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackButton" type="Button" parent="UI/SafePanel"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_left = 0.5
+anchor_top = 1.0
+offset_left = -100.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 16
+text = "Back to 2D Room"
