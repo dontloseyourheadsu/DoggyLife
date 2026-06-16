@@ -8,17 +8,17 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.196078, 0.176471, 0.235294, 0.941176)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
 border_color = Color(0.572549, 0.486275, 0.690196, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-shadow_size = 4
-shadow_offset = Vector2(2, 2)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 6
+shadow_offset = Vector2(3, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_hover"]
 bg_color = Color(0.8, 0.3, 0.3, 1)
@@ -26,22 +26,23 @@ border_width_bottom = 4
 border_color = Color(0.9, 0.4, 0.4, 1)
 
 [node name="DogStatsPanel" type="PanelContainer"]
-custom_minimum_size = Vector2(280, 200)
-offset_right = 280.0
-offset_bottom = 200.0
+custom_minimum_size = Vector2(540, 400)
+offset_right = 540.0
+offset_bottom = 400.0
 theme = ExtResource("2_theme")
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 script = ExtResource("1_script")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="Header" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -49,7 +50,7 @@ layout_mode = 2
 [node name="DogNameLabel" type="Label" parent="MarginContainer/VBoxContainer/Header"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 24
 text = "Sammy"
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/Header"]
@@ -57,9 +58,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/Header"]
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 14
 theme_override_styles/hover = SubResource("StyleBoxFlat_close_hover")
 theme_override_styles/normal = SubResource("StyleBoxFlat_close_hover")
 text = "X"
@@ -68,29 +69,32 @@ text = "X"
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.666667, 0.666667, 0.666667, 1)
-theme_override_font_sizes/font_size = 6
+theme_override_font_sizes/font_size = 12
 text = "Samoyed"
 
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 16
 
 [node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 8
+size_flags_vertical = 3
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 16
 columns = 2
 
 [node name="HungerLabel" type="Label" parent="MarginContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 6
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 10
 text = "HUNGER"
 
 [node name="HungerBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 16)
+custom_minimum_size = Vector2(240, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 nine_patch_stretch = true
 stretch_margin_left = 2
 stretch_margin_top = 2
@@ -102,14 +106,16 @@ texture_progress = ExtResource("5_progress")
 
 [node name="ThirstLabel" type="Label" parent="MarginContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 6
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 10
 text = "THIRST"
 
 [node name="ThirstBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 16)
+custom_minimum_size = Vector2(240, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 nine_patch_stretch = true
 stretch_margin_left = 2
 stretch_margin_top = 2
@@ -121,14 +127,16 @@ texture_progress = ExtResource("5_progress")
 
 [node name="HygieneLabel" type="Label" parent="MarginContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 6
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 10
 text = "HYGIENE"
 
 [node name="HygieneBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 16)
+custom_minimum_size = Vector2(240, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 nine_patch_stretch = true
 stretch_margin_left = 2
 stretch_margin_top = 2
@@ -140,14 +148,16 @@ texture_progress = ExtResource("5_progress")
 
 [node name="EnergyLabel" type="Label" parent="MarginContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 6
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 10
 text = "ENERGY"
 
 [node name="EnergyBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 16)
+custom_minimum_size = Vector2(240, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 nine_patch_stretch = true
 stretch_margin_left = 2
 stretch_margin_top = 2
@@ -159,14 +169,16 @@ texture_progress = ExtResource("5_progress")
 
 [node name="LoveLabel" type="Label" parent="MarginContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 6
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 10
 text = "LOVE"
 
 [node name="LoveBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 16)
+custom_minimum_size = Vector2(240, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 nine_patch_stretch = true
 stretch_margin_left = 2
 stretch_margin_top = 2
