@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://c6y7e3dclick"]
+
+[ext_resource type="Script" path="res://scenes/room/click_indicator_3d.gd" id="1_script"]
+
+[sub_resource type="Shader" id="Shader_ring"]
+code = "shader_type spatial;
+render_mode unshaded, depth_draw_never, cull_disabled;
+
+uniform vec4 color : source_color = vec4(0.3, 0.7, 1.0, 1.0);
+uniform float radius : hint_range(0.0, 1.0) = 0.2;
+uniform float thickness : hint_range(0.0, 0.5) = 0.05;
+
+void fragment() {
+    vec2 uv = UV - 0.5;
+    float dist = length(uv);
+    float outer = smoothstep(radius + thickness, radius, dist);
+    float inner = smoothstep(radius, radius - thickness, dist);
+    float alpha = outer * (1.0 - inner);
+    ALBEDO = color.rgb;
+    ALPHA = color.a * alpha;
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
+render_priority = 1
+shader = SubResource("Shader_ring")
+shader_parameter/color = Color(0.3, 0.7, 1, 1)
+shader_parameter/radius = 0.05
+shader_parameter/thickness = 0.04
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_click"]
+size = Vector2(1.5, 1.5)
+
+[node name="ClickIndicator3D" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+material_override = SubResource("ShaderMaterial_ring")
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_click")
+script = ExtResource("1_script")
