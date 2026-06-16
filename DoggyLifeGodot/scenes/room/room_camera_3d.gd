@@ -1,7 +1,7 @@
 extends Camera3D
 
 @export var target: Node3D
-@export var offset: Vector3 = Vector3(0.0, 4.5, 6.0) # Angle camera down and set distance
+@export var offset: Vector3 = Vector3(0.0, 2.5, 3.5) # Angle camera down and set distance
 @export var lerp_speed: float = 4.0
 
 func _ready() -> void:

@@ -27,6 +27,7 @@ const MAX_SCRATCHES = 2
 var _command_active: bool = false
 var _command_target: Vector3 = Vector3.INF
 const _ARRIVAL_EPS := 0.25
+var _chase_target: RigidBody3D = null
 
 # Signals for command progress
 signal go_to_started(target_position: Vector3)
@@ -107,7 +108,45 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 
-	if _command_active:
+	if _chase_target:
+		if not is_instance_valid(_chase_target):
+			_chase_target = null
+			is_moving = false
+			velocity.x = 0.0
+			velocity.z = 0.0
+			_start_sitting()
+			if movement_timer:
+				movement_timer.wait_time = randf_range(0.8, 3.0)
+				movement_timer.start()
+		else:
+			var target_xz: Vector3 = Vector3(_chase_target.global_position.x, global_position.y, _chase_target.global_position.z)
+			var to_target: Vector3 = target_xz - global_position
+			
+			var to_target_3d: Vector3 = _chase_target.global_position - global_position
+			if to_target_3d.length() <= 0.6:
+				# Pick up the ball!
+				if is_instance_valid(_chase_target):
+					_chase_target.queue_free()
+				_chase_target = null
+				is_moving = false
+				velocity.x = 0.0
+				velocity.z = 0.0
+				_start_sitting()
+				
+				# Resume autonomous timer cycle
+				if movement_timer:
+					movement_timer.wait_time = randf_range(0.8, 3.0)
+					movement_timer.start()
+			else:
+				var dir: Vector3 = to_target.normalized()
+				is_moving = true
+				current_direction = dir
+				velocity.x = dir.x * (movement_speed * 1.5) # Run faster when chasing!
+				velocity.z = dir.z * (movement_speed * 1.5)
+
+				_update_sprite_animation()
+				move_and_slide()
+	elif _command_active:
 		# Calculate direction on XZ plane only
 		var target_xz: Vector3 = Vector3(_command_target.x, global_position.y, _command_target.z)
 		var to_target: Vector3 = target_xz - global_position
@@ -135,7 +174,7 @@ func _physics_process(delta: float) -> void:
 			_update_sprite_animation()
 			move_and_slide()
 
-			if get_slide_collision_count() > 0:
+			if is_on_wall():
 				_command_active = false
 				go_to_canceled.emit(_command_target)
 				_handle_collision()
@@ -146,7 +185,7 @@ func _physics_process(delta: float) -> void:
 		_update_sprite_animation()
 		move_and_slide()
 		
-		if get_slide_collision_count() > 0:
+		if is_on_wall():
 			_handle_collision()
 	else:
 		velocity.x = 0.0
@@ -257,9 +296,16 @@ func _start_walking_away_from_collision():
 	var new_dir = Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
 	
 	# If we collided, walk away from the obstacle normal
-	if get_slide_collision_count() > 0:
-		var normal: Vector3 = get_slide_collision(0).get_normal()
-		var normal_xz: Vector3 = Vector3(normal.x, 0.0, normal.z)
+	var wall_normal := Vector3.ZERO
+	for i in range(get_slide_collision_count()):
+		var collision = get_slide_collision(i)
+		var normal = collision.get_normal()
+		if abs(normal.y) < 0.707:
+			wall_normal = normal
+			break
+			
+	if not wall_normal.is_zero_approx():
+		var normal_xz: Vector3 = Vector3(wall_normal.x, 0.0, wall_normal.z)
 		if not normal_xz.is_zero_approx():
 			# Add random angle offset so dog doesn't bounce straight back
 			var angle = randf_range(-PI / 3.0, PI / 3.0)
@@ -294,16 +340,23 @@ func _start_scratching():
 		_start_walking_away_from_collision()
 
 func _on_movement_timer_timeout():
-	if _command_active:
+	if _command_active or _chase_target:
 		return
 
 	var action_choice = randi() % 100
-	if action_choice < 45:
-		_start_sitting()
-	elif action_choice < 95:
-		_start_walking()
+	if current_state == DogState.SITTING:
+		# Prevent consecutive sitting. Choose between walking (90%) and scratching (10%)
+		if action_choice < 90:
+			_start_walking()
+		else:
+			_start_scratching()
 	else:
-		_start_scratching()
+		if action_choice < 45:
+			_start_sitting()
+		elif action_choice < 95:
+			_start_walking()
+		else:
+			_start_scratching()
 	
 	movement_timer.wait_time = randf_range(0.8, 3.0)
 	movement_timer.start()
@@ -314,6 +367,7 @@ func _on_animation_timer_timeout():
 # =============== Public API ===============
 func go_to_global_position(target: Vector3) -> void:
 	"""Command the dog to walk towards the given global 3D position on XZ plane."""
+	_chase_target = null
 	_command_target = target
 	_command_active = true
 	current_state = DogState.WALKING
@@ -324,6 +378,19 @@ func go_to_global_position(target: Vector3) -> void:
 		animation_timer.stop()
 	go_to_started.emit(target)
 
+func chase_ball(ball: RigidBody3D) -> void:
+	"""Command the dog to chase the thrown 3D ball."""
+	_chase_target = ball
+	_command_active = false
+	_command_target = Vector3.INF
+	current_state = DogState.WALKING
+	is_moving = true
+	if movement_timer:
+		movement_timer.stop()
+	if animation_timer:
+		animation_timer.stop()
+
 func cancel_command() -> void:
 	_command_active = false
 	_command_target = Vector3.INF
+	_chase_target = null
