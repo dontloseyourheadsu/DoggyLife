@@ -4,8 +4,8 @@ extends Node3D
 @onready var camera: Camera3D = $RoomCamera3D
 @onready var stats_panel = $UI/SafePanel/DogStatsPanel
 
-const CLICK_INDICATOR_SCENE = preload("res://scenes/room/click_indicator_3d.tscn")
-const BALL_3D_SCENE = preload("res://scenes/room/ball_3d.tscn")
+const CLICK_INDICATOR_SCENE = preload("res://scenes/room/props/click_indicator_3d.tscn")
+const BALL_3D_SCENE = preload("res://scenes/room/props/ball_3d.tscn")
 
 var active_ball: RigidBody3D = null
 
