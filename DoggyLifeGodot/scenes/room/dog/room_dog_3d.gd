@@ -40,6 +40,8 @@ signal dog_selected(dog_node: CharacterBody3D)
 # Dog Care / Survival Stats (0.0 to 100.0)
 var dog_name: String = "Sammy"
 var dog_breed: String = "Samoyed"
+var dog_key: String = ""
+var weight: float = 1.0
 
 var stat_hunger: float = 80.0
 var stat_thirst: float = 85.0
@@ -65,6 +67,38 @@ const DOG_SPRITEFRAMES_MAP: Dictionary = {
 	"dog-spaniel": "res://sprites/dogs/spriteframes/spaniel-dog.tres",
 }
 
+# Breed statistics configuration
+const BREED_STATS = {
+	"dog-samoyed": {
+		"breed_name": "Samoyed",
+		"display_name": "Sammy",
+		"scale": 1.2,
+		"speed": 2.0,
+		"weight": 23.0
+	},
+	"dog-beagle": {
+		"breed_name": "Beagle",
+		"display_name": "Buddy",
+		"scale": 0.8,
+		"speed": 2.5,
+		"weight": 12.0
+	},
+	"dog-shiba": {
+		"breed_name": "Shiba Inu",
+		"display_name": "Hiro",
+		"scale": 0.95,
+		"speed": 2.2,
+		"weight": 10.0
+	},
+	"dog-spaniel": {
+		"breed_name": "Cocker Spaniel",
+		"display_name": "Charlie",
+		"scale": 0.9,
+		"speed": 1.8,
+		"weight": 14.0
+	}
+}
+
 # Get gravity from project settings
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 
@@ -72,8 +106,11 @@ func _ready():
 	# Ensure random values are different each run
 	randomize()
 
-	# Choose a dog SpriteFrames set based on owned dogs
-	_apply_owned_dog_spriteframes()
+	# Choose a dog SpriteFrames set based on owned dogs or dog_key
+	if dog_key != "":
+		initialize_breed(dog_key)
+	else:
+		_apply_owned_dog_spriteframes()
 
 	# Setup movement timer
 	add_child(movement_timer)
@@ -105,6 +142,32 @@ func _on_input_event(_camera: Node, event: InputEvent, _event_position: Vector3,
 		get_viewport().set_input_as_handled()
 		dog_selected.emit(self)
 
+func initialize_breed(key: String) -> void:
+	dog_key = key
+	if not BREED_STATS.has(key):
+		push_warning("Unknown dog key: %s" % key)
+		return
+		
+	var stats = BREED_STATS[key]
+	dog_breed = stats["breed_name"]
+	dog_name = stats["display_name"]
+	movement_speed = stats["speed"]
+	weight = stats["weight"]
+	
+	# Apply scale to the character body
+	var s = stats["scale"]
+	scale = Vector3(s, s, s)
+	
+	# Apply SpriteFrames
+	var path: String = DOG_SPRITEFRAMES_MAP.get(key, "")
+	if path != "":
+		var res: Resource = load(path)
+		if res is SpriteFrames:
+			if animated_dog_sprite:
+				animated_dog_sprite.sprite_frames = res
+		else:
+			push_warning("Failed to load SpriteFrames: %s" % path)
+
 func _apply_owned_dog_spriteframes() -> void:
 	if not animated_dog_sprite:
 		return
@@ -122,26 +185,8 @@ func _apply_owned_dog_spriteframes() -> void:
 		owned_dogs.append("dog-samoyed")
 	
 	# Pick a random owned dog
-	var dog_key: String = owned_dogs[randi() % owned_dogs.size()]
-	var path: String = DOG_SPRITEFRAMES_MAP[dog_key]
-	var res: Resource = load(path)
-	if res is SpriteFrames:
-		animated_dog_sprite.sprite_frames = res
-		match dog_key:
-			"dog-samoyed":
-				dog_breed = "Samoyed"
-				dog_name = "Sammy"
-			"dog-beagle":
-				dog_breed = "Beagle"
-				dog_name = "Buddy"
-			"dog-shiba":
-				dog_breed = "Shiba Inu"
-				dog_name = "Hiro"
-			"dog-spaniel":
-				dog_breed = "Cocker Spaniel"
-				dog_name = "Charlie"
-	else:
-		push_warning("Failed to load dog SpriteFrames: %s" % path)
+	var key: String = owned_dogs[randi() % owned_dogs.size()]
+	initialize_breed(key)
 
 func play_anim(anim_name: String) -> void:
 	if animated_dog_sprite and animated_dog_sprite.sprite_frames and animated_dog_sprite.sprite_frames.has_animation(anim_name):
