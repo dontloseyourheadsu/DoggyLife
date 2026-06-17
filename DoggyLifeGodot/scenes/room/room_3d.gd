@@ -81,9 +81,9 @@ func _handle_click(mouse_pos: Vector2) -> void:
 			target_pos.x = clamp(target_pos.x, -5.5, 5.5)
 			target_pos.z = clamp(target_pos.z, -5.5, 5.5)
 			
-			# Command the dog to walk to the target position
-			if room_dog and room_dog.has_method("go_to_global_position"):
-				room_dog.go_to_global_position(target_pos)
+			# Command only the last inspected dog to walk to the target position
+			if selected_dog and is_instance_valid(selected_dog) and selected_dog.has_method("go_to_global_position"):
+				selected_dog.go_to_global_position(target_pos)
 				
 				# Spawn visual click indicator
 				var indicator = CLICK_INDICATOR_SCENE.instantiate()
