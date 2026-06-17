@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://b125d3droom3d"]
 
-[ext_resource type="Script" path="res://scenes/room/room_3d.gd" id="1_script"]
-[ext_resource type="Script" path="res://scenes/room/room_camera_3d.gd" id="2_camera_script"]
-[ext_resource type="PackedScene" uid="uid://dmj25y3ddoggy" path="res://scenes/room/room_dog_3d.tscn" id="3_dog_scene"]
-[ext_resource type="PackedScene" path="res://scenes/room/dog_stats_panel.tscn" id="4_stats_panel"]
+[ext_resource type="Script" uid="uid://cx2xqwmwreu6r" path="res://scenes/room/room_3d.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://b3dp1iwdq47ok" path="res://scenes/room/room_camera_3d.gd" id="2_camera_script"]
+[ext_resource type="PackedScene" uid="uid://dmj25y3ddoggy" path="res://scenes/room/dog/room_dog_3d.tscn" id="3_dog_scene"]
+[ext_resource type="PackedScene" path="res://scenes/room/ui/dog_stats_panel.tscn" id="4_stats_panel"]
 
 [sub_resource type="Environment" id="Environment_cozy"]
 background_mode = 1
@@ -42,77 +42,76 @@ size = Vector3(12, 4, 0.2)
 [sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
 size = Vector3(0.2, 4, 12)
 
-[node name="Room3D" type="Node3D"]
+[node name="Room3D" type="Node3D" unique_id=250493286]
 script = ExtResource("1_script")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1963824506]
 environment = SubResource("Environment_cozy")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1776192035]
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 8, 0)
 light_color = Color(1, 0.95, 0.9, 1)
 light_energy = 1.3
 shadow_enabled = true
 shadow_bias = 0.03
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1428998889]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 light_color = Color(1, 0.92, 0.8, 1)
 light_energy = 1.8
-omni_range = 15.0
 shadow_enabled = true
 shadow_bias = 0.05
+omni_range = 15.0
 
-[node name="Floor" type="StaticBody3D" parent="."]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=499627796]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=1896820116]
 mesh = SubResource("PlaneMesh_floor")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=874020307]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 shape = SubResource("BoxShape3D_floor")
 
-[node name="NorthWall" type="StaticBody3D" parent="."]
+[node name="NorthWall" type="StaticBody3D" parent="." unique_id=628647922]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -6)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="NorthWall"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NorthWall" unique_id=354426568]
 mesh = SubResource("BoxMesh_wall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="NorthWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NorthWall" unique_id=411895406]
 shape = SubResource("BoxShape3D_wall")
 
-[node name="SouthWall" type="StaticBody3D" parent="."]
+[node name="SouthWall" type="StaticBody3D" parent="." unique_id=455452728]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 6)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SouthWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SouthWall" unique_id=907721872]
 shape = SubResource("BoxShape3D_wall")
 
-[node name="EastWall" type="StaticBody3D" parent="."]
+[node name="EastWall" type="StaticBody3D" parent="." unique_id=72683523]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="EastWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EastWall" unique_id=555314945]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="WestWall" type="StaticBody3D" parent="."]
+[node name="WestWall" type="StaticBody3D" parent="." unique_id=1248199690]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WestWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WestWall" unique_id=1965299626]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="RoomDog3D" parent="." instance=ExtResource("3_dog_scene")]
+[node name="RoomDog3D" parent="." unique_id=487981062 instance=ExtResource("3_dog_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 
-[node name="RoomCamera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+[node name="RoomCamera3D" type="Camera3D" parent="." unique_id=1463289192 node_paths=PackedStringArray("target")]
 transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 2.5, 3.5)
 fov = 55.0
 size = 6.0
 script = ExtResource("2_camera_script")
 target = NodePath("../RoomDog3D")
-offset = Vector3(0, 2.5, 3.5)
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=889710236]
 
-[node name="SafePanel" type="Control" parent="UI"]
+[node name="SafePanel" type="Control" parent="UI" unique_id=1377083115]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -121,7 +120,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Instructions" type="Label" parent="UI/SafePanel"]
+[node name="Instructions" type="Label" parent="UI/SafePanel" unique_id=918399182]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -141,7 +140,7 @@ Left Click: Command dog | Right Click: Throw ball | Let go: Dog wanders autonomo
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DogStatsPanel" parent="UI/SafePanel" instance=ExtResource("4_stats_panel")]
+[node name="DogStatsPanel" parent="UI/SafePanel" unique_id=803311057 instance=ExtResource("4_stats_panel")]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -155,5 +154,3 @@ offset_right = 270.0
 offset_bottom = 200.0
 grow_horizontal = 2
 grow_vertical = 2
-
-
