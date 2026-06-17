@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" path="res://scenes/room/dog_stats_panel.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/room/ui/dog_stats_panel.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://cnld8djuw1qpf" path="res://themes/main_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://cmjj5dfq4qpk4" path="res://ui/icons/loadbar-back.png" id="3_back"]
 [ext_resource type="Texture2D" uid="uid://bkru7fkodkkv8" path="res://ui/icons/loadbar.png" id="4_over"]
