@@ -33,7 +33,7 @@ func _update_ui() -> void:
 		return
 		
 	name_label.text = current_dog.dog_name
-	breed_label.text = current_dog.dog_breed
+	breed_label.text = "%s (Speed: %.1f, Weight: %.1f)" % [current_dog.dog_breed, current_dog.movement_speed, current_dog.weight]
 	
 	# Update progressive bars (0-100 range)
 	hunger_bar.value = current_dog.stat_hunger
