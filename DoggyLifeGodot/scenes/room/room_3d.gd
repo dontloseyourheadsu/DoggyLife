@@ -132,7 +132,8 @@ func _handle_right_click(mouse_pos: Vector2) -> void:
 			
 			ball.linear_velocity = Vector3(velocity_xz.x, velocity_y, velocity_xz.z)
 			
-			# Command the dog to chase the ball
-			if room_dog and room_dog.has_method("chase_ball"):
-				room_dog.chase_ball(ball)
+			# Command all dogs in the room to chase the ball
+			for dog in active_dogs:
+				if is_instance_valid(dog) and dog.has_method("chase_ball"):
+					dog.chase_ball(ball)
 
