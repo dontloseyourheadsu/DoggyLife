@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dmj25y3ddoggy"]
 
-[ext_resource type="Script" path="res://scenes/room/room_dog_3d.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/room/dog/room_dog_3d.gd" id="1_script"]
 [ext_resource type="SpriteFrames" uid="uid://drymo5cd0gf1j" path="res://sprites/dogs/spriteframes/samoyed-dog.tres" id="2_frames"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_dog"]
