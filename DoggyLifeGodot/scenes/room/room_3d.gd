@@ -1,24 +1,58 @@
 extends Node3D
 
-@onready var room_dog: CharacterBody3D = $RoomDog3D
 @onready var camera: Camera3D = $RoomCamera3D
 @onready var stats_panel = $UI/SafePanel/DogStatsPanel
 
 const CLICK_INDICATOR_SCENE = preload("res://scenes/room/props/click_indicator_3d.tscn")
 const BALL_3D_SCENE = preload("res://scenes/room/props/ball_3d.tscn")
+const DOG_SCENE = preload("res://scenes/room/dog/room_dog_3d.tscn")
 
 var active_ball: RigidBody3D = null
+var active_dogs: Array[CharacterBody3D] = []
+var selected_dog: CharacterBody3D = null
 
 func _ready() -> void:
 	# Make sure the mouse mode is visible
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
-	# Connect to all dogs in the room
-	for child in get_children():
-		if child.has_signal("dog_selected"):
-			child.dog_selected.connect(_on_dog_selected)
+	# Load owned dogs from player data
+	var player_data := PlayerData.load_player_data()
+	var owned_dogs: Array[String] = []
+	for item in player_data.owned_items:
+		if item.begins_with("dog-"):
+			owned_dogs.append(item)
+			
+	if owned_dogs.is_empty():
+		owned_dogs.append("dog-samoyed")
+		
+	# Spawn all owned/unlocked dogs
+	for i in range(owned_dogs.size()):
+		var dog_key = owned_dogs[i]
+		var dog_inst = DOG_SCENE.instantiate()
+		dog_inst.dog_key = dog_key
+		
+		# Spread them out in the room
+		var angle = i * (2.0 * PI / owned_dogs.size())
+		var dist = randf_range(1.0, 2.5)
+		dog_inst.global_position = Vector3(cos(angle) * dist, 0.1, sin(angle) * dist)
+		
+		add_child(dog_inst)
+		active_dogs.append(dog_inst)
+		
+		dog_inst.dog_selected.connect(_on_dog_selected)
+		
+	# Set default selected dog to the first spawned dog
+	if not active_dogs.is_empty():
+		selected_dog = active_dogs[0]
+		if camera:
+			camera.target = selected_dog
+		if stats_panel:
+			stats_panel.display_dog(selected_dog)
 
 func _on_dog_selected(dog_node: CharacterBody3D) -> void:
+	selected_dog = dog_node
+	if camera:
+		camera.target = dog_node
 	if stats_panel:
 		stats_panel.display_dog(dog_node)
 

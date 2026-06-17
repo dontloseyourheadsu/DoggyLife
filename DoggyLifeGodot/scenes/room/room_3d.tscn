@@ -99,15 +99,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WestWall" unique_id=1965299626]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="RoomDog3D" parent="." unique_id=487981062 instance=ExtResource("3_dog_scene")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-
-[node name="RoomCamera3D" type="Camera3D" parent="." unique_id=1463289192 node_paths=PackedStringArray("target")]
+[node name="RoomCamera3D" type="Camera3D" parent="." unique_id=1463289192]
 transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 2.5, 3.5)
 fov = 55.0
 size = 6.0
 script = ExtResource("2_camera_script")
-target = NodePath("../RoomDog3D")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=889710236]
 
