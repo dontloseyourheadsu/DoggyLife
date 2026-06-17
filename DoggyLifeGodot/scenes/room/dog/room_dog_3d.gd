@@ -28,6 +28,7 @@ var _command_active: bool = false
 var _command_target: Vector3 = Vector3.INF
 const _ARRIVAL_EPS := 0.25
 var _chase_target: RigidBody3D = null
+var push_velocity: Vector3 = Vector3.ZERO
 
 # Signals for command progress
 signal go_to_started(target_position: Vector3)
@@ -40,6 +41,8 @@ signal dog_selected(dog_node: CharacterBody3D)
 # Dog Care / Survival Stats (0.0 to 100.0)
 var dog_name: String = "Sammy"
 var dog_breed: String = "Samoyed"
+var dog_key: String = ""
+var weight: float = 1.0
 
 var stat_hunger: float = 80.0
 var stat_thirst: float = 85.0
@@ -65,15 +68,51 @@ const DOG_SPRITEFRAMES_MAP: Dictionary = {
 	"dog-spaniel": "res://sprites/dogs/spriteframes/spaniel-dog.tres",
 }
 
+# Breed statistics configuration
+const BREED_STATS = {
+	"dog-samoyed": {
+		"breed_name": "Samoyed",
+		"display_name": "Sammy",
+		"scale": 1.2,
+		"speed": 2.0,
+		"weight": 23.0
+	},
+	"dog-beagle": {
+		"breed_name": "Beagle",
+		"display_name": "Buddy",
+		"scale": 0.8,
+		"speed": 2.5,
+		"weight": 12.0
+	},
+	"dog-shiba": {
+		"breed_name": "Shiba Inu",
+		"display_name": "Hiro",
+		"scale": 0.95,
+		"speed": 2.2,
+		"weight": 10.0
+	},
+	"dog-spaniel": {
+		"breed_name": "Cocker Spaniel",
+		"display_name": "Charlie",
+		"scale": 0.9,
+		"speed": 1.8,
+		"weight": 14.0
+	}
+}
+
 # Get gravity from project settings
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 
 func _ready():
+	add_to_group("dogs")
 	# Ensure random values are different each run
 	randomize()
 
-	# Choose a dog SpriteFrames set based on owned dogs
-	_apply_owned_dog_spriteframes()
+	# Choose a dog SpriteFrames set based on owned dogs or dog_key
+	if dog_key != "":
+		initialize_breed(dog_key)
+	else:
+		_apply_owned_dog_spriteframes()
 
 	# Setup movement timer
 	add_child(movement_timer)
@@ -105,6 +144,32 @@ func _on_input_event(_camera: Node, event: InputEvent, _event_position: Vector3,
 		get_viewport().set_input_as_handled()
 		dog_selected.emit(self)
 
+func initialize_breed(key: String) -> void:
+	dog_key = key
+	if not BREED_STATS.has(key):
+		push_warning("Unknown dog key: %s" % key)
+		return
+		
+	var stats = BREED_STATS[key]
+	dog_breed = stats["breed_name"]
+	dog_name = stats["display_name"]
+	movement_speed = stats["speed"]
+	weight = stats["weight"]
+	
+	# Apply scale to the character body
+	var s = stats["scale"]
+	scale = Vector3(s, s, s)
+	
+	# Apply SpriteFrames
+	var path: String = DOG_SPRITEFRAMES_MAP.get(key, "")
+	if path != "":
+		var res: Resource = load(path)
+		if res is SpriteFrames:
+			if animated_dog_sprite:
+				animated_dog_sprite.sprite_frames = res
+		else:
+			push_warning("Failed to load SpriteFrames: %s" % path)
+
 func _apply_owned_dog_spriteframes() -> void:
 	if not animated_dog_sprite:
 		return
@@ -122,26 +187,8 @@ func _apply_owned_dog_spriteframes() -> void:
 		owned_dogs.append("dog-samoyed")
 	
 	# Pick a random owned dog
-	var dog_key: String = owned_dogs[randi() % owned_dogs.size()]
-	var path: String = DOG_SPRITEFRAMES_MAP[dog_key]
-	var res: Resource = load(path)
-	if res is SpriteFrames:
-		animated_dog_sprite.sprite_frames = res
-		match dog_key:
-			"dog-samoyed":
-				dog_breed = "Samoyed"
-				dog_name = "Sammy"
-			"dog-beagle":
-				dog_breed = "Beagle"
-				dog_name = "Buddy"
-			"dog-shiba":
-				dog_breed = "Shiba Inu"
-				dog_name = "Hiro"
-			"dog-spaniel":
-				dog_breed = "Cocker Spaniel"
-				dog_name = "Charlie"
-	else:
-		push_warning("Failed to load dog SpriteFrames: %s" % path)
+	var key: String = owned_dogs[randi() % owned_dogs.size()]
+	initialize_breed(key)
 
 func play_anim(anim_name: String) -> void:
 	if animated_dog_sprite and animated_dog_sprite.sprite_frames and animated_dog_sprite.sprite_frames.has_animation(anim_name):
@@ -155,10 +202,11 @@ func _process(_delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	# Add gravity
+	var vy = velocity.y
 	if not is_on_floor():
-		velocity.y -= gravity * delta
+		vy -= gravity * delta
 	else:
-		velocity.y = 0.0
+		vy = 0.0
 
 	# Update survival stats dynamically
 	stat_hunger = clamp(stat_hunger - HUNGER_DECAY_RATE * delta, 0.0, 100.0)
@@ -178,12 +226,15 @@ func _physics_process(delta: float) -> void:
 		if is_exhausted and stat_energy >= 30.0:
 			is_exhausted = false
 
+	# Calculate desired horizontal velocity
+	var move_vel = Vector3.ZERO
+	var wall_collision_check = false
+	var command_check = false
+
 	if _chase_target:
 		if not is_instance_valid(_chase_target):
 			_chase_target = null
 			is_moving = false
-			velocity.x = 0.0
-			velocity.z = 0.0
 			_start_sitting()
 			if movement_timer:
 				movement_timer.wait_time = randf_range(0.8, 3.0)
@@ -191,7 +242,6 @@ func _physics_process(delta: float) -> void:
 		else:
 			var target_xz: Vector3 = Vector3(_chase_target.global_position.x, global_position.y, _chase_target.global_position.z)
 			var to_target: Vector3 = target_xz - global_position
-			
 			var to_target_3d: Vector3 = _chase_target.global_position - global_position
 			if to_target_3d.length() <= 0.6:
 				# Pick up the ball!
@@ -199,11 +249,7 @@ func _physics_process(delta: float) -> void:
 					_chase_target.queue_free()
 				_chase_target = null
 				is_moving = false
-				velocity.x = 0.0
-				velocity.z = 0.0
 				_start_sitting()
-				
-				# Resume autonomous timer cycle
 				if movement_timer:
 					movement_timer.wait_time = randf_range(0.8, 3.0)
 					movement_timer.start()
@@ -211,25 +257,14 @@ func _physics_process(delta: float) -> void:
 				var dir: Vector3 = to_target.normalized()
 				is_moving = true
 				current_direction = dir
-				velocity.x = dir.x * (movement_speed * 1.5) # Run faster when chasing!
-				velocity.z = dir.z * (movement_speed * 1.5)
-
-				_update_sprite_animation()
-				move_and_slide()
+				move_vel = dir * (movement_speed * 1.5)
 	elif _command_active:
-		# Calculate direction on XZ plane only
 		var target_xz: Vector3 = Vector3(_command_target.x, global_position.y, _command_target.z)
 		var to_target: Vector3 = target_xz - global_position
-		
 		if to_target.length() <= _ARRIVAL_EPS:
-			# Arrived
 			_command_active = false
 			is_moving = false
-			velocity.x = 0.0
-			velocity.z = 0.0
 			_start_sitting()
-			
-			# Resume autonomous timer cycle
 			if movement_timer:
 				movement_timer.wait_time = randf_range(0.8, 3.0)
 				movement_timer.start()
@@ -238,29 +273,51 @@ func _physics_process(delta: float) -> void:
 			var dir: Vector3 = to_target.normalized()
 			is_moving = true
 			current_direction = dir
-			velocity.x = dir.x * movement_speed
-			velocity.z = dir.z * movement_speed
-
-			_update_sprite_animation()
-			move_and_slide()
-
-			if is_on_wall():
-				_command_active = false
-				go_to_canceled.emit(_command_target)
-				_handle_collision()
+			move_vel = dir * movement_speed
+			wall_collision_check = true
+			command_check = true
 	elif is_moving:
-		velocity.x = current_direction.x * movement_speed
-		velocity.z = current_direction.z * movement_speed
-		
+		move_vel = current_direction * movement_speed
+		wall_collision_check = true
+
+	# Combine movement velocity, push velocity, and gravity
+	velocity = move_vel + push_velocity
+	velocity.y = vy
+
+	# Decay push velocity
+	push_velocity = push_velocity.move_toward(Vector3.ZERO, delta * 10.0)
+
+	# Update animations and move
+	if is_moving or not push_velocity.is_zero_approx():
 		_update_sprite_animation()
-		move_and_slide()
-		
-		if is_on_wall():
-			_handle_collision()
-	else:
-		velocity.x = 0.0
-		velocity.z = 0.0
-		move_and_slide()
+	
+	move_and_slide()
+
+	# Handle collisions
+	var collided_with_wall = is_on_wall()
+	
+	# Process slide collisions for dog-to-dog pushes
+	for i in range(get_slide_collision_count()):
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		if collider and collider.is_in_group("dogs") and collider != self:
+			var normal = collision.get_normal()
+			var push_dir = Vector3(normal.x, 0.0, normal.z).normalized()
+			if push_dir.is_zero_approx():
+				push_dir = (global_position - collider.global_position)
+				push_dir.y = 0.0
+				push_dir = push_dir.normalized()
+			
+			# Lighter dogs (low weight) get pushed further than heavier ones (high weight)
+			# Weight ratio: other weight / our weight
+			var force_magnitude = 5.0 * (collider.weight / weight)
+			push_velocity = push_dir * force_magnitude
+
+	if wall_collision_check and collided_with_wall:
+		if command_check:
+			_command_active = false
+			go_to_canceled.emit(_command_target)
+		_handle_collision()
 
 func _update_sprite_animation() -> void:
 	var move_vec: Vector3 = velocity

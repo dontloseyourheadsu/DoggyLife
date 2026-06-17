@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c6y7e3dclick"]
 
-[ext_resource type="Script" path="res://scenes/room/click_indicator_3d.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/room/props/click_indicator_3d.gd" id="1_script"]
 
 [sub_resource type="Shader" id="Shader_ring"]
 code = "shader_type spatial;
