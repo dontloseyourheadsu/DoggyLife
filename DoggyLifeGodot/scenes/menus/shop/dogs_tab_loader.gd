@@ -30,9 +30,8 @@ static func populate(_grid: GridContainer, player_data, tile_size: int, add_entr
 		add_entry.call(dname, dog_preview)
 
 static func _ensure_default_owned_dog(player_data) -> void:
-	var default_name := "dog-samoyed"
-	if not player_data.owns_item(default_name):
-		player_data.add_owned_item(default_name)
+	# Delegate to load_player_data, which ensures the player owns dogs
+	player_data.load_player_data()
 
 static func _atlas(sheet: Texture2D, region: Rect2) -> Texture2D:
 	var at := AtlasTexture.new()
