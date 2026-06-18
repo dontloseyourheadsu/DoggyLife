@@ -182,9 +182,11 @@ func _apply_owned_dog_spriteframes() -> void:
 		if item_name.begins_with("dog-") and DOG_SPRITEFRAMES_MAP.has(item_name):
 			owned_dogs.append(item_name)
 	
-	# If no owned dogs, fallback to samoyed
+	# If no owned dogs, fallback to a random breed
 	if owned_dogs.is_empty():
-		owned_dogs.append("dog-samoyed")
+		var keys := DOG_SPRITEFRAMES_MAP.keys()
+		randomize()
+		owned_dogs.append(keys[randi() % keys.size()])
 	
 	# Pick a random owned dog
 	var key: String = owned_dogs[randi() % owned_dogs.size()]
