@@ -23,7 +23,11 @@ func _ready() -> void:
 			owned_dogs.append(item)
 			
 	if owned_dogs.is_empty():
-		owned_dogs.append("dog-samoyed")
+		randomize()
+		var all_dogs := ["dog-samoyed", "dog-beagle", "dog-shiba", "dog-spaniel"]
+		all_dogs.shuffle()
+		owned_dogs.append(all_dogs[0])
+		owned_dogs.append(all_dogs[1])
 		
 	# Spawn all owned/unlocked dogs
 	for i in range(owned_dogs.size()):

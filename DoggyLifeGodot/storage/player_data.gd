@@ -6,27 +6,45 @@ class_name PlayerData
 const PLAYER_DATA_PATH = "user://player_data.tres"
 
 static func load_player_data() -> PlayerData:
+	var pd: PlayerData
+	var needs_save := false
+	
 	if FileAccess.file_exists(PLAYER_DATA_PATH):
-		var pd := load(PLAYER_DATA_PATH) as PlayerData
+		pd = load(PLAYER_DATA_PATH) as PlayerData
 		# Backward compatibility: ensure new fields exist
 		if pd.owned_items == null:
 			pd.owned_items = []
-		return pd
-	var fresh := PlayerData.new()
-	fresh.owned_items = []
-	# Seed default ownership on fresh profile
-	# Dogs: default samoyed
-	fresh.owned_items.append("dog-samoyed")
-	# Tiles: first 3 for floor and wall
-	for i in range(3):
-		fresh.owned_items.append("floor-tile-%d" % i)
-		fresh.owned_items.append("wall-tile-%d" % i)
-	# Items: shelf and window by default
-	fresh.owned_items.append("shelf-sprite")
-	fresh.owned_items.append("window-sprite")
-	# Persist immediately so subsequent loads use the same defaults
-	PlayerData.save_player_data(fresh)
-	return fresh
+			needs_save = true
+	else:
+		pd = PlayerData.new()
+		pd.owned_items = []
+		# Tiles: first 3 for floor and wall
+		for i in range(3):
+			pd.owned_items.append("floor-tile-%d" % i)
+			pd.owned_items.append("wall-tile-%d" % i)
+		# Items: shelf and window by default
+		pd.owned_items.append("shelf-sprite")
+		pd.owned_items.append("window-sprite")
+		needs_save = true
+		
+	# Check if the player has any dogs stored to their account
+	var owned_dogs: Array[String] = []
+	for item in pd.owned_items:
+		if item.begins_with("dog-"):
+			owned_dogs.append(item)
+			
+	if owned_dogs.is_empty():
+		randomize()
+		var all_dogs := ["dog-samoyed", "dog-beagle", "dog-shiba", "dog-spaniel"]
+		all_dogs.shuffle()
+		pd.owned_items.append(all_dogs[0])
+		pd.owned_items.append(all_dogs[1])
+		needs_save = true
+		
+	if needs_save:
+		PlayerData.save_player_data(pd)
+		
+	return pd
 
 static func save_player_data(player_data: PlayerData) -> void:
 	var err := ResourceSaver.save(player_data, PLAYER_DATA_PATH)

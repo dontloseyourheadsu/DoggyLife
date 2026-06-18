@@ -154,9 +154,8 @@ func _populate_dogs_grid() -> void:
 	)
 
 func _ensure_default_owned_dog() -> void:
-	var default_name := "dog-samoyed"
-	if not PLAYER_DATA_STORAGE.owns_item(default_name):
-		PLAYER_DATA_STORAGE.add_owned_item(default_name)
+	# Delegate to PLAYER_DATA_STORAGE
+	PLAYER_DATA_STORAGE.load_player_data()
 
 func _populate_tiles_grid() -> void:
 	# Clear existing
