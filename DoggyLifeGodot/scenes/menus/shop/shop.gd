@@ -59,7 +59,7 @@ func _ready() -> void:
 
 func _on_back_button_pressed() -> void:
 	# Load room scene
-	var room_scene = load("res://scenes/room/room.tscn").instantiate()
+	var room_scene = load("res://scenes/room/room_3d.tscn").instantiate()
 	get_tree().root.add_child(room_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = room_scene
