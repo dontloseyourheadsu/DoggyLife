@@ -52,6 +52,46 @@ func _ready() -> void:
 			camera.target = selected_dog
 		if stats_panel:
 			stats_panel.display_dog(selected_dog)
+			
+	# Apply floor and wall textures
+	_setup_room_textures()
+
+func _setup_room_textures() -> void:
+	# 1. Floor Texture (cropped from res://sprites/decoration/floor.png)
+	var floor_tex_path := "res://sprites/decoration/floor.png"
+	if ResourceLoader.exists(floor_tex_path):
+		var floor_tex := load(floor_tex_path) as Texture2D
+		if floor_tex:
+			var img := floor_tex.get_image()
+			if img:
+				# Crop the first 48x48 tile (cozy wood parquet style)
+				var tile_img := img.get_region(Rect2i(0, 0, 48, 48))
+				var tile_tex := ImageTexture.create_from_image(tile_img)
+				
+				var floor_mesh: MeshInstance3D = $Floor/MeshInstance3D
+				if floor_mesh:
+					var mat = floor_mesh.get_active_material(0)
+					if mat is StandardMaterial3D:
+						var new_mat = mat.duplicate() as StandardMaterial3D
+						new_mat.albedo_texture = tile_tex
+						# Tile it 6x6 times across the 12x12m floor
+						new_mat.uv1_scale = Vector3(6, 6, 6)
+						floor_mesh.set_surface_override_material(0, new_mat)
+	
+	# 2. Wall Texture (res://shared/images/stripes.png)
+	var wall_tex_path := "res://shared/images/stripes.png"
+	if ResourceLoader.exists(wall_tex_path):
+		var stripes_tex := load(wall_tex_path) as Texture2D
+		if stripes_tex:
+			var wall_mesh: MeshInstance3D = $NorthWall/MeshInstance3D
+			if wall_mesh:
+				var mat = wall_mesh.get_active_material(0)
+				if mat is StandardMaterial3D:
+					var new_mat = mat.duplicate() as StandardMaterial3D
+					new_mat.albedo_texture = stripes_tex
+					# Tile the wallpaper stripes
+					new_mat.uv1_scale = Vector3(6, 2, 1)
+					wall_mesh.set_surface_override_material(0, new_mat)
 
 func _on_dog_selected(dog_node: CharacterBody3D) -> void:
 	selected_dog = dog_node
