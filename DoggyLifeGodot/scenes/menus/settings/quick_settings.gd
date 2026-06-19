@@ -75,7 +75,7 @@ func _on_save_button_pressed() -> void:
 
 func _go_home():
 	# Load room scene
-	var room_scene = load("res://scenes/room/room.tscn").instantiate()
+	var room_scene = load("res://scenes/room/room_3d.tscn").instantiate()
 	get_tree().root.add_child(room_scene)
 	get_tree().current_scene.queue_free()
 	get_tree().current_scene = room_scene
