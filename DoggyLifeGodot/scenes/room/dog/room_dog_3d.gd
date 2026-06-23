@@ -47,6 +47,9 @@ var weight: float = 1.0
 var bowl_node: StaticBody3D = null
 var is_eating: bool = false
 var is_going_to_eat: bool = false
+var dispenser_node: StaticBody3D = null
+var is_drinking: bool = false
+var is_going_to_drink: bool = false
 
 var stat_hunger: float = 80.0
 var stat_thirst: float = 85.0
@@ -220,7 +223,7 @@ func _physics_process(delta: float) -> void:
 	stat_hygiene = clamp(stat_hygiene - HYGIENE_DECAY_RATE * delta, 0.0, 100.0)
 	stat_affection = clamp(stat_affection - AFFECTION_DECAY_RATE * delta, 0.0, 100.0)
 
-	# Handle eating logic
+	# Handle eating and drinking logic
 	if is_eating:
 		if is_instance_valid(bowl_node):
 			play_anim("sit-front")
@@ -250,10 +253,43 @@ func _physics_process(delta: float) -> void:
 				_start_sitting()
 		else:
 			is_going_to_eat = false
+	elif is_drinking:
+		if is_instance_valid(dispenser_node):
+			play_anim("sit-front")
+			var thirst_needed = 100.0 - stat_thirst
+			var rate = 15.0 * delta
+			var to_drink = min(rate, thirst_needed)
+			var drunk = dispenser_node.drink_water(to_drink)
+			if drunk > 0.0:
+				stat_thirst = clamp(stat_thirst + drunk, 0.0, 100.0)
+			
+			if drunk <= 0.0 or stat_thirst >= 98.0:
+				is_drinking = false
+				_start_sitting()
+		else:
+			is_drinking = false
+			_start_sitting()
+	elif is_going_to_drink:
+		if is_instance_valid(dispenser_node):
+			var dist_to_dispenser = (global_position - dispenser_node.global_position)
+			dist_to_dispenser.y = 0.0
+			if dist_to_dispenser.length() < 0.6:
+				is_going_to_drink = false
+				is_drinking = true
+				_command_active = false
+				is_moving = false
+				velocity = Vector3.ZERO
+				_start_sitting()
+		else:
+			is_going_to_drink = false
 	elif stat_hunger < 45.0 and not _command_active and not _chase_target and not is_exhausted:
 		if is_instance_valid(bowl_node) and bowl_node.fullness > 0.0:
 			is_going_to_eat = true
 			go_to_global_position(bowl_node.global_position)
+	elif stat_thirst < 45.0 and not _command_active and not _chase_target and not is_exhausted:
+		if is_instance_valid(dispenser_node) and dispenser_node.fullness > 0.0:
+			is_going_to_drink = true
+			go_to_global_position(dispenser_node.global_position)
 
 	if current_state == DogState.WALKING and is_moving:
 		stat_energy = clamp(stat_energy - ENERGY_DECAY_RATE_WALKING * delta, 0.0, 100.0)
@@ -272,7 +308,7 @@ func _physics_process(delta: float) -> void:
 	var wall_collision_check = false
 	var command_check = false
 
-	if is_eating:
+	if is_eating or is_drinking:
 		move_vel = Vector3.ZERO
 	elif _chase_target:
 		if not is_instance_valid(_chase_target):
@@ -548,9 +584,11 @@ func go_to_global_position(target: Vector3) -> void:
 	"""Command the dog to walk towards the given global 3D position on XZ plane."""
 	if is_exhausted:
 		return
-	if not is_going_to_eat:
+	if not is_going_to_eat and not is_going_to_drink:
 		is_eating = false
 		is_going_to_eat = false
+		is_drinking = false
+		is_going_to_drink = false
 	_chase_target = null
 	_command_target = target
 	_command_active = true
@@ -568,6 +606,8 @@ func chase_ball(ball: RigidBody3D) -> void:
 		return
 	is_eating = false
 	is_going_to_eat = false
+	is_drinking = false
+	is_going_to_drink = false
 	_chase_target = ball
 	_command_active = false
 	_command_target = Vector3.INF
@@ -584,3 +624,5 @@ func cancel_command() -> void:
 	_chase_target = null
 	is_eating = false
 	is_going_to_eat = false
+	is_drinking = false
+	is_going_to_drink = false
