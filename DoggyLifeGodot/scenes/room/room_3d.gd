@@ -35,6 +35,9 @@ func _ready() -> void:
 		var dog_inst = DOG_SCENE.instantiate()
 		dog_inst.dog_key = dog_key
 		
+		# Initialize breed details early so we have name
+		dog_inst.initialize_breed(dog_key)
+		
 		# Spread them out in the room
 		var angle = i * (2.0 * PI / owned_dogs.size())
 		var dist = randf_range(1.0, 2.5)
@@ -45,6 +48,18 @@ func _ready() -> void:
 		
 		dog_inst.dog_selected.connect(_on_dog_selected)
 		
+		# Spawn associated bowl
+		var bowl_scene = preload("res://scenes/room/props/bowl_3d.tscn")
+		var bowl_inst = bowl_scene.instantiate()
+		var bowl_angle = angle + 0.35
+		var bowl_dist = dist + 0.7
+		bowl_inst.global_position = Vector3(cos(bowl_angle) * bowl_dist, 0.02, sin(bowl_angle) * bowl_dist)
+		add_child(bowl_inst)
+		bowl_inst.setup(dog_key, dog_inst.dog_name)
+		
+		# Link dog to its bowl
+		dog_inst.bowl_node = bowl_inst
+		
 	# Set default selected dog to the first spawned dog
 	if not active_dogs.is_empty():
 		selected_dog = active_dogs[0]
@@ -53,8 +68,72 @@ func _ready() -> void:
 		if stats_panel:
 			stats_panel.display_dog(selected_dog)
 			
+	# Setup Coin and Food HUD programmatically
+	_setup_hud_and_shop()
+			
 	# Apply floor and wall textures
 	_setup_room_textures()
+
+func _setup_hud_and_shop() -> void:
+	# HUD Container
+	var hud_container = HBoxContainer.new()
+	hud_container.name = "HUDContainer"
+	hud_container.alignment = BoxContainer.ALIGNMENT_END
+	hud_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	hud_container.anchor_left = 1.0
+	hud_container.anchor_right = 1.0
+	hud_container.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	hud_container.position = Vector2(-260, 20)
+	hud_container.custom_minimum_size = Vector2(240, 40)
+	$UI/SafePanel.add_child(hud_container)
+
+	# Coins Label
+	var coins_label = Label.new()
+	coins_label.name = "CoinsLabel"
+	coins_label.text = "Coins: %d  |  " % PlayerData.get_coins_count()
+	coins_label.add_theme_font_size_override("font_size", 18)
+	hud_container.add_child(coins_label)
+
+	# Food Label
+	var food_label = Label.new()
+	food_label.name = "FoodLabel"
+	food_label.text = "Food Stock: %.0f" % PlayerData.get_food_stock()
+	food_label.add_theme_font_size_override("font_size", 18)
+	hud_container.add_child(food_label)
+
+	# Shop Button
+	var shop_btn = TextureButton.new()
+	shop_btn.name = "ShopButton"
+	shop_btn.texture_normal = preload("res://ui/buttons/button-shop.png")
+	shop_btn.custom_minimum_size = Vector2(48, 48)
+	shop_btn.size = Vector2(48, 48)
+	shop_btn.scale = Vector2(1.5, 1.5)
+	shop_btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	shop_btn.anchor_left = 1.0
+	shop_btn.anchor_top = 1.0
+	shop_btn.anchor_right = 1.0
+	shop_btn.anchor_bottom = 1.0
+	shop_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	shop_btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	shop_btn.position = Vector2(-90, -90)
+	$UI/SafePanel.add_child(shop_btn)
+	shop_btn.pressed.connect(_on_shop_button_pressed)
+
+func refresh_food_hud() -> void:
+	var hud = $UI/SafePanel.get_node_or_null("HUDContainer")
+	if hud:
+		var coins_l = hud.get_node_or_null("CoinsLabel")
+		if coins_l:
+			coins_l.text = "Coins: %d  |  " % PlayerData.get_coins_count()
+		var food_l = hud.get_node_or_null("FoodLabel")
+		if food_l:
+			food_l.text = "Food Stock: %.0f" % PlayerData.get_food_stock()
+
+func _on_shop_button_pressed() -> void:
+	var shop_scene = load("res://scenes/menus/shop/shop.tscn").instantiate()
+	get_tree().root.add_child(shop_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = shop_scene
 
 func _setup_room_textures() -> void:
 	# 1. Floor Texture (cropped from res://sprites/decoration/floor.png)

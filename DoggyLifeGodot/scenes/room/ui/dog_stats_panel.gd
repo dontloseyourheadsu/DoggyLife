@@ -10,9 +10,33 @@ extends PanelContainer
 
 var current_dog: CharacterBody3D = null
 
+var bowl_label: Label = null
+var refill_btn: Button = null
+
 func _ready() -> void:
 	# Hide panel initially
 	visible = false
+	
+	# Add separator programmatically
+	var sep = HSeparator.new()
+	$MarginContainer/VBoxContainer.add_child(sep)
+	
+	# Add Bowl HUD container
+	var bowl_box = HBoxContainer.new()
+	bowl_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	bowl_box.add_theme_constant_override("separation", 20)
+	$MarginContainer/VBoxContainer.add_child(bowl_box)
+	
+	bowl_label = Label.new()
+	bowl_label.text = "Bowl: Basic Bowl [0/100]"
+	bowl_label.add_theme_font_size_override("font_size", 16)
+	bowl_box.add_child(bowl_label)
+	
+	refill_btn = Button.new()
+	refill_btn.text = "Refill Bowl"
+	refill_btn.custom_minimum_size = Vector2(100, 30)
+	bowl_box.add_child(refill_btn)
+	refill_btn.pressed.connect(_on_refill_pressed)
 
 func display_dog(dog: CharacterBody3D) -> void:
 	current_dog = dog
@@ -25,6 +49,11 @@ func close_panel() -> void:
 
 func _process(_delta: float) -> void:
 	if visible and is_instance_valid(current_dog):
+		_update_ui()
+
+func _on_refill_pressed() -> void:
+	if is_instance_valid(current_dog) and is_instance_valid(current_dog.bowl_node):
+		current_dog.bowl_node.refill()
 		_update_ui()
 
 func _update_ui() -> void:
@@ -41,3 +70,12 @@ func _update_ui() -> void:
 	hygiene_bar.value = current_dog.stat_hygiene
 	energy_bar.value = current_dog.stat_energy
 	love_bar.value = current_dog.stat_affection
+
+	# Update bowl info
+	if is_instance_valid(current_dog) and is_instance_valid(current_dog.bowl_node):
+		var bowl = current_dog.bowl_node
+		bowl_label.text = "Bowl: %s [%.0f / %.0f]" % [bowl.bowl_type.capitalize(), bowl.fullness, bowl.capacity]
+		refill_btn.disabled = bowl.fullness >= bowl.capacity
+	else:
+		bowl_label.text = "Bowl: None"
+		refill_btn.disabled = true
