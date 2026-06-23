@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=38 format=3 uid="uid://drymo5cd0gf1j"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://drymo5cd0gf1j"]
 
 [ext_resource type="Texture2D" uid="uid://cla0eac1sn6ha" path="res://sprites/dogs/images/samoyed-dog.png" id="1_5bp0m"]
 
