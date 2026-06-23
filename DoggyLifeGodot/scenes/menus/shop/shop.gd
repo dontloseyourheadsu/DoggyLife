@@ -55,6 +55,14 @@ func _ready() -> void:
 	_update_item_name_display("")
 	# Populate the items list initially
 	_populate_items_if_needed()
+	
+	# Add Food Label to Container programmatically
+	var food_lbl = Label.new()
+	food_lbl.name = "ShopFoodLabel"
+	food_lbl.text = "Food Stock: %.0f" % PLAYER_DATA_STORAGE.get_food_stock()
+	food_lbl.add_theme_font_size_override("font_size", 20)
+	food_lbl.position = Vector2(50, 110)
+	$Container.add_child(food_lbl)
 
 
 func _on_back_button_pressed() -> void:
@@ -234,6 +242,15 @@ func _add_item_entry(item_name: String, texture: Texture2D, target_grid: GridCon
 	preview.size = Vector2(display_width, display_height)
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	
+	# Apply tints for bowls in shop
+	if item_name == "bowl-basic":
+		preview.self_modulate = Color(0.6, 0.75, 1.0, 1.0)
+	elif item_name == "bowl-silver":
+		preview.self_modulate = Color(0.8, 0.9, 1.0, 1.0)
+	elif item_name == "bowl-gold":
+		preview.self_modulate = Color(1.0, 0.85, 0.3, 1.0)
+		
 	# Let the parent VBoxContainer receive the click anywhere on the item
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -284,6 +301,41 @@ func _update_price_display(price) -> void:
 func _on_price_container_pressed() -> void:
 	if _selected_item_name == "" or _selected_item_price <= 0:
 		return
+		
+	# Check if selected item is a bowl
+	if _selected_item_name.begins_with("bowl-"):
+		var bowl_type = _selected_item_name.split("-")[1]
+		_show_dog_selection_popup(bowl_type, _selected_item_price)
+		return
+		
+	# Check if selected item is food (consumable)
+	if _selected_item_name.begins_with("food-"):
+		# Try to spend coins
+		var ok := PLAYER_DATA_STORAGE.spend_coins(_selected_item_price)
+		if not ok:
+			return
+		
+		# Add food stock
+		var amount = 50.0
+		if _selected_item_name == "food-medium":
+			amount = 150.0
+		elif _selected_item_name == "food-large":
+			amount = 400.0
+			
+		PLAYER_DATA_STORAGE.add_food_stock(amount)
+		_update_food_display()
+		
+		# Clear selection and UI
+		_selected_item_name = ""
+		_selected_item_price = 0
+		_update_price_display(null)
+		_update_item_name_display("")
+		
+		# Update coin HUD
+		if is_instance_valid(_coins_display) and _coins_display.has_method("refresh"):
+			_coins_display.refresh()
+		return
+		
 	# Ensure not owned
 	if PLAYER_DATA_STORAGE.owns_item(_selected_item_name):
 		return
@@ -308,8 +360,93 @@ func _on_price_container_pressed() -> void:
 	if is_instance_valid(_coins_display) and _coins_display.has_method("refresh"):
 		_coins_display.refresh()
 
+func _update_food_display() -> void:
+	var food_lbl = $Container.get_node_or_null("ShopFoodLabel")
+	if food_lbl:
+		food_lbl.text = "Food Stock: %.0f" % PLAYER_DATA_STORAGE.get_food_stock()
+
+func _show_dog_selection_popup(bowl_type: String, price: int) -> void:
+	if PLAYER_DATA_STORAGE.get_coins_count() < price:
+		return
+		
+	# Create overlay panel
+	var overlay = ColorRect.new()
+	overlay.name = "DogSelectionOverlay"
+	overlay.color = Color(0, 0, 0, 0.6)
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(overlay)
+	
+	# Create centered container
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(300, 200)
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	overlay.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "Give %s bowl to:" % bowl_type.capitalize()
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+	
+	# Find all owned dogs
+	var player_data = PLAYER_DATA_STORAGE.load_player_data()
+	var owned_dogs: Array[String] = []
+	for item in player_data.owned_items:
+		if item.begins_with("dog-"):
+			owned_dogs.append(item)
+			
+	# For each owned dog, create a button
+	for dog_key in owned_dogs:
+		var dog_name = "Dog"
+		match dog_key:
+			"dog-samoyed": dog_name = "Sammy"
+			"dog-beagle": dog_name = "Buddy"
+			"dog-shiba": dog_name = "Hiro"
+			"dog-spaniel": dog_name = "Charlie"
+			
+		var btn = Button.new()
+		btn.text = dog_name
+		vbox.add_child(btn)
+		
+		# Connect press event
+		btn.pressed.connect(func() -> void:
+			if PLAYER_DATA_STORAGE.spend_coins(price):
+				var capacity = 100.0
+				if bowl_type == "silver":
+					capacity = 250.0
+				elif bowl_type == "gold":
+					capacity = 500.0
+					
+				var bowl_data = {
+					"type": bowl_type,
+					"capacity": capacity,
+					"fullness": capacity # Fill to max
+				}
+				PLAYER_DATA_STORAGE.save_dog_bowl(dog_key, bowl_data)
+				
+				# Refresh coin display
+				_coins_display.refresh()
+				_clear_selection()
+				overlay.queue_free()
+		)
+		
+	# Cancel button
+	var cancel_btn = Button.new()
+	cancel_btn.text = "Cancel"
+	cancel_btn.modulate = Color.RED
+	vbox.add_child(cancel_btn)
+	cancel_btn.pressed.connect(func() -> void:
+		overlay.queue_free()
+	)
+
 func _get_item_price(item_name: String) -> int:
-	# Deterministic mapping within 8..15
+	# Deterministic mapping
 	if item_name.begins_with("floor-tile-"):
 		return 4
 	if item_name.begins_with("wall-tile-"):
@@ -317,18 +454,18 @@ func _get_item_price(item_name: String) -> int:
 	if item_name.begins_with("dog-"):
 		return 6
 	match item_name:
-		"lamp-sprite":
+		"bowl-basic":
 			return 10
-		"shelf-sprite":
-			return 9
-		"bed-sprite":
-			return 15
-		"window-sprite":
-			return 8
-		"bookshelf-sprite":
+		"bowl-silver":
+			return 30
+		"bowl-gold":
+			return 60
+		"food-small":
+			return 5
+		"food-medium":
 			return 12
-		"painting-sprite":
-			return 11
+		"food-large":
+			return 25
 		_:
 			return 8
 
@@ -364,6 +501,20 @@ func _update_item_name_display(item_name: String) -> void:
 	_price_item_name.text = "%s:" % _format_item_display_name(item_name)
 
 func _format_item_display_name(raw_name: String) -> String:
+	match raw_name:
+		"bowl-basic":
+			return "Basic Bowl (Cap: 100)"
+		"bowl-silver":
+			return "Silver Bowl (Cap: 250)"
+		"bowl-gold":
+			return "Golden Bowl (Cap: 500)"
+		"food-small":
+			return "Small Food Bag (+50)"
+		"food-medium":
+			return "Medium Food Bag (+150)"
+		"food-large":
+			return "Large Food Bag (+400)"
+
 	var s := raw_name
 	# Strip common suffixes or words we don't want in the display
 	s = s.replace("-sprite", "")
