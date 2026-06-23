@@ -5,6 +5,7 @@ class_name PlayerData
 @export var owned_items: Array[String] = []
 @export var food_stock: float = 100.0
 @export var dog_bowls: Dictionary = {}
+@export var dog_dispensers: Dictionary = {}
 const PLAYER_DATA_PATH = "user://player_data.tres"
 
 static func load_player_data() -> PlayerData:
@@ -22,6 +23,9 @@ static func load_player_data() -> PlayerData:
 			needs_save = true
 		if not ("dog_bowls" in pd) or pd.dog_bowls == null:
 			pd.dog_bowls = {}
+			needs_save = true
+		if not ("dog_dispensers" in pd) or pd.dog_dispensers == null:
+			pd.dog_dispensers = {}
 			needs_save = true
 	else:
 		pd = PlayerData.new()
@@ -55,6 +59,9 @@ static func load_player_data() -> PlayerData:
 	for dog_key in owned_dogs:
 		if not pd.dog_bowls.has(dog_key):
 			pd.dog_bowls[dog_key] = {"type": "basic", "capacity": 100.0, "fullness": 100.0}
+			needs_save = true
+		if not pd.dog_dispensers.has(dog_key):
+			pd.dog_dispensers[dog_key] = {"type": "basic", "capacity": 100.0, "fullness": 100.0}
 			needs_save = true
 		
 	if needs_save:
@@ -118,4 +125,15 @@ static func get_dog_bowl(dog_key: String) -> Dictionary:
 static func save_dog_bowl(dog_key: String, bowl_data: Dictionary) -> void:
 	var player_data := load_player_data()
 	player_data.dog_bowls[dog_key] = bowl_data
+	save_player_data(player_data)
+
+static func get_dog_dispenser(dog_key: String) -> Dictionary:
+	var player_data := load_player_data()
+	if player_data.dog_dispensers.has(dog_key):
+		return player_data.dog_dispensers[dog_key]
+	return {"type": "basic", "capacity": 100.0, "fullness": 100.0}
+
+static func save_dog_dispenser(dog_key: String, dispenser_data: Dictionary) -> void:
+	var player_data := load_player_data()
+	player_data.dog_dispensers[dog_key] = dispenser_data
 	save_player_data(player_data)

@@ -12,6 +12,7 @@ static func populate(_grid: GridContainer, player_data, _floor_dir: String, _wal
 	# Load textures
 	var bowl_tex = load("res://sprites/decoration/bowl_placeholder.jpg")
 	var food_tex = load("res://sprites/decoration/dog_food_bag.jpg")
+	var dispenser_tex = load("res://sprites/decoration/water_dispenser.jpg")
 	
 	if bowl_tex != null:
 		items.append({"name": "bowl-basic", "texture": bowl_tex})
@@ -22,6 +23,11 @@ static func populate(_grid: GridContainer, player_data, _floor_dir: String, _wal
 		items.append({"name": "food-small", "texture": food_tex})
 		items.append({"name": "food-medium", "texture": food_tex})
 		items.append({"name": "food-large", "texture": food_tex})
+
+	if dispenser_tex != null:
+		items.append({"name": "dispenser-basic", "texture": dispenser_tex})
+		items.append({"name": "dispenser-silver", "texture": dispenser_tex})
+		items.append({"name": "dispenser-gold", "texture": dispenser_tex})
 
 	for it in items:
 		var entry_name: String = it["name"]

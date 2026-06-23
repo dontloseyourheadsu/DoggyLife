@@ -60,6 +60,18 @@ func _ready() -> void:
 		# Link dog to its bowl
 		dog_inst.bowl_node = bowl_inst
 		
+		# Spawn associated water dispenser
+		var dispenser_scene = preload("res://scenes/room/props/dispenser_3d.tscn")
+		var dispenser_inst = dispenser_scene.instantiate()
+		var dispenser_angle = angle - 0.35
+		var dispenser_dist = dist + 0.7
+		dispenser_inst.global_position = Vector3(cos(dispenser_angle) * dispenser_dist, 0.02, sin(dispenser_angle) * dispenser_dist)
+		add_child(dispenser_inst)
+		dispenser_inst.setup(dog_key, dog_inst.dog_name)
+		
+		# Link dog to its dispenser
+		dog_inst.dispenser_node = dispenser_inst
+		
 	# Set default selected dog to the first spawned dog
 	if not active_dogs.is_empty():
 		selected_dog = active_dogs[0]

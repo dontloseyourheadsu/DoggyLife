@@ -243,12 +243,12 @@ func _add_item_entry(item_name: String, texture: Texture2D, target_grid: GridCon
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	
-	# Apply tints for bowls in shop
-	if item_name == "bowl-basic":
+	# Apply tints for bowls and dispensers in shop
+	if item_name == "bowl-basic" or item_name == "dispenser-basic":
 		preview.self_modulate = Color(0.6, 0.75, 1.0, 1.0)
-	elif item_name == "bowl-silver":
+	elif item_name == "bowl-silver" or item_name == "dispenser-silver":
 		preview.self_modulate = Color(0.8, 0.9, 1.0, 1.0)
-	elif item_name == "bowl-gold":
+	elif item_name == "bowl-gold" or item_name == "dispenser-gold":
 		preview.self_modulate = Color(1.0, 0.85, 0.3, 1.0)
 		
 	# Let the parent VBoxContainer receive the click anywhere on the item
@@ -302,10 +302,11 @@ func _on_price_container_pressed() -> void:
 	if _selected_item_name == "" or _selected_item_price <= 0:
 		return
 		
-	# Check if selected item is a bowl
-	if _selected_item_name.begins_with("bowl-"):
-		var bowl_type = _selected_item_name.split("-")[1]
-		_show_dog_selection_popup(bowl_type, _selected_item_price)
+	# Check if selected item is a bowl or dispenser
+	if _selected_item_name.begins_with("bowl-") or _selected_item_name.begins_with("dispenser-"):
+		var kind = _selected_item_name.split("-")[0]
+		var type = _selected_item_name.split("-")[1]
+		_show_dog_selection_popup(kind, type, _selected_item_price)
 		return
 		
 	# Check if selected item is food (consumable)
@@ -365,7 +366,7 @@ func _update_food_display() -> void:
 	if food_lbl:
 		food_lbl.text = "Food Stock: %.0f" % PLAYER_DATA_STORAGE.get_food_stock()
 
-func _show_dog_selection_popup(bowl_type: String, price: int) -> void:
+func _show_dog_selection_popup(kind: String, type: String, price: int) -> void:
 	if PLAYER_DATA_STORAGE.get_coins_count() < price:
 		return
 		
@@ -390,7 +391,7 @@ func _show_dog_selection_popup(bowl_type: String, price: int) -> void:
 	panel.add_child(vbox)
 	
 	var title = Label.new()
-	title.text = "Give %s bowl to:" % bowl_type.capitalize()
+	title.text = "Give %s %s to:" % [type.capitalize(), kind.capitalize()]
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 	
@@ -418,17 +419,21 @@ func _show_dog_selection_popup(bowl_type: String, price: int) -> void:
 		btn.pressed.connect(func() -> void:
 			if PLAYER_DATA_STORAGE.spend_coins(price):
 				var capacity = 100.0
-				if bowl_type == "silver":
+				if type == "silver":
 					capacity = 250.0
-				elif bowl_type == "gold":
+				elif type == "gold":
 					capacity = 500.0
 					
-				var bowl_data = {
-					"type": bowl_type,
+				var data = {
+					"type": type,
 					"capacity": capacity,
 					"fullness": capacity # Fill to max
 				}
-				PLAYER_DATA_STORAGE.save_dog_bowl(dog_key, bowl_data)
+				
+				if kind == "bowl":
+					PLAYER_DATA_STORAGE.save_dog_bowl(dog_key, data)
+				else:
+					PLAYER_DATA_STORAGE.save_dog_dispenser(dog_key, data)
 				
 				# Refresh coin display
 				_coins_display.refresh()
@@ -459,6 +464,12 @@ func _get_item_price(item_name: String) -> int:
 		"bowl-silver":
 			return 30
 		"bowl-gold":
+			return 60
+		"dispenser-basic":
+			return 10
+		"dispenser-silver":
+			return 30
+		"dispenser-gold":
 			return 60
 		"food-small":
 			return 5
@@ -508,6 +519,12 @@ func _format_item_display_name(raw_name: String) -> String:
 			return "Silver Bowl (Cap: 250)"
 		"bowl-gold":
 			return "Golden Bowl (Cap: 500)"
+		"dispenser-basic":
+			return "Basic Dispenser (Cap: 100)"
+		"dispenser-silver":
+			return "Silver Dispenser (Cap: 250)"
+		"dispenser-gold":
+			return "Golden Dispenser (Cap: 500)"
 		"food-small":
 			return "Small Food Bag (+50)"
 		"food-medium":
