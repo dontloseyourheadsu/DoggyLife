@@ -44,6 +44,10 @@ var dog_breed: String = "Samoyed"
 var dog_key: String = ""
 var weight: float = 1.0
 
+var bowl_node: StaticBody3D = null
+var is_eating: bool = false
+var is_going_to_eat: bool = false
+
 var stat_hunger: float = 80.0
 var stat_thirst: float = 85.0
 var stat_hygiene: float = 90.0
@@ -216,6 +220,41 @@ func _physics_process(delta: float) -> void:
 	stat_hygiene = clamp(stat_hygiene - HYGIENE_DECAY_RATE * delta, 0.0, 100.0)
 	stat_affection = clamp(stat_affection - AFFECTION_DECAY_RATE * delta, 0.0, 100.0)
 
+	# Handle eating logic
+	if is_eating:
+		if is_instance_valid(bowl_node):
+			play_anim("sit-front")
+			var food_needed = 100.0 - stat_hunger
+			var rate = 15.0 * delta
+			var to_eat = min(rate, food_needed)
+			var eaten = bowl_node.eat_food(to_eat)
+			if eaten > 0.0:
+				stat_hunger = clamp(stat_hunger + eaten, 0.0, 100.0)
+			
+			if eaten <= 0.0 or stat_hunger >= 98.0:
+				is_eating = false
+				_start_sitting()
+		else:
+			is_eating = false
+			_start_sitting()
+	elif is_going_to_eat:
+		if is_instance_valid(bowl_node):
+			var dist_to_bowl = (global_position - bowl_node.global_position)
+			dist_to_bowl.y = 0.0
+			if dist_to_bowl.length() < 0.6:
+				is_going_to_eat = false
+				is_eating = true
+				_command_active = false
+				is_moving = false
+				velocity = Vector3.ZERO
+				_start_sitting()
+		else:
+			is_going_to_eat = false
+	elif stat_hunger < 45.0 and not _command_active and not _chase_target and not is_exhausted:
+		if is_instance_valid(bowl_node) and bowl_node.fullness > 0.0:
+			is_going_to_eat = true
+			go_to_global_position(bowl_node.global_position)
+
 	if current_state == DogState.WALKING and is_moving:
 		stat_energy = clamp(stat_energy - ENERGY_DECAY_RATE_WALKING * delta, 0.0, 100.0)
 		if stat_energy <= 0.0:
@@ -233,7 +272,9 @@ func _physics_process(delta: float) -> void:
 	var wall_collision_check = false
 	var command_check = false
 
-	if _chase_target:
+	if is_eating:
+		move_vel = Vector3.ZERO
+	elif _chase_target:
 		if not is_instance_valid(_chase_target):
 			_chase_target = null
 			is_moving = false
@@ -507,6 +548,9 @@ func go_to_global_position(target: Vector3) -> void:
 	"""Command the dog to walk towards the given global 3D position on XZ plane."""
 	if is_exhausted:
 		return
+	if not is_going_to_eat:
+		is_eating = false
+		is_going_to_eat = false
 	_chase_target = null
 	_command_target = target
 	_command_active = true
@@ -522,6 +566,8 @@ func chase_ball(ball: RigidBody3D) -> void:
 	"""Command the dog to chase the thrown 3D ball."""
 	if is_exhausted:
 		return
+	is_eating = false
+	is_going_to_eat = false
 	_chase_target = ball
 	_command_active = false
 	_command_target = Vector3.INF
@@ -536,3 +582,5 @@ func cancel_command() -> void:
 	_command_active = false
 	_command_target = Vector3.INF
 	_chase_target = null
+	is_eating = false
+	is_going_to_eat = false
