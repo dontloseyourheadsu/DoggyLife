@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/room/props/dispenser_3d.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/decoration/water_dispenser.jpg" id="2_texture"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_dispenser"]
+height = 0.4
+radius = 0.25
+
+[node name="Dispenser3D" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("CylinderShape3D_dispenser")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+pixel_size = 0.012
+billboard = 1
+shaded = true
+texture = ExtResource("2_texture")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+pixel_size = 0.01
+billboard = 1
+no_depth_test = true
+font_size = 18
+outline_size = 4
+text = "Dispenser"
