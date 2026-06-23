@@ -12,6 +12,8 @@ var current_dog: CharacterBody3D = null
 
 var bowl_label: Label = null
 var refill_btn: Button = null
+var dispenser_label: Label = null
+var refill_dispenser_btn: Button = null
 
 func _ready() -> void:
 	# Hide panel initially
@@ -34,9 +36,26 @@ func _ready() -> void:
 	
 	refill_btn = Button.new()
 	refill_btn.text = "Refill Bowl"
-	refill_btn.custom_minimum_size = Vector2(100, 30)
+	refill_btn.custom_minimum_size = Vector2(120, 30)
 	bowl_box.add_child(refill_btn)
 	refill_btn.pressed.connect(_on_refill_pressed)
+	
+	# Add Dispenser HUD container
+	var dispenser_box = HBoxContainer.new()
+	dispenser_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	dispenser_box.add_theme_constant_override("separation", 20)
+	$MarginContainer/VBoxContainer.add_child(dispenser_box)
+	
+	dispenser_label = Label.new()
+	dispenser_label.text = "Dispenser: Basic [0/100]"
+	dispenser_label.add_theme_font_size_override("font_size", 16)
+	dispenser_box.add_child(dispenser_label)
+	
+	refill_dispenser_btn = Button.new()
+	refill_dispenser_btn.text = "Refill Dispenser"
+	refill_dispenser_btn.custom_minimum_size = Vector2(120, 30)
+	dispenser_box.add_child(refill_dispenser_btn)
+	refill_dispenser_btn.pressed.connect(_on_refill_dispenser_pressed)
 
 func display_dog(dog: CharacterBody3D) -> void:
 	current_dog = dog
@@ -54,6 +73,11 @@ func _process(_delta: float) -> void:
 func _on_refill_pressed() -> void:
 	if is_instance_valid(current_dog) and is_instance_valid(current_dog.bowl_node):
 		current_dog.bowl_node.refill()
+		_update_ui()
+
+func _on_refill_dispenser_pressed() -> void:
+	if is_instance_valid(current_dog) and is_instance_valid(current_dog.dispenser_node):
+		current_dog.dispenser_node.refill()
 		_update_ui()
 
 func _update_ui() -> void:
@@ -79,3 +103,12 @@ func _update_ui() -> void:
 	else:
 		bowl_label.text = "Bowl: None"
 		refill_btn.disabled = true
+
+	# Update dispenser info
+	if is_instance_valid(current_dog) and is_instance_valid(current_dog.dispenser_node):
+		var disp = current_dog.dispenser_node
+		dispenser_label.text = "Dispenser: %s [%.0f / %.0f]" % [disp.dispenser_type.capitalize(), disp.fullness, disp.capacity]
+		refill_dispenser_btn.disabled = disp.fullness >= disp.capacity
+	else:
+		dispenser_label.text = "Dispenser: None"
+		refill_dispenser_btn.disabled = true
