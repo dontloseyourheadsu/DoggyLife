@@ -99,7 +99,7 @@ func _show_floating_text(txt: String) -> void:
 	f_label.font_size = 24
 	f_label.modulate = Color.CYAN
 	add_child(f_label)
-	f_label.global_position = global_position + Vector3(0, 0.5, 0)
+	f_label.global_position = global_position + Vector3(0, 0.4, 0)
 	
 	var tween = create_tween()
 	tween.tween_property(f_label, "global_position", f_label.global_position + Vector3(0, 0.5, 0), 0.8)

@@ -244,7 +244,7 @@ func _physics_process(delta: float) -> void:
 		if is_instance_valid(bowl_node):
 			var dist_to_bowl = (global_position - bowl_node.global_position)
 			dist_to_bowl.y = 0.0
-			if dist_to_bowl.length() < 0.6:
+			if dist_to_bowl.length() < 0.4:
 				is_going_to_eat = false
 				is_eating = true
 				_command_active = false
@@ -273,7 +273,7 @@ func _physics_process(delta: float) -> void:
 		if is_instance_valid(dispenser_node):
 			var dist_to_dispenser = (global_position - dispenser_node.global_position)
 			dist_to_dispenser.y = 0.0
-			if dist_to_dispenser.length() < 0.6:
+			if dist_to_dispenser.length() < 0.42:
 				is_going_to_drink = false
 				is_drinking = true
 				_command_active = false
